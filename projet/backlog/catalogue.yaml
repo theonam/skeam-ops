@@ -156,3 +156,21 @@ items:
     commit: 627d86f
     maj: 2026-10-15
     notes: Règle de rédaction des devis donnée par Théo le 2026-10-15. L'ordre d'importance tiré du transcript relève de /cadrage, chantier cadrage.
+  - id: OPS-210
+    titre: Une ligne de devis par option
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_recetter
+    taille: XS
+    estimation_h: 1
+    dependances:
+      - OPS-203
+    criteres_acceptation:
+      - Chaque item optionnel devient sa propre ligne de devis, Option n suivi de son titre, que le client choisit une à une.
+      - Les options sont numérotées par lot puis dans l'ordre du backlog ; le taux horaire reste celui de tarifs.yaml.
+    audience: interne
+    a_valider: false
+    commit: 9065dc7
+    maj: 2026-10-15
+    notes: Demandé par Théo le 2026-10-15, sur le modèle du devis d'options E G M.
