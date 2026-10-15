@@ -5,7 +5,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: en_cours
+    statut: a_recetter
     taille: S
     estimation_h: 3
     dependances: []
@@ -14,14 +14,14 @@ items:
       - La commande crée le projet et la section Todoist après confirmation de Théo et renseigne client.yaml todoist.
     audience: interne
     a_valider: false
-    commit: null
+    commit: d18a75a
     maj: 2026-10-15
   - id: OPS-302
     titre: Commande /import-transcript
     module: null
     lot: 1
     priorite: indispensable
-    statut: en_cours
+    statut: a_recetter
     taille: L
     estimation_h: 8
     dependances:
@@ -32,14 +32,14 @@ items:
       - Le dossier projet passe scripts/validate.py après import.
     audience: interne
     a_valider: false
-    commit: null
+    commit: 919d1ad
     maj: 2026-10-15
   - id: OPS-303
     titre: Commande /cadrage
     module: null
     lot: 1
     priorite: indispensable
-    statut: en_cours
+    statut: a_recetter
     taille: L
     estimation_h: 8
     dependances:
@@ -49,14 +49,14 @@ items:
       - Les items créés sans accord de Théo portent a_valider true et audience interne.
     audience: interne
     a_valider: false
-    commit: null
+    commit: 6930c37
     maj: 2026-10-15
   - id: OPS-304
     titre: Commande /chiffrage
     module: null
     lot: 1
     priorite: indispensable
-    statut: en_cours
+    statut: a_recetter
     taille: M
     estimation_h: 4
     dependances:
@@ -66,14 +66,14 @@ items:
       - Le brouillon est référencé dans client.yaml devis avec le statut brouillon.
     audience: interne
     a_valider: false
-    commit: null
+    commit: 9b70431
     maj: 2026-10-15
   - id: OPS-305
     titre: Commande /sync-todoist
     module: null
     lot: 1
     priorite: souhaitable
-    statut: en_cours
+    statut: a_recetter
     taille: M
     estimation_h: 5
     dependances:
@@ -83,14 +83,14 @@ items:
       - todoist_id et statut sont reportés dans actions.yaml ; une seconde synchronisation ne crée aucun doublon.
     audience: interne
     a_valider: false
-    commit: null
+    commit: dd09982
     maj: 2026-10-15
   - id: OPS-306
     titre: Commande /publier
     module: null
     lot: 1
     priorite: souhaitable
-    statut: en_cours
+    statut: a_recetter
     taille: M
     estimation_h: 5
     dependances:
@@ -101,6 +101,25 @@ items:
       - Le document est publié en doc Claude après validation de Théo et son URL est écrite dans client.yaml liens.
     audience: interne
     a_valider: false
-    commit: null
+    commit: "9032265"
     maj: 2026-10-15
     notes: Demandée par Théo dans la consigne du chantier cadrage ; CONTRAT.md section 11.7 la range au chantier dashboard, voir skills/PROPOSITIONS-CONTRAT.md.
+  - id: OPS-307
+    titre: Faire converger vue.py et agreger.py sur le filtrage par audience
+    module: null
+    lot: 2
+    priorite: souhaitable
+    statut: a_faire
+    taille: S
+    estimation_h: 2
+    dependances:
+      - OPS-306
+      - "externe: format de sortie de dashboard/scripts/agreger.py, chantier dashboard"
+    criteres_acceptation:
+      - Le tableau des audiences de CONTRAT.md section 10 est appliqué par un seul code, partagé par /publier et /dashboard.
+      - Les tests de skills/tests/test_vue.py passent sans modification de leurs attentes.
+    audience: interne
+    a_valider: true
+    commit: null
+    maj: 2026-10-15
+    notes: Besoin découvert pendant OPS-306, voir skills/PROPOSITIONS-CONTRAT.md, entrée Script de vue par audience.
