@@ -5,7 +5,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_faire
+    statut: en_cours
     taille: S
     estimation_h: 3
     dependances: []
@@ -21,7 +21,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_faire
+    statut: en_cours
     taille: L
     estimation_h: 8
     dependances:
@@ -39,7 +39,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_faire
+    statut: en_cours
     taille: L
     estimation_h: 8
     dependances:
@@ -56,7 +56,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_faire
+    statut: en_cours
     taille: M
     estimation_h: 4
     dependances:
@@ -73,7 +73,7 @@ items:
     module: null
     lot: 1
     priorite: souhaitable
-    statut: a_faire
+    statut: en_cours
     taille: M
     estimation_h: 5
     dependances:
@@ -85,3 +85,22 @@ items:
     a_valider: false
     commit: null
     maj: 2026-10-15
+  - id: OPS-306
+    titre: Commande /publier
+    module: null
+    lot: 1
+    priorite: souhaitable
+    statut: en_cours
+    taille: M
+    estimation_h: 5
+    dependances:
+      - OPS-301
+    criteres_acceptation:
+      - La commande produit la vue interne, commerciale ou client d'un dossier projet en appliquant le tableau des audiences de CONTRAT.md section 10.
+      - La vue client ne contient ni estimation, ni temps, ni note, ni tarif, ni contenu de interne/.
+      - Le document est publié en doc Claude après validation de Théo et son URL est écrite dans client.yaml liens.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15
+    notes: Demandée par Théo dans la consigne du chantier cadrage ; CONTRAT.md section 11.7 la range au chantier dashboard, voir skills/PROPOSITIONS-CONTRAT.md.
