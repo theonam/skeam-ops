@@ -1,0 +1,85 @@
+# Chantier dashboard, branche feat/dashboard, agent ops-dashboard, dossier dashboard/. Ids OPS-401 à OPS-499.
+items:
+  - id: OPS-401
+    titre: Script d'agrégation agreger.py par audience
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_faire
+    taille: L
+    estimation_h: 8
+    dependances: []
+    criteres_acceptation:
+      - python dashboard/scripts/agreger.py produit dashboard/out/<audience>.json selon CONTRAT.md section 11.5.
+      - Pour les audiences commercial et client, la sortie ne contient aucune donnée exclue par la section 10 ; un test le vérifie sur exemples/.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15
+  - id: OPS-402
+    titre: Rendu du dashboard
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_faire
+    taille: M
+    estimation_h: 6
+    dependances:
+      - OPS-401
+    criteres_acceptation:
+      - Une page lit dashboard/out/<audience>.json et affiche par projet statut, lots, avancement et, en interne, temps et actions.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15
+  - id: OPS-403
+    titre: Commandes /dashboard et /calibrer
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_faire
+    taille: S
+    estimation_h: 3
+    dependances:
+      - OPS-401
+      - OPS-204
+    criteres_acceptation:
+      - dashboard/skills/dashboard/SKILL.md et dashboard/skills/calibrer/SKILL.md orchestrent les scripts de CONTRAT.md section 11.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15
+  - id: OPS-404
+    titre: Commande /publier
+    module: null
+    lot: 1
+    priorite: souhaitable
+    statut: a_faire
+    taille: M
+    estimation_h: 5
+    dependances:
+      - OPS-401
+    criteres_acceptation:
+      - La commande met à jour les documents pointés par liens.docs_<audience> à partir des vues filtrées, après confirmation de Théo.
+      - Aucune notification ni aucun courriel n'est envoyé au client.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15
+  - id: OPS-405
+    titre: Relecture hebdomadaire du temps
+    module: null
+    lot: 2
+    priorite: souhaitable
+    statut: a_faire
+    taille: S
+    estimation_h: 3
+    dependances:
+      - OPS-401
+    criteres_acceptation:
+      - Le dashboard interne liste les lignes de temps valide false de la semaine par agent et par item.
+      - Une commande passe à true les lignes relues par Théo, sans modifier les autres champs.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15

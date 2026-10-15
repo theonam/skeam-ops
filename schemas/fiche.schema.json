@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/theonam/skeam-ops/schemas/fiche.schema.json",
+  "title": "Projection de la fiche lisible, projet/fiche.md",
+  "description": "Seul le titre de niveau 1 est imposé. Le plan des sections est recommandé, pas validé.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["titre"],
+  "properties": {
+    "titre": { "$ref": "commun.schema.json#/$defs/texte" }
+  }
+}

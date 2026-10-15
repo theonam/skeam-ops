@@ -1,0 +1,7 @@
+# Registre des clients. Format : CONTRAT.md section 12. Le statut fait foi dans projet/client.yaml du dépôt client.
+clients:
+  - slug: egm
+    nom: E G M
+    depot: theonam/egm-app
+    statut: en_dev
+    actif: true

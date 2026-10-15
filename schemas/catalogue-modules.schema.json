@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/theonam/skeam-ops/schemas/catalogue-modules.schema.json",
+  "title": "Catalogue des modules, catalogue/modules.yaml",
+  "description": "Audience interne. Propriété du chantier catalogue, format fixé par le contrat.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["modules"],
+  "properties": {
+    "modules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "nom", "description", "taille_type", "heures_min", "heures_max", "confiance", "mesures", "prix_conseille_ht"],
+        "properties": {
+          "code": { "$ref": "commun.schema.json#/$defs/code_module" },
+          "nom": { "$ref": "commun.schema.json#/$defs/texte" },
+          "description": { "$ref": "commun.schema.json#/$defs/texte" },
+          "taille_type": { "$ref": "commun.schema.json#/$defs/taille" },
+          "heures_min": { "$ref": "commun.schema.json#/$defs/heures" },
+          "heures_max": { "description": "Supérieur ou égal à heures_min.", "$ref": "commun.schema.json#/$defs/heures" },
+          "confiance": { "type": "string", "enum": ["faible", "moyenne", "forte"] },
+          "mesures": {
+            "description": "Écrit par calibrer.py : une mesure par item fait rattaché au module.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["client", "item", "heures"],
+              "properties": {
+                "client": { "$ref": "commun.schema.json#/$defs/slug" },
+                "item": { "$ref": "commun.schema.json#/$defs/id_item" },
+                "heures": { "$ref": "commun.schema.json#/$defs/heures" }
+              }
+            }
+          },
+          "prix_conseille_ht": {
+            "description": "Prix HT conseillé du module, ou null tant qu'il n'est pas calculé.",
+            "anyOf": [{ "type": "null" }, { "$ref": "commun.schema.json#/$defs/montant_ht" }]
+          }
+        }
+      }
+    }
+  }
+}

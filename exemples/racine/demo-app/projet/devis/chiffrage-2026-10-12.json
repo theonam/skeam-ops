@@ -1,0 +1,32 @@
+{
+  "slug": "demo",
+  "date": "2026-10-12",
+  "objet": "Application de gestion Démo Bâtiment, lots 0 et 1 et maintenance",
+  "lignes": [
+    {
+      "titre": "Lot 0 : démo",
+      "description": "Connexion par lien SMS et liste des chantiers en cours.",
+      "quantite": 1,
+      "unite": "forfait",
+      "prix_unitaire_ht": 1800,
+      "tva": 0.2
+    },
+    {
+      "titre": "Lot 1 : pointage et export paie",
+      "description": "Saisie du pointage journalier et export mensuel des heures.",
+      "quantite": 1,
+      "unite": "forfait",
+      "prix_unitaire_ht": 4500,
+      "tva": 0.2
+    },
+    {
+      "titre": "Maintenance et hébergement",
+      "description": "",
+      "quantite": 12,
+      "unite": "mois",
+      "prix_unitaire_ht": 100,
+      "tva": 0.2
+    }
+  ],
+  "total_ht": 7500
+}

@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/theonam/skeam-ops/schemas/commun.schema.json",
+  "title": "Définitions communes à tous les formats",
+  "description": "Types partagés, référencés par les autres schémas via commun.schema.json#/$defs/<nom>. Ce fichier ne valide aucun document à lui seul.",
+  "$defs": {
+    "texte": {
+      "description": "Chaîne non vide.",
+      "type": "string",
+      "minLength": 1
+    },
+    "texte_ou_null": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "date": {
+      "description": "Date ISO 8601 AAAA-MM-JJ, heure de Paris.",
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+      "format": "date"
+    },
+    "date_ou_null": {
+      "type": ["string", "null"],
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+      "format": "date"
+    },
+    "heure": {
+      "description": "Heure locale de Paris HH:MM sur 24 heures.",
+      "type": "string",
+      "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+    },
+    "slug": {
+      "description": "Identifiant court du projet : minuscules et chiffres, sans tiret, 2 à 12 caractères, commence par une lettre.",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]{1,11}$"
+    },
+    "id_item": {
+      "description": "Id d'item de backlog : préfixe = slug en majuscules, tiret, numéro sur 3 chiffres. Ex. EGM-012.",
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9]{1,11}-[0-9]{3}$"
+    },
+    "id_action": {
+      "description": "Id d'action : ACT-, préfixe, tiret, numéro sur 3 chiffres. Ex. ACT-EGM-003.",
+      "type": "string",
+      "pattern": "^ACT-[A-Z][A-Z0-9]{1,11}-[0-9]{3}$"
+    },
+    "code_module": {
+      "description": "Code de module du catalogue, kebab-case.",
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "agent": {
+      "description": "Nom d'agent ou de personne qui saisit du temps, kebab-case. Ex. egm-dev, ops-socle, theo.",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+    },
+    "depot": {
+      "description": "Dépôt GitHub proprietaire/nom. Ex. theonam/egm-app.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9-]*/[A-Za-z0-9._-]+$"
+    },
+    "url_ou_null": {
+      "type": ["string", "null"],
+      "pattern": "^https://[^\\s]+$"
+    },
+    "montant_ht": {
+      "description": "Montant hors taxes en euros, positif ou nul, 2 décimales au plus.",
+      "type": "number",
+      "minimum": 0
+    },
+    "heures": {
+      "description": "Nombre d'heures strictement positif, décimales autorisées.",
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "taille": {
+      "type": "string",
+      "enum": ["XS", "S", "M", "L", "XL"]
+    },
+    "statut_projet": {
+      "type": "string",
+      "enum": ["prospect", "cadrage", "devis_envoye", "signe", "en_dev", "recette", "run", "clos"]
+    },
+    "statut_item": {
+      "type": "string",
+      "enum": ["a_faire", "en_cours", "a_recetter", "fait", "abandonne"]
+    },
+    "priorite_item": {
+      "type": "string",
+      "enum": ["indispensable", "souhaitable", "optionnel"]
+    },
+    "audience": {
+      "type": "string",
+      "enum": ["interne", "commercial", "client"]
+    },
+    "commit_ou_null": {
+      "description": "Hash Git en minuscules, 7 à 40 caractères.",
+      "type": ["string", "null"],
+      "pattern": "^[0-9a-f]{7,40}$"
+    },
+    "dougs_id": {
+      "description": "Identifiant UUID du devis Dougs, renvoyé par create-quote-draft.",
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    },
+    "todoist_id_ou_null": {
+      "description": "Identifiant Todoist, toujours écrit comme une chaîne.",
+      "type": ["string", "null"],
+      "pattern": "^[A-Za-z0-9_-]+$"
+    },
+    "participants": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/texte" }
+    },
+    "source_transcript": {
+      "description": "Origine du transcript : plaud pour un enregistrement Plaud, visio pour un export Teams, Meet ou Zoom, manuel pour des notes saisies.",
+      "type": "string",
+      "enum": ["plaud", "visio", "manuel"]
+    },
+    "chemin_transcript": {
+      "type": "string",
+      "pattern": "^transcripts/[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9]+(-[a-z0-9]+)*\\.md$"
+    }
+  }
+}

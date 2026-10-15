@@ -1,0 +1,37 @@
+items:
+  - id: ACT-OPS-001
+    titre: Relire et fusionner la pull request feat/init
+    contexte: Socle commun posé par la conversation feat/init ; les quatre chantiers partent de main une fois fusionné.
+    priorite: p1
+    points: 3pt
+    echeance: 2026-10-16
+    statut: ouverte
+    todoist_id: null
+    source: OPS-001
+  - id: ACT-OPS-002
+    titre: Arbitrer les points tranchés du socle commun
+    contexte: Choix faits faute de précision dans la consigne, listés dans decisions.md et dans la pull request.
+    priorite: p2
+    points: 2pt
+    echeance: 2026-10-16
+    statut: ouverte
+    todoist_id: null
+    source: decisions.md
+  - id: ACT-OPS-003
+    titre: Confirmer le statut d'E G M dans clients.yaml
+    contexte: en_dev retenu par défaut ; client.yaml du dépôt egm-app fait foi et doit concorder.
+    priorite: p2
+    points: 1pt
+    echeance: null
+    statut: ouverte
+    todoist_id: null
+    source: cadrage.md
+  - id: ACT-OPS-004
+    titre: Lancer les quatre conversations de chantier
+    contexte: Une conversation par chantier sur feat/socle, feat/catalogue, feat/cadrage et feat/dashboard, après fusion de feat/init.
+    priorite: p2
+    points: 1pt
+    echeance: null
+    statut: ouverte
+    todoist_id: null
+    source: OPS-001

@@ -1,0 +1,19 @@
+items:
+  - id: ACT-DEMO-001
+    titre: Obtenir la liste des compagnons
+    contexte: Dépendance externe de DEMO-003, demandée à Claire Martin en réunion de lancement.
+    priorite: p2
+    points: 1pt
+    echeance: 2026-10-20
+    statut: ouverte
+    todoist_id: "6Jf8VR2xqxJ5Gm3P"
+    source: syntheses/2026-10-08-lancement.md
+  - id: ACT-DEMO-002
+    titre: Confirmer le format d'export du cabinet de paie
+    contexte: Note de DEMO-004 ; sans ce format l'export ne peut pas être recetté.
+    priorite: p3
+    points: 2pt
+    echeance: null
+    statut: ouverte
+    todoist_id: null
+    source: DEMO-004

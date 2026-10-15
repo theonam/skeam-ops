@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/theonam/skeam-ops/schemas/decisions.schema.json",
+  "title": "Projection du journal des décisions, projet/decisions.md",
+  "description": "Le validateur extrait le titre de niveau 1 et, pour chaque entrée ## AAAA-MM-JJ titre, la date, le titre et la liste ordonnée des champs en gras trouvés dans les puces - **Champ** : texte.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["titre", "entrees"],
+  "properties": {
+    "titre": { "const": "Décisions" },
+    "entrees": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["date", "titre", "champs"],
+        "properties": {
+          "date": { "$ref": "commun.schema.json#/$defs/date" },
+          "titre": { "$ref": "commun.schema.json#/$defs/texte" },
+          "champs": { "const": ["Décision", "Raison", "Impact", "Source"] }
+        }
+      }
+    }
+  }
+}

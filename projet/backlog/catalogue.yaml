@@ -1,0 +1,86 @@
+# Chantier catalogue, branche feat/catalogue, agent ops-catalogue, dossier catalogue/. Ids OPS-201 à OPS-299.
+items:
+  - id: OPS-201
+    titre: Catalogue initial des modules
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_faire
+    taille: M
+    estimation_h: 4
+    dependances: []
+    criteres_acceptation:
+      - catalogue/modules.yaml liste les modules courants d'un outil de gestion de PME, au format de CONTRAT.md section 8.1.
+      - python scripts/validate.py --catalogue catalogue/ sort sans erreur.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15
+  - id: OPS-202
+    titre: Grille tarifaire interne
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_faire
+    taille: XS
+    estimation_h: 1
+    dependances: []
+    criteres_acceptation:
+      - catalogue/tarifs.yaml fixe taux_horaire_cible, marge_securite par taille et plancher_ht, au format de CONTRAT.md section 8.2.
+      - Les valeurs sont proposées dans la pull request ; Théo les arrête.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15
+  - id: OPS-203
+    titre: Script de chiffrage chiffrer.py
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_faire
+    taille: L
+    estimation_h: 8
+    dependances:
+      - OPS-201
+      - OPS-202
+    criteres_acceptation:
+      - python catalogue/scripts/chiffrer.py <chemin_projet> --sortie <chemin_projet>/devis/ produit chiffrage-AAAA-MM-JJ.md et .json.
+      - Le .json passe scripts/validate.py et ses lignes se transposent sans retouche en lignes de devis Dougs.
+      - Le chiffrage du client fictif de exemples/ est reproductible.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15
+  - id: OPS-204
+    titre: Script de calibrage calibrer.py
+    module: null
+    lot: 1
+    priorite: souhaitable
+    statut: a_faire
+    taille: M
+    estimation_h: 5
+    dependances:
+      - OPS-201
+    criteres_acceptation:
+      - python catalogue/scripts/calibrer.py --clients clients.yaml --racine <dossier des clones> réécrit les mesures selon CONTRAT.md section 11.4.
+      - Deux passages de suite produisent un fichier identique.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15
+  - id: OPS-205
+    titre: Méthode de calcul du prix conseillé et de la confiance
+    module: null
+    lot: 2
+    priorite: souhaitable
+    statut: a_faire
+    taille: S
+    estimation_h: 3
+    dependances:
+      - OPS-204
+    criteres_acceptation:
+      - catalogue/README.md explique comment prix_conseille_ht et confiance découlent des mesures et des tarifs.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15

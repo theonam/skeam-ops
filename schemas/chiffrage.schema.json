@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/theonam/skeam-ops/schemas/chiffrage.schema.json",
+  "title": "Chiffrage JSON, projet/devis/chiffrage-AAAA-MM-JJ.json",
+  "description": "Produit par catalogue/scripts/chiffrer.py. Chaque ligne se transpose une pour une en ligne de devis Dougs : titre vers title, description vers description, quantite vers quantity, unite vers unit, prix_unitaire_ht vers unitAmount, tva vers vatRate, avec isPriceWithVat à false.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["slug", "date", "objet", "lignes", "total_ht"],
+  "properties": {
+    "slug": { "$ref": "commun.schema.json#/$defs/slug" },
+    "date": { "description": "Identique à la date du nom de fichier.", "$ref": "commun.schema.json#/$defs/date" },
+    "objet": { "description": "Objet du devis Dougs, champ subject.", "$ref": "commun.schema.json#/$defs/texte" },
+    "lignes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["titre", "description", "quantite", "unite", "prix_unitaire_ht", "tva"],
+        "properties": {
+          "titre": { "$ref": "commun.schema.json#/$defs/texte" },
+          "description": { "description": "Peut être une chaîne vide.", "type": "string" },
+          "quantite": { "type": "number", "exclusiveMinimum": 0 },
+          "unite": { "type": "string", "enum": ["forfait", "jour", "heure", "unité", "mois", "an"] },
+          "prix_unitaire_ht": { "$ref": "commun.schema.json#/$defs/montant_ht" },
+          "tva": { "description": "Taux en ratio décimal comme dans Dougs : 0.2 pour 20 %.", "type": "number", "enum": [0.2, 0.1, 0.055, 0.021, 0] }
+        }
+      }
+    },
+    "total_ht": { "description": "Somme des quantite fois prix_unitaire_ht, arrondie au centime.", "$ref": "commun.schema.json#/$defs/montant_ht" }
+  }
+}

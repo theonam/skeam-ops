@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/theonam/skeam-ops/schemas/temps.schema.json",
+  "title": "Ligne du journal de temps, projet/temps/AAAA-MM-<agent>.jsonl",
+  "description": "Schéma d'UNE ligne. Le fichier contient un objet JSON par ligne, sans ligne vide.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["date", "debut", "fin", "minutes", "item", "source", "agent", "note", "valide"],
+  "properties": {
+    "date": { "description": "Date du début de la session.", "$ref": "commun.schema.json#/$defs/date" },
+    "debut": { "$ref": "commun.schema.json#/$defs/heure" },
+    "fin": { "$ref": "commun.schema.json#/$defs/heure" },
+    "minutes": { "description": "Égal à fin moins debut ; si fin est avant debut, la session a passé minuit.", "type": "integer", "minimum": 1, "maximum": 1440 },
+    "item": {
+      "description": "Id de l'item travaillé, ou null pour du temps hors item : réunion, administratif.",
+      "anyOf": [{ "type": "null" }, { "$ref": "commun.schema.json#/$defs/id_item" }]
+    },
+    "source": { "type": "string", "enum": ["claude-code", "theo"] },
+    "agent": { "$ref": "commun.schema.json#/$defs/agent" },
+    "note": { "type": "string" },
+    "valide": { "description": "Passe à true quand Théo relit la semaine.", "type": "boolean" }
+  }
+}

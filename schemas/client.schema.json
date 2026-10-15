@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/theonam/skeam-ops/schemas/client.schema.json",
+  "title": "Fiche client structurée, projet/client.yaml",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["slug", "nom", "raison_sociale", "siren", "adresse", "contacts", "statut", "apporteur", "dates", "montants_ht", "devis", "liens", "todoist"],
+  "properties": {
+    "slug": { "$ref": "commun.schema.json#/$defs/slug" },
+    "nom": { "$ref": "commun.schema.json#/$defs/texte" },
+    "raison_sociale": { "$ref": "commun.schema.json#/$defs/texte_ou_null" },
+    "siren": {
+      "description": "9 chiffres, écrit entre guillemets en YAML.",
+      "type": ["string", "null"],
+      "pattern": "^[0-9]{9}$"
+    },
+    "adresse": {
+      "description": "Adresse de facturation, alignée sur le format client de Dougs.",
+      "anyOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["rue", "code_postal", "ville", "pays"],
+          "properties": {
+            "rue": { "$ref": "commun.schema.json#/$defs/texte" },
+            "code_postal": { "type": "string", "pattern": "^[0-9]{5}$" },
+            "ville": { "$ref": "commun.schema.json#/$defs/texte" },
+            "pays": { "$ref": "commun.schema.json#/$defs/texte" }
+          }
+        }
+      ]
+    },
+    "contacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["nom", "role", "email", "tel"],
+        "properties": {
+          "nom": { "$ref": "commun.schema.json#/$defs/texte" },
+          "role": { "$ref": "commun.schema.json#/$defs/texte_ou_null" },
+          "email": {
+            "type": ["string", "null"],
+            "pattern": "^[^@\\s]+@[^@\\s]+\\.[A-Za-z]{2,}$"
+          },
+          "tel": {
+            "description": "Format international avec espaces : +33 6 12 34 56 78.",
+            "type": ["string", "null"],
+            "pattern": "^\\+[1-9][0-9]{0,2}( [0-9]{1,4})+$"
+          }
+        }
+      }
+    },
+    "statut": { "$ref": "commun.schema.json#/$defs/statut_projet" },
+    "apporteur": { "type": "string", "enum": ["theo", "jonathan", "autre"] },
+    "dates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["premier_contact", "cadrage", "signature", "mise_en_service"],
+      "properties": {
+        "premier_contact": { "$ref": "commun.schema.json#/$defs/date_ou_null" },
+        "cadrage": { "$ref": "commun.schema.json#/$defs/date_ou_null" },
+        "signature": { "$ref": "commun.schema.json#/$defs/date_ou_null" },
+        "mise_en_service": { "$ref": "commun.schema.json#/$defs/date_ou_null" }
+      }
+    },
+    "montants_ht": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["build_signe", "options_signees", "run_annuel"],
+      "properties": {
+        "build_signe": { "$ref": "commun.schema.json#/$defs/montant_ht" },
+        "options_signees": { "$ref": "commun.schema.json#/$defs/montant_ht" },
+        "run_annuel": { "$ref": "commun.schema.json#/$defs/montant_ht" }
+      }
+    },
+    "devis": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["dougs_id", "objet", "montant_ht", "statut"],
+        "properties": {
+          "dougs_id": { "$ref": "commun.schema.json#/$defs/dougs_id" },
+          "objet": { "$ref": "commun.schema.json#/$defs/texte" },
+          "montant_ht": { "$ref": "commun.schema.json#/$defs/montant_ht" },
+          "statut": { "type": "string", "enum": ["brouillon", "envoye", "accepte", "refuse"] }
+        }
+      }
+    },
+    "liens": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["depot", "demo", "prod", "docs_interne", "docs_commercial", "docs_client"],
+      "properties": {
+        "depot": {
+          "anyOf": [{ "type": "null" }, { "$ref": "commun.schema.json#/$defs/depot" }]
+        },
+        "demo": { "$ref": "commun.schema.json#/$defs/url_ou_null" },
+        "prod": { "$ref": "commun.schema.json#/$defs/url_ou_null" },
+        "docs_interne": { "$ref": "commun.schema.json#/$defs/url_ou_null" },
+        "docs_commercial": { "$ref": "commun.schema.json#/$defs/url_ou_null" },
+        "docs_client": { "$ref": "commun.schema.json#/$defs/url_ou_null" }
+      }
+    },
+    "todoist": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["projet_id", "section_id"],
+      "properties": {
+        "projet_id": { "$ref": "commun.schema.json#/$defs/todoist_id_ou_null" },
+        "section_id": { "$ref": "commun.schema.json#/$defs/todoist_id_ou_null" }
+      }
+    }
+  }
+}

@@ -1,0 +1,88 @@
+# Chantier socle, branche feat/socle, agent ops-socle, dossier socle/. Ids OPS-101 à OPS-199.
+items:
+  - id: OPS-101
+    titre: Application socle installable sur téléphone et tablette
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_faire
+    taille: L
+    estimation_h: 12
+    dependances: []
+    criteres_acceptation:
+      - L'application socle s'installe depuis le navigateur sur téléphone et tablette, Android et iOS.
+      - L'interface est utilisable d'une main sur un écran de téléphone.
+      - Le choix de pile technique est documenté dans socle/README.md.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15
+  - id: OPS-102
+    titre: Comptes, profils et droits génériques
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_faire
+    taille: M
+    estimation_h: 8
+    dependances:
+      - OPS-101
+    criteres_acceptation:
+      - Les profils et leurs droits se déclarent par configuration, sans code, pour refléter la section Profils et droits d'un cadrage.
+      - Un utilisateur ne voit que ce que son profil autorise.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15
+  - id: OPS-103
+    titre: Script socle/scripts/init_app.sh
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_faire
+    taille: M
+    estimation_h: 4
+    dependances:
+      - OPS-101
+    criteres_acceptation:
+      - socle/scripts/init_app.sh <dossier_cible> initialise une application client conforme à CONTRAT.md section 11.6.
+      - Le script ne touche jamais à <dossier_cible>/projet/ et refuse d'écraser un fichier existant, code 1.
+      - Le CLAUDE.md racine produit contient la ligne @projet/CLAUDE-projet.md.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15
+  - id: OPS-104
+    titre: Déploiement des environnements démo et production
+    module: null
+    lot: 1
+    priorite: souhaitable
+    statut: a_faire
+    taille: M
+    estimation_h: 5
+    dependances:
+      - OPS-101
+    criteres_acceptation:
+      - La procédure de déploiement démo et production est documentée et reproductible en une commande par environnement.
+      - Les URL obtenues se reportent dans liens.demo et liens.prod de client.yaml.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15
+  - id: OPS-105
+    titre: Modules socle réutilisables alignés sur le catalogue
+    module: null
+    lot: 2
+    priorite: souhaitable
+    statut: a_faire
+    taille: L
+    estimation_h: 10
+    dependances:
+      - OPS-102
+      - OPS-201
+    criteres_acceptation:
+      - Chaque module fourni par le socle porte le code du module correspondant dans catalogue/modules.yaml.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15

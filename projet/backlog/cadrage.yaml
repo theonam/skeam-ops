@@ -1,0 +1,87 @@
+# Chantier cadrage, branche feat/cadrage, agent ops-cadrage, dossier skills/. Ids OPS-301 à OPS-399.
+items:
+  - id: OPS-301
+    titre: Commande /nouveau-client
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_faire
+    taille: S
+    estimation_h: 3
+    dependances: []
+    criteres_acceptation:
+      - skills/nouveau-client/SKILL.md appelle scripts/nouveau_dossier.py et ajoute l'entrée au registre clients.yaml.
+      - La commande crée le projet et la section Todoist après confirmation de Théo et renseigne client.yaml todoist.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15
+  - id: OPS-302
+    titre: Commande /import-transcript
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_faire
+    taille: L
+    estimation_h: 8
+    dependances:
+      - OPS-301
+    criteres_acceptation:
+      - Un enregistrement Plaud devient un transcript et une synthèse en 5 sections, au format de CONTRAT.md sections 9.1 et 9.2.
+      - Les actions de Théo sont ajoutées à actions.yaml avec la synthèse pour source.
+      - Le dossier projet passe scripts/validate.py après import.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15
+  - id: OPS-303
+    titre: Commande /cadrage
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_faire
+    taille: L
+    estimation_h: 8
+    dependances:
+      - OPS-302
+    criteres_acceptation:
+      - La commande met à jour cadrage.md dans ses 14 sections et propose les items du backlog correspondants.
+      - Les items créés sans accord de Théo portent a_valider true et audience interne.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15
+  - id: OPS-304
+    titre: Commande /chiffrage
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_faire
+    taille: M
+    estimation_h: 4
+    dependances:
+      - OPS-203
+    criteres_acceptation:
+      - La commande lance chiffrer.py puis crée un brouillon de devis Dougs, sans jamais le finaliser ni l'envoyer.
+      - Le brouillon est référencé dans client.yaml devis avec le statut brouillon.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15
+  - id: OPS-305
+    titre: Commande /sync-todoist
+    module: null
+    lot: 1
+    priorite: souhaitable
+    statut: a_faire
+    taille: M
+    estimation_h: 5
+    dependances:
+      - OPS-301
+    criteres_acceptation:
+      - Les actions ouvertes de actions.yaml existent dans Todoist avec priorité, étiquette de points et échéance.
+      - todoist_id et statut sont reportés dans actions.yaml ; une seconde synchronisation ne crée aucun doublon.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15

@@ -1,0 +1,22 @@
+# Socle commun, branche feat/init. Ids OPS-001 à OPS-099, réservés à Théo et au socle commun.
+items:
+  - id: OPS-001
+    titre: Socle commun du dépôt, contrat, schémas, validateur et gabarits
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_recetter
+    taille: L
+    estimation_h: 6
+    dependances: []
+    criteres_acceptation:
+      - CONTRAT.md décrit chaque format avec un exemple validé par scripts/validate.py --contrat.
+      - schemas/ contient un JSON Schema par format.
+      - scripts/validate.py valide un dossier projet complet et sort avec un code non nul en cas d'erreur.
+      - scripts/nouveau_dossier.py crée un dossier projet valide depuis templates/dossier-client.
+      - templates/dossier-client et projet/ passent la validation sans erreur.
+      - Le README donne la carte des dossiers et les règles de collaboration.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15

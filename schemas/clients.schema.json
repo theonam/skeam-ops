@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/theonam/skeam-ops/schemas/clients.schema.json",
+  "title": "Registre des clients, clients.yaml à la racine de skeam-ops",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["clients"],
+  "properties": {
+    "clients": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["slug", "nom", "depot", "statut", "actif"],
+        "properties": {
+          "slug": { "$ref": "commun.schema.json#/$defs/slug" },
+          "nom": { "$ref": "commun.schema.json#/$defs/texte" },
+          "depot": { "$ref": "commun.schema.json#/$defs/depot" },
+          "statut": { "description": "Copie du statut de projet/client.yaml, qui fait foi.", "$ref": "commun.schema.json#/$defs/statut_projet" },
+          "actif": { "description": "false : ignoré par agreger.py et calibrer.py.", "type": "boolean" }
+        }
+      }
+    }
+  }
+}

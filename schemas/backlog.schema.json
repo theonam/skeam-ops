@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/theonam/skeam-ops/schemas/backlog.schema.json",
+  "title": "Fichier de backlog, projet/backlog/<nom>.yaml",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["items"],
+  "properties": {
+    "items": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/item" }
+    }
+  },
+  "$defs": {
+    "item": {
+      "title": "Item de backlog",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "titre", "module", "lot", "priorite", "statut", "taille", "estimation_h", "dependances", "criteres_acceptation", "audience", "a_valider", "commit", "maj"],
+      "properties": {
+        "id": { "$ref": "commun.schema.json#/$defs/id_item" },
+        "titre": { "$ref": "commun.schema.json#/$defs/texte" },
+        "module": {
+          "description": "Code du catalogue, ou null pour un item hors catalogue.",
+          "anyOf": [{ "type": "null" }, { "$ref": "commun.schema.json#/$defs/code_module" }]
+        },
+        "lot": { "description": "0 pour la démo.", "type": "integer", "minimum": 0 },
+        "priorite": { "$ref": "commun.schema.json#/$defs/priorite_item" },
+        "statut": { "$ref": "commun.schema.json#/$defs/statut_item" },
+        "taille": { "$ref": "commun.schema.json#/$defs/taille" },
+        "estimation_h": { "$ref": "commun.schema.json#/$defs/heures" },
+        "dependances": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "anyOf": [
+              { "$ref": "commun.schema.json#/$defs/id_item" },
+              { "type": "string", "pattern": "^externe: [^\\s].*$" }
+            ]
+          }
+        },
+        "criteres_acceptation": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "commun.schema.json#/$defs/texte" }
+        },
+        "audience": { "$ref": "commun.schema.json#/$defs/audience" },
+        "a_valider": { "type": "boolean" },
+        "commit": { "$ref": "commun.schema.json#/$defs/commit_ou_null" },
+        "maj": { "$ref": "commun.schema.json#/$defs/date" },
+        "notes": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

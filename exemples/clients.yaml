@@ -1,0 +1,7 @@
+# Registre d'exemple, pointe vers le client fictif de exemples/racine.
+clients:
+  - slug: demo
+    nom: Démo Bâtiment
+    depot: skeam-exemple/demo-app
+    statut: en_dev
+    actif: true
