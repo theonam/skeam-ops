@@ -1,0 +1,5 @@
+{"date":"2026-10-05","debut":"20:00","fin":"21:30","minutes":90,"item":"FICTIF-001","source":"claude-code","agent":"fictif-dev","note":"","valide":true}
+{"date":"2026-10-06","debut":"20:00","fin":"21:30","minutes":90,"item":"FICTIF-001","source":"claude-code","agent":"fictif-dev","note":"Envoi des courriels","valide":true}
+{"date":"2026-10-07","debut":"21:00","fin":"22:00","minutes":60,"item":"FICTIF-002","source":"claude-code","agent":"fictif-dev","note":"","valide":true}
+{"date":"2026-10-13","debut":"23:30","fin":"00:45","minutes":75,"item":"FICTIF-003","source":"claude-code","agent":"fictif-dev","note":"Session passée minuit","valide":false}
+{"date":"2026-10-14","debut":"20:00","fin":"23:00","minutes":180,"item":"FICTIF-003","source":"claude-code","agent":"fictif-dev","note":"","valide":false}

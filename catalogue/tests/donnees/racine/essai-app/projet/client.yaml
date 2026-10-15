@@ -1,0 +1,42 @@
+# Client fictif du jeu d'essai du chantier catalogue. Aucune donnée réelle.
+# Fiche client structurée. Format : CONTRAT.md, section client.yaml.
+# Toutes les clés sont obligatoires ; une valeur inconnue vaut null.
+# Écrire entre guillemets les valeurs faites de chiffres : siren, code postal, ids Todoist.
+slug: essai
+nom: "Essai Rénovation"
+raison_sociale: null
+siren: null                 # "123456789"
+adresse: null               # ou { rue: ..., code_postal: "69003", ville: ..., pays: France }
+contacts: []
+# contacts:
+#   - nom: Prénom Nom
+#     role: Gérant
+#     email: prenom.nom@exemple.fr
+#     tel: "+33 6 12 34 56 78"
+statut: en_dev              # prospect, cadrage, devis_envoye, signe, en_dev, recette, run, clos
+apporteur: theo             # theo, jonathan, autre
+dates:
+  premier_contact: null     # AAAA-MM-JJ
+  cadrage: null
+  signature: null
+  mise_en_service: null
+montants_ht:
+  build_signe: 0
+  options_signees: 0
+  run_annuel: 0
+devis: []
+# devis:
+#   - dougs_id: 3f2b6c1e-8a4d-4c2b-9e7f-1a2b3c4d5e6f
+#     objet: Application de gestion, lot 1
+#     montant_ht: 12500
+#     statut: brouillon     # brouillon, envoye, accepte, refuse
+liens:
+  depot: skeam-exemple/essai-app
+  demo: null                # URL https
+  prod: null
+  docs_interne: null
+  docs_commercial: null
+  docs_client: null
+todoist:
+  projet_id: null           # "6Jf8VQXxpwv56VQ7"
+  section_id: null

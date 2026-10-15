@@ -1,0 +1,13 @@
+# Actions personnelles de Théo. Format : CONTRAT.md, section Action.
+# Id : ACT-<SLUG EN MAJUSCULES>-<numéro sur 3 chiffres>.
+items: []
+# items:
+#   - id: ACT-EGM-003
+#     titre: Relancer le client pour la liste des chantiers en cours
+#     contexte: Demandée en réunion de lancement ; bloque l'import des chantiers du lot 1.
+#     priorite: p2              # p1 la plus urgente
+#     points: 1pt               # 1pt, 2pt, 3pt, 5pt, 8pt
+#     echeance: 2026-10-20      # ou null
+#     statut: ouverte           # ouverte, faite, annulee
+#     todoist_id: null          # écrit par /sync-todoist, entre guillemets
+#     source: syntheses/2026-10-08-lancement.md   # manuel, id d'item ou chemin relatif à projet/

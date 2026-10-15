@@ -1,0 +1,77 @@
+# Backlog du client fictif essai du jeu d'essai du chantier catalogue.
+items:
+  - id: ESSAI-001
+    titre: Devis de rénovation
+    module: devis
+    lot: 1
+    priorite: indispensable
+    statut: fait
+    taille: L
+    estimation_h: 12
+    dependances: []
+    criteres_acceptation:
+      - Un devis est envoyé en PDF.
+    audience: client
+    a_valider: false
+    commit: c3d4e5f
+    maj: 2026-10-14
+  - id: ESSAI-002
+    titre: Facturation des chantiers
+    module: facturation-simple
+    lot: 1
+    priorite: indispensable
+    statut: fait
+    taille: M
+    estimation_h: 10
+    dependances: []
+    criteres_acceptation:
+      - Une facture est émise depuis un devis.
+    audience: client
+    a_valider: false
+    commit: d4e5f6a
+    maj: 2026-10-14
+  - id: ESSAI-003
+    titre: Pointage des heures
+    module: pointage
+    lot: 1
+    priorite: souhaitable
+    statut: fait
+    taille: M
+    estimation_h: 5
+    dependances: []
+    criteres_acceptation:
+      - Un compagnon saisit ses heures.
+    audience: client
+    a_valider: false
+    commit: e5f6a7b
+    maj: 2026-10-14
+  - id: ESSAI-004
+    titre: Connexion des compagnons
+    module: connexion-droits
+    lot: 1
+    priorite: indispensable
+    statut: fait
+    taille: S
+    estimation_h: 4
+    dependances: []
+    criteres_acceptation:
+      - Un compagnon se connecte.
+    audience: client
+    a_valider: false
+    commit: f6a7b8c
+    maj: 2026-10-14
+  - id: ESSAI-005
+    titre: Planning des équipes
+    module: planning-equipes
+    lot: 2
+    priorite: souhaitable
+    statut: en_cours
+    taille: L
+    estimation_h: 2
+    dependances: []
+    criteres_acceptation:
+      - Le conducteur affecte une équipe à un chantier.
+    audience: client
+    a_valider: false
+    commit: null
+    maj: 2026-10-14
