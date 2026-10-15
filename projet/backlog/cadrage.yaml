@@ -49,7 +49,7 @@ items:
       - Les items créés sans accord de Théo portent a_valider true et audience interne.
     audience: interne
     a_valider: false
-    commit: c8f0152
+    commit: 5663c2b
     maj: 2026-10-15
   - id: OPS-304
     titre: Commande /skeam-chiffrage
@@ -101,7 +101,7 @@ items:
       - Le document est publié en doc Claude après validation de Théo et son URL est écrite dans client.yaml liens.
     audience: interne
     a_valider: false
-    commit: 1121e09
+    commit: b39141f
     maj: 2026-10-15
     notes: Demandée par Théo dans la consigne du chantier cadrage ; CONTRAT.md section 11.7 la range au chantier dashboard, voir skills/PROPOSITIONS-CONTRAT.md.
   - id: OPS-307
@@ -128,7 +128,7 @@ items:
     module: null
     lot: 2
     priorite: souhaitable
-    statut: a_faire
+    statut: a_recetter
     taille: S
     estimation_h: 2
     dependances:
@@ -137,7 +137,7 @@ items:
       - Le backlog de la vue publiée tient en un tableau par lot, une ligne par item, avec les critères en dessous ou dans une colonne.
       - test_vue.py vérifie toujours le filtrage par audience.
     audience: interne
-    a_valider: true
-    commit: null
+    a_valider: false
+    commit: b39141f
     maj: 2026-10-15
-    notes: Besoin découvert au test réel sur E G M, 46 items publiés en fiches une par une, document long à lire et à remplir.
+    notes: Besoin découvert au test réel sur E G M, validé par Théo le 2026-10-15 avec la vue en onglets et la page d'accueil.
