@@ -91,7 +91,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: en_cours
+    statut: a_recetter
     taille: M
     estimation_h: 4
     dependances: []
@@ -103,7 +103,7 @@ items:
       - Aucune écriture sur theonam/egm-app.
     audience: interne
     a_valider: false
-    commit: null
+    commit: 342add3
     maj: 2026-10-15
     notes: Demandé par Théo, brief du chantier socle du 2026-10-15. Phase 1, suivie d'une validation de Théo avant toute extraction.
   - id: OPS-107
