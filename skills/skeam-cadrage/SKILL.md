@@ -1,9 +1,9 @@
 ---
-name: cadrage
-description: Génère ou met à jour le document de cadrage et le backlog d'un client SKEAM à partir de toutes ses synthèses et décisions, en signalant les contradictions entre sources au lieu de les trancher, et fait valider les items en attente. À utiliser quand Théo tape /cadrage, veut rédiger ou rafraîchir le cadrage d'un client, consolider le backlog après plusieurs réunions, ou valider les items marqués a_valider.
+name: skeam-cadrage
+description: Génère ou met à jour le document de cadrage et le backlog d'un client SKEAM à partir de toutes ses synthèses et décisions, en signalant les contradictions entre sources au lieu de les trancher, et fait valider les items en attente. À utiliser quand Théo tape /skeam-cadrage, veut rédiger ou rafraîchir le cadrage d'un client, consolider le backlog après plusieurs réunions, ou valider les items marqués a_valider.
 ---
 
-# /cadrage
+# /skeam-cadrage
 
 Consolide tout ce qui a été dit et décidé en un cadrage à jour et un backlog cohérent. La commande rédige et propose ; Théo arbitre section par section et item par item. Quand deux sources se contredisent, elle le montre et laisse Théo trancher.
 
@@ -97,19 +97,19 @@ Lister les items `a_valider: true`, y compris ceux ajoutés à l'étape 6, avec 
 ### 8. Appliquer et valider
 
 1. Écrire `cadrage.md` et le backlog pour les seuls éléments acceptés.
-2. Proposer, si le statut client est `prospect`, le passage à `cadrage` et `dates.cadrage` du jour : `Valider`, `Annuler`. Si accepté, reporter aussi le statut dans `clients.yaml` de skeam-ops, par un commit distinct sur skeam-ops, comme à l'étape 8 de `/nouveau-client`.
+2. Proposer, si le statut client est `prospect`, le passage à `cadrage` et `dates.cadrage` du jour : `Valider`, `Annuler`. Si accepté, reporter aussi le statut dans `clients.yaml` de skeam-ops, par un commit distinct sur skeam-ops, comme à l'étape 8 de `/skeam-nouveau-client`.
 3. `python3 scripts/validate.py ../<nom>/projet`, puis traiter chaque avertissement de règle citée absente.
 
 ### 9. Committer et rendre compte
 
-Question de commit, message `projet: cadrage version <n>`. Compte rendu selon `skills/commun.md` section 8, avec la liste des contradictions restées ouvertes. Suggérer `/chiffrage` si le backlog est stable, `/publier` si le cadrage doit être relu.
+Question de commit, message `projet: skeam-cadrage version <n>`. Compte rendu selon `skills/commun.md` section 8, avec la liste des contradictions restées ouvertes. Suggérer `/skeam-chiffrage` si le backlog est stable, `/skeam-publier` si le cadrage doit être relu.
 
 ## Garde-fous
 
 - Aucune contradiction tranchée par la commande.
 - Aucun fait sans source. Aucune règle renumérotée.
 - Aucun item supprimé du fichier ; un abandon passe par `statut: abandonne`, choisi par Théo.
-- `decisions.md` n'est jamais modifié par cette commande : une décision nouvelle passe par `/import-transcript` ou par Théo.
+- `decisions.md` n'est jamais modifié par cette commande : une décision nouvelle passe par `/skeam-import-transcript` ou par Théo.
 - Aucune écriture hors du dépôt client, sauf le statut dans `clients.yaml` après accord.
 
 ## Idempotence
@@ -120,7 +120,7 @@ Relancer la commande sans nouvelle source ne produit aucune proposition : le cad
 
 | Cas | Conduite |
 |---|---|
-| Aucune synthèse | S'arrêter et suggérer `/import-transcript`. |
+| Aucune synthèse | S'arrêter et suggérer `/skeam-import-transcript`. |
 | Dossier projet invalide au départ | Présenter les erreurs ; proposer de ne corriger que celles qui touchent `cadrage.md` ou le backlog, sinon s'arrêter. |
 | Section imposée absente ou renommée dans `cadrage.md` | La rétablir à sa place dans la proposition ; le signaler. |
 | Avertissement de règle citée absente | Proposer de corriger le critère ou de rétablir la règle ; ne rien décider seul. |

@@ -1,7 +1,7 @@
 """Produit la vue Markdown d'un dossier projet pour une audience, CONTRAT.md section 10.
 
 Usage :
-    python skills/publier/vue.py <chemin_projet> --audience interne|commercial|client [--sortie fichier.md]
+    python skills/skeam-publier/vue.py <chemin_projet> --audience interne|commercial|client [--sortie fichier.md]
 
 Lancé depuis la racine de skeam-ops. Valide d'abord le dossier projet et
 s'arrête avec le code 1 s'il est invalide. La vue est construite par liste

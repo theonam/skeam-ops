@@ -1,9 +1,9 @@
 ---
-name: import-transcript
-description: Importe un enregistrement Plaud dans le dossier projet d'un client SKEAM, transcript brut puis synthèse en 5 sections, et propose sans les appliquer les mises à jour du cadrage, nouveaux items, décisions et actions, que Théo arbitre une par une. À utiliser après une réunion client enregistrée, quand Théo tape /import-transcript ou demande d'importer, de synthétiser ou de traiter une réunion Plaud pour un client.
+name: skeam-import-transcript
+description: Importe un enregistrement Plaud dans le dossier projet d'un client SKEAM, transcript brut puis synthèse en 5 sections, et propose sans les appliquer les mises à jour du cadrage, nouveaux items, décisions et actions, que Théo arbitre une par une. À utiliser après une réunion client enregistrée, quand Théo tape /skeam-import-transcript ou demande d'importer, de synthétiser ou de traiter une réunion Plaud pour un client.
 ---
 
-# /import-transcript
+# /skeam-import-transcript
 
 Transforme une réunion enregistrée en matière exploitable : le transcript brut et la synthèse sont écrits dans le dépôt ; tout le reste est **proposé**, et rien n'est appliqué sans l'accord de Théo, élément par élément.
 
@@ -107,18 +107,18 @@ Présenter les propositions groupées par type, puis les arbitrer par questions 
 ### 8. Appliquer ce qui est accepté
 
 1. Cadrage : modifier la section visée ; ajouter le chemin de la synthèse en `Sources` s'il n'y figure pas.
-2. Items : ajouter au fichier de backlog dont les items ont le même `lot` ; à défaut, créer `backlog/lot<n>.yaml`. Un item accepté garde `a_valider: true` ; son passage à `false` se fait par `/cadrage`.
+2. Items : ajouter au fichier de backlog dont les items ont le même `lot` ; à défaut, créer `backlog/lot<n>.yaml`. Un item accepté garde `a_valider: true` ; son passage à `false` se fait par `/skeam-cadrage`.
 3. Décisions : ajouter en fin de `decisions.md`, ordre chronologique respecté.
 4. Actions : ajouter en fin de `actions.yaml`, `todoist_id: null`.
 5. Valider : code 0 exigé.
 
 ### 9. Committer
 
-Question : committer et pousser `transcripts/`, `syntheses/` et les fichiers modifiés : `Valider`, `Annuler`. Message `projet: import-transcript AAAA-MM-JJ-sujet`.
+Question : committer et pousser `transcripts/`, `syntheses/` et les fichiers modifiés : `Valider`, `Annuler`. Message `projet: skeam-import-transcript AAAA-MM-JJ-sujet`.
 
 ### 10. Compte rendu
 
-Selon `skills/commun.md` section 8 ; y lister les passages sensibles écartés de la synthèse. Suggérer `/sync-todoist` si des actions ont été ajoutées, `/cadrage` si des items ou le cadrage ont bougé.
+Selon `skills/commun.md` section 8 ; y lister les passages sensibles écartés de la synthèse. Suggérer `/skeam-sync-todoist` si des actions ont été ajoutées, `/skeam-cadrage` si des items ou le cadrage ont bougé.
 
 ## Garde-fous
 
@@ -126,7 +126,7 @@ Selon `skills/commun.md` section 8 ; y lister les passages sensibles écartés d
 - Aucune proposition appliquée sans `Accepter` explicite.
 - Aucun fait sans horodatage du transcript. Le résumé Plaud n'est pas une source.
 - Jamais de modification d'un item existant hors proposition acceptée ; jamais de statut `fait` ou `abandonne`.
-- Jamais d'écriture dans Todoist : c'est le rôle de `/sync-todoist`.
+- Jamais d'écriture dans Todoist : c'est le rôle de `/skeam-sync-todoist`.
 
 ## Idempotence
 

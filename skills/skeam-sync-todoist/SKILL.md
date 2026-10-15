@@ -1,9 +1,9 @@
 ---
-name: sync-todoist
-description: Synchronise dans les deux sens les actions de Théo entre actions.yaml d'un client SKEAM et sa section Todoist, création des nouvelles actions après validation, report dans le dépôt des tâches terminées dans Todoist, todoist_id renseigné. À utiliser quand Théo tape /sync-todoist, après un /import-transcript qui a ajouté des actions, ou quand il veut aligner ses tâches Todoist avec un ou tous ses projets clients.
+name: skeam-sync-todoist
+description: Synchronise dans les deux sens les actions de Théo entre actions.yaml d'un client SKEAM et sa section Todoist, création des nouvelles actions après validation, report dans le dépôt des tâches terminées dans Todoist, todoist_id renseigné. À utiliser quand Théo tape /skeam-sync-todoist, après un /skeam-import-transcript qui a ajouté des actions, ou quand il veut aligner ses tâches Todoist avec un ou tous ses projets clients.
 ---
 
-# /sync-todoist
+# /skeam-sync-todoist
 
 Garde Todoist et `actions.yaml` d'accord. Le dépôt reste la source de vérité du contenu des actions ; Todoist fait foi pour ce que Théo y a terminé. Toute écriture dans Todoist et tout commit passent par une validation.
 
@@ -38,7 +38,7 @@ Lire d'abord `skills/commun.md` dans le clone de skeam-ops, puis CONTRAT.md sect
 ### 1. Préparer
 
 1. Étape 0 et identification du ou des clients, `skills/commun.md` sections 1 et 2.
-2. Pour chaque client, lire `todoist.projet_id` et `todoist.section_id` de `client.yaml`. Section absente : chercher la section `Client · <nom>` par `find-sections` dans le projet `6h6qfvrgr83M56Gq`. Trouvée : proposer d'écrire son id dans `client.yaml`. Pas trouvée : proposer de la créer, comme à l'étape 6 de `/nouveau-client`.
+2. Pour chaque client, lire `todoist.projet_id` et `todoist.section_id` de `client.yaml`. Section absente : chercher la section `Client · <nom>` par `find-sections` dans le projet `6h6qfvrgr83M56Gq`. Trouvée : proposer d'écrire son id dans `client.yaml`. Pas trouvée : proposer de la créer, comme à l'étape 6 de `/skeam-nouveau-client`.
 
 ### 2. Lire l'état des deux côtés
 
@@ -96,7 +96,7 @@ Les échecs par élément n'annulent pas les succès : ne renvoyer que les élé
 
 ### 7. Committer et rendre compte
 
-Question de commit, message `projet: sync-todoist du AAAA-MM-JJ`. Compte rendu selon `skills/commun.md` section 8 : nombre de tâches créées, terminées, supprimées, d'actions reportées et importées, et écarts laissés en l'état.
+Question de commit, message `projet: skeam-sync-todoist du AAAA-MM-JJ`. Compte rendu selon `skills/commun.md` section 8 : nombre de tâches créées, terminées, supprimées, d'actions reportées et importées, et écarts laissés en l'état.
 
 ## Garde-fous
 

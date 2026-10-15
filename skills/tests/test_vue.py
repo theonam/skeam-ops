@@ -1,4 +1,4 @@
-"""Tests de skills/publier/vue.py sur le client fictif exemples/racine/demo-app.
+"""Tests de skills/skeam-publier/vue.py sur le client fictif exemples/racine/demo-app.
 
 Lancement depuis la racine de skeam-ops :
     python -m unittest discover -s skills/tests -p "test_*.py"
@@ -16,7 +16,7 @@ import unittest
 from pathlib import Path
 
 RACINE = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(RACINE / "skills" / "publier"))
+sys.path.insert(0, str(RACINE / "skills" / "skeam-publier"))
 
 import vue  # noqa: E402
 

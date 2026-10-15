@@ -1,9 +1,9 @@
 ---
-name: nouveau-client
-description: Ouvre un nouveau client SKEAM, dépôt GitHub, dossier projet, fiche, registre clients.yaml et section Todoist. À utiliser dès que Théo dit qu'il a un nouveau prospect ou client, tape /nouveau-client, ou demande de créer le dossier d'un client qui n'est pas encore dans clients.yaml.
+name: skeam-nouveau-client
+description: Ouvre un nouveau client SKEAM, dépôt GitHub, dossier projet, fiche, registre clients.yaml et section Todoist. À utiliser dès que Théo dit qu'il a un nouveau prospect ou client, tape /skeam-nouveau-client, ou demande de créer le dossier d'un client qui n'est pas encore dans clients.yaml.
 ---
 
-# /nouveau-client
+# /skeam-nouveau-client
 
 Crée tout ce qu'il faut pour suivre un nouveau client : le dépôt, le dossier `projet/` au format du contrat, l'entrée du registre et la section Todoist. Théo ne donne que ce qu'il sait ; la commande cherche le reste dans le registre public des entreprises et ne remplit rien qui n'a pas de source.
 
@@ -116,7 +116,7 @@ Présenter le récapitulatif complet : dépôt, contenu de `client.yaml`, texte 
 ### 8. Exécuter, dans cet ordre
 
 1. Section Todoist : `add-sections` avec `name: Client · <nom>` et `projectId: 6h6qfvrgr83M56Gq`. Écrire `todoist.projet_id: "6h6qfvrgr83M56Gq"` et `todoist.section_id` entre guillemets dans `client.yaml`, puis revalider. En cas d'échec, laisser `section_id: null` et le signaler.
-2. Dépôt client : commit `projet: nouveau-client <slug>` avec `projet/` et `CLAUDE.md`, puis push, selon `skills/commun.md` section 6.
+2. Dépôt client : commit `projet: skeam-nouveau-client <slug>` avec `projet/` et `CLAUDE.md`, puis push, selon `skills/commun.md` section 6.
 3. Registre : ajouter l'entrée en fin de liste de `clients.yaml`, puis
 
    ```sh
@@ -128,7 +128,7 @@ Présenter le récapitulatif complet : dépôt, contenu de `client.yaml`, texte 
 
 ### 9. Compte rendu
 
-Selon `skills/commun.md` section 8. Suggérer `/import-transcript` pour la première réunion enregistrée.
+Selon `skills/commun.md` section 8. Suggérer `/skeam-import-transcript` pour la première réunion enregistrée.
 
 ## Garde-fous
 

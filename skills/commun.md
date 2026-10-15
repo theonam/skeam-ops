@@ -40,7 +40,7 @@ Les scripts de skeam-ops se lancent depuis `$RACINE/skeam-ops`, avec des chemins
 1. Lire `skeam-ops/clients.yaml`.
 2. Si Théo a donné un slug ou un nom, chercher l'entrée correspondante. Une seule correspondance : la retenir. Plusieurs ou aucune : poser la question à choix multiples avec les clients actifs du registre.
 3. Le dépôt est `depot` de l'entrée ; le dossier projet est `$RACINE/<nom du dépôt>/projet`.
-   Si Théo désigne explicitement un dépôt absent du registre, par exemple le dépôt de test `theonam/skeam-test-fictif`, l'utiliser après confirmation, en signalant qu'il n'est pas au registre. Aucune commande ne l'y ajoute, sauf `/nouveau-client`.
+   Si Théo désigne explicitement un dépôt absent du registre, par exemple le dépôt de test `theonam/skeam-test-fictif`, l'utiliser après confirmation, en signalant qu'il n'est pas au registre. Aucune commande ne l'y ajoute, sauf `/skeam-nouveau-client`.
 4. Valider le dossier projet avant de le lire : `python3 scripts/validate.py ../<nom>/projet`. Code 1 : présenter les erreurs à Théo et s'arrêter, sauf mention contraire du `SKILL.md`.
 
 ## 3. Validation par Théo
@@ -90,7 +90,7 @@ git commit -m "projet: <commande> <résumé court>"
 git pull --rebase --autostash && git push
 ```
 
-- Message : `projet: import-transcript 2026-10-08-lancement`, `projet: chiffrage du 2026-10-12`. Pas d'id d'item : ces commits ne portent pas de code.
+- Message : `projet: skeam-import-transcript 2026-10-08-lancement`, `projet: skeam-chiffrage du 2026-10-12`. Pas d'id d'item : ces commits ne portent pas de code.
 - `git add` nomme les fichiers ; jamais `git add -A`.
 - Push refusé : réessayer une fois après `git pull --rebase` ; en cas de conflit ou de branche protégée, s'arrêter, laisser le commit local et décrire la situation à Théo. Jamais de `--force`.
 - Si Théo refuse le commit, laisser les fichiers modifiés dans le clone et le dire dans le compte rendu : ils seront perdus à la fin de la session.

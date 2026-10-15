@@ -1,7 +1,7 @@
 # Chantier cadrage, branche feat/cadrage, agent ops-cadrage, dossier skills/. Ids OPS-301 à OPS-399.
 items:
   - id: OPS-301
-    titre: Commande /nouveau-client
+    titre: Commande /skeam-nouveau-client
     module: null
     lot: 1
     priorite: indispensable
@@ -10,14 +10,14 @@ items:
     estimation_h: 3
     dependances: []
     criteres_acceptation:
-      - skills/nouveau-client/SKILL.md appelle scripts/nouveau_dossier.py et ajoute l'entrée au registre clients.yaml.
+      - skills/skeam-nouveau-client/SKILL.md appelle scripts/nouveau_dossier.py et ajoute l'entrée au registre clients.yaml.
       - La commande crée le projet et la section Todoist après confirmation de Théo et renseigne client.yaml todoist.
     audience: interne
     a_valider: false
     commit: d18a75a
     maj: 2026-10-15
   - id: OPS-302
-    titre: Commande /import-transcript
+    titre: Commande /skeam-import-transcript
     module: null
     lot: 1
     priorite: indispensable
@@ -35,7 +35,7 @@ items:
     commit: 919d1ad
     maj: 2026-10-15
   - id: OPS-303
-    titre: Commande /cadrage
+    titre: Commande /skeam-cadrage
     module: null
     lot: 1
     priorite: indispensable
@@ -52,7 +52,7 @@ items:
     commit: 6930c37
     maj: 2026-10-15
   - id: OPS-304
-    titre: Commande /chiffrage
+    titre: Commande /skeam-chiffrage
     module: null
     lot: 1
     priorite: indispensable
@@ -69,7 +69,7 @@ items:
     commit: 9b70431
     maj: 2026-10-15
   - id: OPS-305
-    titre: Commande /sync-todoist
+    titre: Commande /skeam-sync-todoist
     module: null
     lot: 1
     priorite: souhaitable
@@ -86,7 +86,7 @@ items:
     commit: dd09982
     maj: 2026-10-15
   - id: OPS-306
-    titre: Commande /publier
+    titre: Commande /skeam-publier
     module: null
     lot: 1
     priorite: souhaitable
@@ -116,7 +116,7 @@ items:
       - OPS-306
       - "externe: format de sortie de dashboard/scripts/agreger.py, chantier dashboard"
     criteres_acceptation:
-      - Le tableau des audiences de CONTRAT.md section 10 est appliqué par un seul code, partagé par /publier et /dashboard.
+      - Le tableau des audiences de CONTRAT.md section 10 est appliqué par un seul code, partagé par /skeam-publier et /dashboard.
       - Les tests de skills/tests/test_vue.py passent sans modification de leurs attentes.
     audience: interne
     a_valider: true

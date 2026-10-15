@@ -1,9 +1,9 @@
 ---
-name: publier
-description: Génère la vue interne, commerciale ou client d'un projet SKEAM selon les règles d'audience du contrat et la publie en doc Claude après validation, puis enregistre l'URL dans client.yaml. À utiliser quand Théo tape /publier, veut un document lisible de l'état d'un projet, une vue pour Jonathan, ou un document de suivi à partager lui-même avec un client.
+name: skeam-publier
+description: Génère la vue interne, commerciale ou client d'un projet SKEAM selon les règles d'audience du contrat et la publie en doc Claude après validation, puis enregistre l'URL dans client.yaml. À utiliser quand Théo tape /skeam-publier, veut un document lisible de l'état d'un projet, une vue pour Jonathan, ou un document de suivi à partager lui-même avec un client.
 ---
 
-# /publier
+# /skeam-publier
 
 Transforme le dossier projet en un document lisible pour une audience donnée et le publie en doc Claude. Le filtrage est fait par un script à liste blanche, pas à la main : la vue client ne peut contenir ni estimation, ni temps, ni note, ni tarif, ni rien de `interne/`. Publier n'est pas envoyer : le document reste privé tant que Théo ne le partage pas lui-même.
 
@@ -23,7 +23,7 @@ Lire d'abord `skills/commun.md` dans le clone de skeam-ops, puis CONTRAT.md sect
 
 ## Contenu de la vue
 
-Produit par `skills/publier/vue.py`, d'après CONTRAT.md section 10 :
+Produit par `skills/skeam-publier/vue.py`, d'après CONTRAT.md section 10 :
 
 | Bloc | client | commercial | interne |
 |---|---|---|---|
@@ -51,7 +51,7 @@ Produit par `skills/publier/vue.py`, d'après CONTRAT.md section 10 :
 
 ```sh
 cd "$RACINE/skeam-ops"
-python3 skills/publier/vue.py ../<nom>/projet --audience <audience> --sortie /tmp/skeam-vue-<slug>-<audience>.md
+python3 skills/skeam-publier/vue.py ../<nom>/projet --audience <audience> --sortie /tmp/skeam-vue-<slug>-<audience>.md
 ```
 
 | Code | Conduite |
@@ -85,7 +85,7 @@ Une question, deux sous-questions :
 
 ### 6. Enregistrer l'URL
 
-Écrire l'URL `https://` du document dans `liens.docs_<audience>` si elle est nouvelle, valider le dossier, puis commit `projet: publier vue <audience>`.
+Écrire l'URL `https://` du document dans `liens.docs_<audience>` si elle est nouvelle, valider le dossier, puis commit `projet: skeam-publier vue <audience>`.
 
 ### 7. Compte rendu
 

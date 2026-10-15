@@ -4,16 +4,16 @@ Un scénario de test manuel par commande, joué dans le chat claude.ai sur le cl
 
 | Fichier | Rôle |
 |---|---|
-| `scenario-nouveau-client.md` | /nouveau-client |
-| `scenario-import-transcript.md` | /import-transcript |
-| `scenario-cadrage.md` | /cadrage |
-| `scenario-chiffrage.md` | /chiffrage |
-| `scenario-sync-todoist.md` | /sync-todoist |
-| `scenario-publier.md` | /publier |
+| `scenario-nouveau-client.md` | /skeam-nouveau-client |
+| `scenario-import-transcript.md` | /skeam-import-transcript |
+| `scenario-cadrage.md` | /skeam-cadrage |
+| `scenario-chiffrage.md` | /skeam-chiffrage |
+| `scenario-sync-todoist.md` | /skeam-sync-todoist |
+| `scenario-publier.md` | /skeam-publier |
 | `fictif/projet/` | dossier projet fictif, valide, état de départ des scénarios 2 à 6 |
 | `reunions/` | textes de réunions fictives à enregistrer sur Plaud |
 | `bouchons/chiffrer.py` | bouchon de `catalogue/scripts/chiffrer.py`, prix fictifs, interface de CONTRAT.md section 11.3 |
-| `test_vue.py` | test automatique de `skills/publier/vue.py` |
+| `test_vue.py` | test automatique de `skills/skeam-publier/vue.py` |
 
 ## Tests automatiques
 

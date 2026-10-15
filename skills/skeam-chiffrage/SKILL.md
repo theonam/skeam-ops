@@ -1,9 +1,9 @@
 ---
-name: chiffrage
-description: Chiffre le backlog d'un client SKEAM avec catalogue/scripts/chiffrer.py, présente le résultat à Théo puis, après sa validation, crée ou met à jour un brouillon de devis Dougs, jamais finalisé ni envoyé, et l'enregistre dans client.yaml. À utiliser quand Théo tape /chiffrage, demande un devis, un chiffrage ou un prix pour un client, ou veut rafraîchir le statut des devis Dougs d'un client.
+name: skeam-chiffrage
+description: Chiffre le backlog d'un client SKEAM avec catalogue/scripts/chiffrer.py, présente le résultat à Théo puis, après sa validation, crée ou met à jour un brouillon de devis Dougs, jamais finalisé ni envoyé, et l'enregistre dans client.yaml. À utiliser quand Théo tape /skeam-chiffrage, demande un devis, un chiffrage ou un prix pour un client, ou veut rafraîchir le statut des devis Dougs d'un client.
 ---
 
-# /chiffrage
+# /skeam-chiffrage
 
 Produit le chiffrage d'un client et le dépose en brouillon dans Dougs. Théo voit les chiffres avant tout appel à Dougs et reste le seul à finaliser et envoyer le devis, depuis Dougs.
 
@@ -29,7 +29,7 @@ Lire d'abord `skills/commun.md` dans le clone de skeam-ops, puis CONTRAT.md sect
 
 1. Étape 0 et identification du client, `skills/commun.md` sections 1 et 2. Un dossier invalide n'est jamais chiffré.
 2. Vérifier la présence de `catalogue/scripts/chiffrer.py` dans skeam-ops. Absent : s'arrêter, le chantier catalogue n'est pas livré. La commande ne lit jamais le catalogue elle-même : le script s'en charge.
-3. Vérifier qu'aucun item n'est `a_valider: true` dans les lots à chiffrer ; sinon le signaler et proposer `/cadrage` d'abord, ou de continuer en connaissance de cause.
+3. Vérifier qu'aucun item n'est `a_valider: true` dans les lots à chiffrer ; sinon le signaler et proposer `/skeam-cadrage` d'abord, ou de continuer en connaissance de cause.
 
 ### 2. Chiffrer
 
@@ -90,7 +90,7 @@ Récapitulatif complet de l'appel, puis question `Valider`, `Annuler`.
 - Nouveau brouillon : ajouter en fin de liste `devis` l'entrée `dougs_id`, `objet`, `montant_ht`, `statut: brouillon`.
 - Mise à jour : modifier `objet` et `montant_ht` de l'entrée existante.
 - Si `create-quote-draft` a réussi mais `update-quote` a échoué : enregistrer quand même l'entrée avec le `dougs_id`, pour qu'une relance mette à jour ce brouillon au lieu d'en créer un second, et le signaler.
-- Valider le dossier, puis question de commit `projet: chiffrage du AAAA-MM-JJ`, avec `devis/` et `client.yaml`.
+- Valider le dossier, puis question de commit `projet: skeam-chiffrage du AAAA-MM-JJ`, avec `devis/` et `client.yaml`.
 
 ### 7. Rafraîchir les statuts, facultatif
 

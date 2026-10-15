@@ -1,4 +1,4 @@
-# Scénario de test : /cadrage
+# Scénario de test : /skeam-cadrage
 
 ## Objet
 
@@ -20,7 +20,7 @@ Le dossier contient alors deux synthèses : 2026-10-20, plafond de 10 heures acc
 
 | # | Théo | Résultat attendu |
 |---|---|---|
-| 1 | `/cadrage dépôt theonam/skeam-test-fictif` | Dépôt hors registre signalé, confirmation demandée. Mode mise à jour. Les deux synthèses, `decisions.md`, le cadrage et le backlog sont lus ; `interne/` ne l'est pas. |
+| 1 | `/skeam-cadrage dépôt theonam/skeam-test-fictif` | Dépôt hors registre signalé, confirmation demandée. Mode mise à jour. Les deux synthèses, `decisions.md`, le cadrage et le backlog sont lus ; `interne/` ne l'est pas. |
 | 2 | | Contradiction présentée : 10 heures, `syntheses/2026-10-20-lancement.md` 00:02:50 et RG1, contre 12 heures les jours de livraison, `syntheses/2026-10-27-atelier.md` 00:00:15. Les deux énoncés sont cités, la commande indique laquelle est la plus récente et **ne tranche pas**. |
 | 3 | | Proposition de cadrage, sections changées seulement : Objet et statut en version 2 du jour ; Intégrations avec export CSV ; Questions ouvertes avec le plafond des jours de livraison et les étapes à photographier ; Sources avec les deux synthèses. RG1 et RG2 inchangées. |
 | 4 | Objet et statut : `Accepter` ; Intégrations : `Accepter` ; Questions ouvertes : `Modifier`, retirer la question sur les photos ; Sources : `Accepter` | La section modifiée est représentée avant acceptation. |
@@ -29,8 +29,8 @@ Le dossier contient alors deux synthèses : 2026-10-20, plafond de 10 heures acc
 | 7 | | Validation des items en attente : FICTIF-004 présenté. |
 | 8 | FICTIF-004 : `Valider`, audience `interne` | `a_valider: false`, `audience: interne`. |
 | 9 | | Aucune proposition de statut client : il vaut déjà `cadrage`. |
-| 10 | Commit : `Valider` | `validate.py` code 0, aucun avertissement de règle citée absente. Commit `projet: cadrage version 2`. Le compte rendu liste la contradiction encore ouverte. |
-| 11 | Relancer `/cadrage` aussitôt | Aucune proposition de cadrage, sauf éventuellement l'item photos rejeté, signalé comme déjà écarté ; version inchangée. |
+| 10 | Commit : `Valider` | `validate.py` code 0, aucun avertissement de règle citée absente. Commit `projet: skeam-cadrage version 2`. Le compte rendu liste la contradiction encore ouverte. |
+| 11 | Relancer `/skeam-cadrage` aussitôt | Aucune proposition de cadrage, sauf éventuellement l'item photos rejeté, signalé comme déjà écarté ; version inchangée. |
 
 ## Contrôles
 
@@ -50,4 +50,4 @@ git -C ../skeam-test-fictif diff HEAD~1 -- projet/decisions.md
 | Action | Attendu |
 |---|---|
 | Renommer à la main le titre `## Exigences` en `## Exigence` avant de lancer | Validation initiale en erreur ; la commande propose de rétablir le titre, sans toucher au reste. |
-| Supprimer toutes les synthèses dans une copie locale et lancer | Arrêt, `/import-transcript` suggéré. |
+| Supprimer toutes les synthèses dans une copie locale et lancer | Arrêt, `/skeam-import-transcript` suggéré. |

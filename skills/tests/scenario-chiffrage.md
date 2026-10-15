@@ -1,4 +1,4 @@
-# Scénario de test : /chiffrage
+# Scénario de test : /skeam-chiffrage
 
 ## Objet
 
@@ -34,14 +34,14 @@ Objet : `Application Atelier Fictif, lots 0 et 1`. Total HT : 1 170.
 
 | # | Théo | Résultat attendu |
 |---|---|---|
-| 1 | `/chiffrage dépôt theonam/skeam-test-fictif` | Dépôt hors registre signalé. Dossier validé. FICTIF-004 signalé comme `a_valider` dans le lot 1, avec proposition de passer par `/cadrage` ou de continuer. |
+| 1 | `/skeam-chiffrage dépôt theonam/skeam-test-fictif` | Dépôt hors registre signalé. Dossier validé. FICTIF-004 signalé comme `a_valider` dans le lot 1, avec proposition de passer par `/skeam-cadrage` ou de continuer. |
 | 2 | Continuer | Commande exacte : `python3 catalogue/scripts/chiffrer.py ../skeam-test-fictif/projet --sortie ../skeam-test-fictif/projet/devis/`, code 0. |
 | 3 | | Tableau des deux lignes et total 1 170 présentés, avec le contenu du `.md`. Contrôles du `.json` passés : total, typographie, TVA 0.2. |
 | 4 | `Créer le brouillon Dougs` | `list-companies` ; recherche du client dans `list-clients` : absent, donc `clientId: null` et `clientData` depuis `client.yaml`, raison sociale Atelier Fictif SAS, adresse avec `zipCode` 44000. Récapitulatif des deux lignes Dougs avec `isPriceWithVat: false`, `vatRate: 0.2`. |
 | 5 | `Valider` | `create-quote-draft` puis `update-quote` sans `status`. Relecture : total HT 1 170. **Aucun** appel à `finalize-quote-draft`, `send-document-by-email` ni `promote-quote-to-invoice`. |
 | 6 | | `client.yaml` : entrée `devis` avec le `dougs_id` UUID, l'objet, `montant_ht: 1170`, `statut: brouillon`. |
-| 7 | Commit : `Valider` | Commit `projet: chiffrage du <date>` avec `devis/chiffrage-<date>.md`, `.json` et `client.yaml`. Compte rendu avec l'id du brouillon, le rappel que Théo finalise et envoie lui-même, et l'avertissement Dougs. |
-| 8 | Passer FICTIF-004 à `a_valider: false` à la main, committer, puis relancer `/chiffrage` | Les fichiers du jour sont remplacés, pas doublés. Écart présenté : lot 1 à 990. Question : mettre à jour le brouillon existant ou en créer un nouveau. |
+| 7 | Commit : `Valider` | Commit `projet: skeam-chiffrage du <date>` avec `devis/chiffrage-<date>.md`, `.json` et `client.yaml`. Compte rendu avec l'id du brouillon, le rappel que Théo finalise et envoie lui-même, et l'avertissement Dougs. |
+| 8 | Passer FICTIF-004 à `a_valider: false` à la main, committer, puis relancer `/skeam-chiffrage` | Les fichiers du jour sont remplacés, pas doublés. Écart présenté : lot 1 à 990. Question : mettre à jour le brouillon existant ou en créer un nouveau. |
 | 9 | Mettre à jour le brouillon existant, puis `Valider` | `list-quote-drafts` confirme l'état `DRAFT`, `update-quote` sur le même `dougs_id`. `client.yaml` : même entrée, `montant_ht: 1260`. Aucune deuxième entrée. |
 
 ## Contrôles
