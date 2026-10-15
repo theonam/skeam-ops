@@ -28,7 +28,7 @@ class TestChiffrer(BaseTemporaire):
         self.assertEqual(list(donnees), ["slug", "date", "objet", "lignes", "total_ht"])
         self.assertEqual(donnees["slug"], "fictif")
         self.assertEqual(donnees["date"], DATE)
-        self.assertEqual(donnees["objet"], "Application de gestion Bâtiment Fictif, lots 0, 1 et 2")
+        self.assertEqual(donnees["objet"], "Application de gestion Bâtiment Fictif, lots 0 et 1, avec options au choix")
         rapport = validate.Rapport()
         self.assertTrue(validate.verifier_chiffrage(rapport, "json", donnees))
         self.assertEqual(rapport.nb_erreurs, 0)
@@ -38,7 +38,7 @@ class TestChiffrer(BaseTemporaire):
         self.chiffrer()
         donnees, _ = self.lire()
         titres = [ligne["titre"] for ligne in donnees["lignes"]]
-        self.assertEqual(titres, ["Lot 0 : démo, connexion", "Lot 1 : devis et facturation", "Options du lot 2"])
+        self.assertEqual(titres, ["Lot 0 : démo, connexion", "Lot 1 : devis et facturation", "Option 1 : Application terrain avec photos et signature"])
         for ligne in donnees["lignes"]:
             self.assertEqual((ligne["quantite"], ligne["unite"], ligne["tva"]), (1, "forfait", 0.2))
             self.assertEqual(ligne["prix_unitaire_ht"] % methode.ARRONDI_HT, 0)
@@ -113,6 +113,31 @@ class TestChiffrer(BaseTemporaire):
             ["- Création et envoi des devis", "- Relance des impayés", "- Transformation du devis en facture"],
         )
 
+    def test_une_ligne_par_option(self):
+        backlog = self.projet / "backlog" / "backlog.yaml"
+        texte = backlog.read_text(encoding="utf-8")
+        debut = texte.index("  - id: FICTIF-006")
+        texte = texte[:debut] + texte[debut:].replace("priorite: souhaitable", "priorite: optionnel", 1)
+        backlog.write_text(texte, encoding="utf-8")
+        self.chiffrer()
+        donnees, _ = self.lire()
+        options = [ligne for ligne in donnees["lignes"] if ligne["titre"].startswith("Option ")]
+        self.assertEqual([ligne["titre"] for ligne in options], ["Option 1 : Relance des impayés", "Option 2 : Application terrain avec photos et signature"])
+        self.assertEqual(options[0]["description"], "- Une facture échue déclenche une relance par courriel")
+        self.assertEqual(options[0]["prix_unitaire_ht"], methode.arrondi_sup(3 * 1.15 * 70))
+        self.assertNotIn("Relance des impayés", donnees["lignes"][1]["description"])
+
+    def test_option_non_client_titre_neutre(self):
+        backlog = self.projet / "backlog" / "backlog.yaml"
+        texte = backlog.read_text(encoding="utf-8")
+        debut = texte.index("  - id: FICTIF-007")
+        texte = texte[:debut] + texte[debut:].replace("audience: client", "audience: commercial", 1)
+        backlog.write_text(texte, encoding="utf-8")
+        self.chiffrer()
+        donnees, md = self.lire()
+        self.assertEqual((donnees["lignes"][2]["titre"], donnees["lignes"][2]["description"]), ("Option 1, lot 2", ""))
+        self.assertIn("**Options sans description**", md)
+
     def test_reproductible(self):
         autre = self.tmp / "autre"
         self.chiffrer()
@@ -151,7 +176,7 @@ class TestChiffrer(BaseTemporaire):
         code, _, erreurs = self.chiffrer()
         self.assertEqual(code, 0, erreurs)
         donnees, _ = self.lire()
-        self.assertEqual(donnees["objet"], "Application de gestion Bâtiment Fictif Lyon, siège, lots 0, 1 et 2")
+        self.assertEqual(donnees["objet"], "Application de gestion Bâtiment Fictif Lyon, siège, lots 0 et 1, avec options au choix")
         self.assertEqual(methode.nettoyer_typo("Devis (avec PDF) — envoi"), "Devis avec PDF, envoi")
 
     def test_projet_invalide(self):

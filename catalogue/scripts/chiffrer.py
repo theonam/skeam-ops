@@ -127,22 +127,32 @@ def chiffrer_items(items: list[dict], modules: dict[str, dict], tarifs: dict) ->
 
 
 def composer_lignes(chiffres: list[Chiffre], libelles: dict[int, str], tarifs: dict) -> tuple[list[Ligne], bool]:
-    """Une ligne forfaitaire par lot, plus une ligne d'options par lot qui en a. Applique le plancher."""
-    lignes: dict[tuple[int, bool], Ligne] = {}
+    """Une ligne forfaitaire par lot, puis une ligne par option, numérotées. Applique le plancher aux lignes fermes."""
+    par_lot: dict[int, Ligne] = {}
+    options: list[Ligne] = []
     for chiffre in chiffres:
-        cle = (chiffre.item["lot"], chiffre.item["priorite"] == "optionnel")
-        lignes.setdefault(cle, Ligne(lot=cle[0], options=cle[1])).chiffres.append(chiffre)
-    resultat = [lignes[cle] for cle in sorted(lignes)]
-
-    for ligne in resultat:
-        libelle = libelles.get(ligne.lot)
-        if ligne.options:
-            ligne.titre = f"Options du lot {ligne.lot}"
+        if chiffre.item["priorite"] == "optionnel":
+            options.append(Ligne(lot=chiffre.item["lot"], options=True, chiffres=[chiffre]))
         else:
-            ligne.titre = f"Lot {ligne.lot} : {libelle}" if libelle else f"Lot {ligne.lot}"
+            par_lot.setdefault(chiffre.item["lot"], Ligne(lot=chiffre.item["lot"], options=False)).chiffres.append(chiffre)
+    # Options par lot, puis dans l'ordre du backlog : de la plus importante pour le client à la moins importante.
+    options.sort(key=lambda ligne: ligne.lot)
+    resultat = [par_lot[lot] for lot in sorted(par_lot)] + options
+
+    for ligne in resultat[: len(par_lot)]:
+        libelle = libelles.get(ligne.lot)
+        ligne.titre = f"Lot {ligne.lot} : {libelle}" if libelle else f"Lot {ligne.lot}"
         ligne.chiffres.sort(key=lambda c: RANG_PRIORITE[c.item["priorite"]])
         visibles = [methode.nettoyer_typo(c.item["titre"]).rstrip(" .") for c in ligne.chiffres if c.item["audience"] == "client"]
         ligne.description = "\n".join(f"- {titre}" for titre in visibles)
+    for numero, ligne in enumerate(options, start=1):
+        item = ligne.chiffres[0].item
+        if item["audience"] == "client":
+            ligne.titre = f"Option {numero} : {methode.nettoyer_typo(item['titre']).rstrip(' .')}"
+            ligne.description = "\n".join(f"- {methode.nettoyer_typo(c).rstrip(' .')}" for c in item["criteres_acceptation"])
+        else:
+            ligne.titre = f"Option {numero}, lot {ligne.lot}"
+    for ligne in resultat:
         ligne.prix = methode.arrondi_sup(ligne.somme("brut"))
 
     fermes = [ligne for ligne in resultat if not ligne.options] or resultat
@@ -157,11 +167,13 @@ def composer_lignes(chiffres: list[Chiffre], libelles: dict[int, str], tarifs: d
 
 
 def objet_devis(client: dict, lignes: list[Ligne]) -> str:
-    lots = sorted({ligne.lot for ligne in lignes})
-    if len(lots) == 1:
-        texte_lots = f"lot {lots[0]}"
+    lots = sorted({ligne.lot for ligne in lignes if not ligne.options})
+    if not lots:
+        texte_lots = "options au choix"
     else:
-        texte_lots = "lots " + ", ".join(map(str, lots[:-1])) + f" et {lots[-1]}"
+        texte_lots = f"lot {lots[0]}" if len(lots) == 1 else "lots " + ", ".join(map(str, lots[:-1])) + f" et {lots[-1]}"
+        if any(ligne.options for ligne in lignes):
+            texte_lots += ", avec options au choix"
     return methode.nettoyer_typo(f"Application de gestion {client['nom']}, {texte_lots}")
 
 
@@ -325,6 +337,9 @@ def rendre_markdown(
     livres = [c.item for c in chiffres if c.item["statut"] in ("fait", "a_recetter")]
     if livres:
         points.append("**Items déjà livrés inclus** dans le chiffrage : " + ", ".join(f"{i['id']} {i['statut']}" for i in livres) + ".")
+    anonymes = [ligne.titre for ligne in lignes if ligne.options and not ligne.description]
+    if anonymes:
+        points.append("**Options sans description**, item d'audience non client : " + ", ".join(anonymes) + ". Rédiger le titre à la main dans Dougs.")
     caches = [c.item["id"] for c in chiffres if c.item["audience"] != "client"]
     if caches:
         points.append("**Items chiffrés mais absents des descriptions**, audience non client : " + ", ".join(caches) + ".")
