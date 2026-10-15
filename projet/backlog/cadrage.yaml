@@ -141,3 +141,19 @@ items:
     commit: b39141f
     maj: 2026-10-15
     notes: Besoin découvert au test réel sur E G M, validé par Théo le 2026-10-15 avec la vue en onglets et la page d'accueil.
+  - id: OPS-309
+    titre: Avancement en trois étapes, proposition de contrat et brief du chantier dashboard
+    module: null
+    lot: 1
+    priorite: souhaitable
+    statut: en_cours
+    taille: XS
+    estimation_h: 1
+    dependances: []
+    criteres_acceptation:
+      - skills/PROPOSITIONS-CONTRAT.md décrit le champ teste_ia et les trois indicateurs développé, testé par l'IA, testé par Théo.
+      - Un brief pour la conversation du chantier dashboard reprend les retours de Théo du 2026-10-15 sur la vue interne.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15
