@@ -146,7 +146,7 @@ items:
     module: null
     lot: 1
     priorite: souhaitable
-    statut: en_cours
+    statut: a_recetter
     taille: XS
     estimation_h: 1
     dependances: []
@@ -155,5 +155,5 @@ items:
       - Un brief pour la conversation du chantier dashboard reprend les retours de Théo du 2026-10-15 sur la vue interne.
     audience: interne
     a_valider: false
-    commit: null
+    commit: ee5bcc4
     maj: 2026-10-15
