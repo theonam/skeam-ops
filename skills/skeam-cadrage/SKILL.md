@@ -26,7 +26,10 @@ Dans cet ordre de lecture, jamais `interne/` :
 3. `cadrage.md` actuel ;
 4. `backlog/*.yaml` ;
 5. `client.yaml` et `fiche.md`, pour le contexte ;
-6. `transcripts/*.md`, seulement pour vérifier un passage ambigu d'une synthèse à son horodatage.
+6. `transcripts/*.md`, seulement pour vérifier un passage ambigu d'une synthèse à son horodatage ;
+7. les documents que Théo désigne, par exemple un cadrage fonctionnel ou une fiche prospect en doc Claude, lus par le connecteur Docs. Ils sont cités par leur titre et leur date en `Sources`, leur adresse en commentaire HTML. Leurs parties internes, prix, marges, stratégie, ne passent jamais dans `cadrage.md`.
+
+Un backlog repris d'un document sans heures : `estimation_h` provisoire déduite de la taille, XS 2, S 4, M 8, L 16, XL 32, et la mention dans `notes`. Un item que les sources disent déjà construit peut être proposé `a_recetter` ou `en_cours` ; c'est Théo qui choisit.
 
 ## Sorties
 
