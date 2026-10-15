@@ -86,3 +86,207 @@ items:
     a_valider: false
     commit: null
     maj: 2026-10-15
+  - id: OPS-106
+    titre: Audit d'egm-app et recommandation de pile
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: en_cours
+    taille: M
+    estimation_h: 4
+    dependances: []
+    criteres_acceptation:
+      - socle/AUDIT.md décrit la pile, l'architecture, le déploiement Render, la base et les tests d'egm-app.
+      - Chaque composant d'egm-app est classé générique, semi-générique ou spécifique E G M.
+      - La cause probable du test de facture instable est expliquée au regard de la numérotation et des accès concurrents.
+      - La recommandation de pile donne avantages, limites et coût de migration.
+      - Aucune écriture sur theonam/egm-app.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15
+    notes: Demandé par Théo, brief du chantier socle du 2026-10-15. Phase 1, suivie d'une validation de Théo avant toute extraction.
+  - id: OPS-107
+    titre: Numérotation légale des documents sans trou ni doublon
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_faire
+    taille: S
+    estimation_h: 5
+    dependances:
+      - OPS-101
+    criteres_acceptation:
+      - Le numéro est attribué dans la transaction qui crée le document ; une création annulée ne laisse pas de trou.
+      - Des tests de concurrence prouvent l'absence de trou et de doublon, y compris au changement d'année.
+      - Préfixes, format et remise à zéro se règlent par configuration.
+      - Les tests sur base réelle utilisent une base propre à chaque lancement.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15
+    notes: Demandé par Théo, brief du chantier socle du 2026-10-15.
+  - id: OPS-108
+    titre: Calculs monétaires au centime et TVA par taux
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_faire
+    taille: S
+    estimation_h: 4
+    dependances:
+      - OPS-101
+    criteres_acceptation:
+      - Montants en centimes entiers, un seul point d'arrondi, testé.
+      - La TVA est calculée par taux sur la base HT cumulée de ce taux.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15
+    notes: Demandé par Théo, brief du chantier socle du 2026-10-15.
+  - id: OPS-109
+    titre: Génération de PDF paramétrable avec annexes
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_faire
+    taille: M
+    estimation_h: 6
+    dependances:
+      - OPS-108
+    criteres_acceptation:
+      - En-tête, mentions légales et IBAN se paramètrent sans code.
+      - Photos et croquis s'ajoutent en annexe.
+      - Le PDF d'un document émis est archivé une seule fois et toujours resservi à l'identique, même sur demandes simultanées.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15
+    notes: Demandé par Théo, brief du chantier socle du 2026-10-15.
+  - id: OPS-110
+    titre: Import Excel avec rapport des rejets et export Excel
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_faire
+    taille: M
+    estimation_h: 5
+    dependances:
+      - OPS-101
+    criteres_acceptation:
+      - Un import rejette les lignes fautives une à une et produit un rapport avec leur motif.
+      - Une simulation montre le résultat sans rien écrire.
+      - Toute liste s'exporte en xlsx.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15
+    notes: Demandé par Théo, brief du chantier socle du 2026-10-15.
+  - id: OPS-111
+    titre: Listes performantes avec filtres et tris sur toutes les colonnes
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_faire
+    taille: S
+    estimation_h: 4
+    dependances:
+      - OPS-101
+    criteres_acceptation:
+      - Une liste de plusieurs milliers de lignes reste fluide, sans pagination.
+      - Chaque colonne se filtre et se trie ; les filtres se combinent.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15
+    notes: Demandé par Théo, brief du chantier socle du 2026-10-15.
+  - id: OPS-112
+    titre: Glisser-déposer de fichiers et croquis au stylet
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_faire
+    taille: M
+    estimation_h: 6
+    dependances:
+      - OPS-101
+    criteres_acceptation:
+      - Photos, PDF et mails Outlook .msg et .eml se déposent directement sur une fiche.
+      - Un croquis au stylet se trace sur une photo ou une page blanche et reste modifiable.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15
+    notes: Demandé par Théo, brief du chantier socle du 2026-10-15.
+  - id: OPS-113
+    titre: Brouillon de mail Outlook avec pièce jointe
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_faire
+    taille: XS
+    estimation_h: 2
+    dependances:
+      - OPS-109
+    criteres_acceptation:
+      - L'application produit un brouillon .eml prêt à envoyer dans Outlook, PDF joint, et trace l'envoi.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15
+    notes: Demandé par Théo, brief du chantier socle du 2026-10-15.
+  - id: OPS-114
+    titre: Journal d'audit, sauvegardes et effacement protégé
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_faire
+    taille: M
+    estimation_h: 5
+    dependances:
+      - OPS-101
+    criteres_acceptation:
+      - Toute création, modification ou annulation est tracée dans un journal en ajout seul.
+      - Une sauvegarde de la base et sa restauration sont scriptées et testées.
+      - L'effacement ne remet jamais à zéro les compteurs de documents légaux hors édition démo.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15
+    notes: Demandé par Théo, brief du chantier socle du 2026-10-15.
+  - id: OPS-115
+    titre: Données de démonstration fictives et script d'effacement
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_faire
+    taille: S
+    estimation_h: 3
+    dependances:
+      - OPS-101
+    criteres_acceptation:
+      - Un script crée un jeu de démonstration entièrement fictif, sans donnée ni nom de client réel.
+      - Un script efface les données métier en gardant les comptes.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15
+    notes: Demandé par Théo, brief du chantier socle du 2026-10-15.
+  - id: OPS-116
+    titre: Documentation du socle et liste des reports vers egm-app
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_faire
+    taille: XS
+    estimation_h: 2
+    dependances:
+      - OPS-103
+    criteres_acceptation:
+      - socle/README.md explique comment démarrer un client, la structure et ce qui se paramètre.
+      - socle/REPORTS-EGM.md liste les corrections du socle à reporter dans egm-app après la démo.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15
+    notes: Demandé par Théo, brief du chantier socle du 2026-10-15.
