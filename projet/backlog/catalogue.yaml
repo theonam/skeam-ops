@@ -30,7 +30,7 @@ items:
       - Les valeurs sont proposées dans la pull request ; Théo les arrête.
     audience: interne
     a_valider: false
-    commit: 17c015b
+    commit: 6a31523
     maj: 2026-10-15
   - id: OPS-203
     titre: Script de chiffrage chiffrer.py
@@ -143,7 +143,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: en_cours
+    statut: a_recetter
     taille: S
     estimation_h: 1
     dependances:
@@ -153,6 +153,6 @@ items:
       - L'ordre suit la priorité de l'item puis l'ordre du backlog, en attendant un champ dédié proposé dans catalogue/PROPOSITIONS-CONTRAT.md.
     audience: interne
     a_valider: false
-    commit: null
+    commit: 627d86f
     maj: 2026-10-15
     notes: Règle de rédaction des devis donnée par Théo le 2026-10-15. L'ordre d'importance tiré du transcript relève de /cadrage, chantier cadrage.
