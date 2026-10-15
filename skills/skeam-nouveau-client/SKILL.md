@@ -94,15 +94,15 @@ python3 scripts/nouveau_dossier.py <slug> "<nom>" ../<nom du dépôt> --depot <d
    - Entreprise : raison sociale, activité, effectif, commune, avec la source registre en fin de paragraphe.
    - Interlocuteurs : une puce par contact.
    - Besoin exprimé : les mots de Théo, reformulés sans ajout. Rien de connu : `À compléter.`
-   - Historique de la relation : `- AAAA-MM-JJ : premier contact, apporté par <apporteur>.`
+   - Historique de la relation : `- AAAA-MM-JJ : premier contact, apporté par <apporteur>.`, avec le prénom lisible : Théo, Jonathan, ou le nom donné par Théo pour `autre`, jamais la valeur technique.
    - Jamais de marge, de tarif, de temps ni d'estimation.
-3. `CLAUDE.md` à la racine du dépôt client : le créer avec la ligne `@projet/CLAUDE-projet.md` s'il n'existe pas ; sinon ajouter cette ligne en fin de fichier si elle manque.
+3. `CLAUDE.md` à la racine du dépôt client : le créer avec la ligne `@projet/CLAUDE-projet.md` s'il n'existe pas. S'il existe, l'application a déjà ses consignes d'agent : demander à Théo avant d'y ajouter la ligne, car cela change le comportement des agents de développement.
 4. `python3 scripts/validate.py ../<nom du dépôt>/projet` : code 0 exigé.
 
 ### 6. Section Todoist
 
 1. `find-sections` dans le projet `6h6qfvrgr83M56Gq` avec `searchText` égal au nom de section `Client · <nom>`.
-2. Une section de nom exactement identique existe : la réutiliser, aucune création.
+2. Comparer les noms sans tenir compte des espaces, de la casse ni des accents : `Client · EGM` correspond à `Client · E G M`. Une section correspond : la proposer à Théo pour réutilisation, aucune création. Plusieurs correspondent : lui laisser choisir.
 3. Sinon, la création est proposée à l'étape 7.
 
 ### 7. Validation unique

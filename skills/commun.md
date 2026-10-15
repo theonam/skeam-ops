@@ -71,7 +71,7 @@ Déroulé d'une validation :
 ## 5. Écrire dans un dossier projet
 
 - Relire la section du contrat du fichier touché avant d'écrire. Aucune clé hors contrat.
-- YAML : deux espaces d'indentation, dates sans guillemets, chaînes faites de chiffres entre guillemets : siren, code postal, ids Todoist. Modifier au plus près, sans réordonner ni supprimer les commentaires existants.
+- YAML : deux espaces d'indentation, dates sans guillemets, chaînes faites de chiffres entre guillemets : siren, code postal, ids Todoist. Toute valeur qui contient deux-points suivis d'une espace, fréquent dans un titre rédigé en français, s'écrit entre guillemets doubles. Modifier au plus près, sans réordonner ni supprimer les commentaires existants.
 - Date du jour : `date +%F` avec `TZ=Europe/Paris`.
 - Nouvel item : `id` égal au plus grand numéro existant dans tout `backlog/` plus un ; `a_valider: true`, `audience: interne`, `statut: a_faire`, `commit: null`, `maj` du jour. Dans skeam-ops, plus petit numéro libre de la plage du chantier.
 - Nouvelle action : `ACT-<PRÉFIXE>-nnn`, plus grand numéro existant plus un, `todoist_id: null`, `statut: ouverte`.
@@ -81,7 +81,7 @@ Déroulé d'une validation :
 
 ## 6. Committer et pousser
 
-Après validation de Théo seulement, sur la branche par défaut du dépôt :
+Après validation de Théo seulement. Avant le premier push sur un dépôt client, vérifier ce que déclenche sa branche par défaut : `.github/workflows/`, `render.yaml` ou tout fichier de déploiement. Si un push y lance une intégration continue ou un déploiement, proposer à Théo de pousser sur la branche dédiée `projet/skeam-ops`, sans ouvrir de pull request, et de la fusionner lui-même. Sinon, sur la branche par défaut :
 
 ```sh
 cd "$RACINE/<nom>"
@@ -104,7 +104,7 @@ git pull --rebase --autostash && git push
 - Toute tâche créée porte dans sa description ce commentaire de contexte, sur trois lignes :
 
   ```text
-  Source : <dépôt> · projet/<source de l'action, ou "manuel">
+  Source : <dépôt> · projet/<source de l'action>     ou, pour une action manuel : Source : <dépôt> · manuel
   Raison : <contexte de l'action>
   Réf : <id de l'action>
   ```
