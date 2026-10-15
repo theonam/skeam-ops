@@ -5,7 +5,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: en_cours
+    statut: a_recetter
     taille: M
     estimation_h: 4
     dependances: []
@@ -14,14 +14,14 @@ items:
       - python scripts/validate.py --catalogue catalogue/ sort sans erreur.
     audience: interne
     a_valider: false
-    commit: null
+    commit: d022c8e
     maj: 2026-10-15
   - id: OPS-202
     titre: Grille tarifaire interne
     module: null
     lot: 1
     priorite: indispensable
-    statut: en_cours
+    statut: a_recetter
     taille: XS
     estimation_h: 1
     dependances: []
@@ -30,14 +30,14 @@ items:
       - Les valeurs sont proposées dans la pull request ; Théo les arrête.
     audience: interne
     a_valider: false
-    commit: null
+    commit: 17c015b
     maj: 2026-10-15
   - id: OPS-203
     titre: Script de chiffrage chiffrer.py
     module: null
     lot: 1
     priorite: indispensable
-    statut: en_cours
+    statut: a_recetter
     taille: L
     estimation_h: 8
     dependances:
@@ -49,14 +49,14 @@ items:
       - Le chiffrage du client fictif de exemples/ est reproductible.
     audience: interne
     a_valider: false
-    commit: null
+    commit: 6bbbb46
     maj: 2026-10-15
   - id: OPS-204
     titre: Script de calibrage calibrer.py
     module: null
     lot: 1
     priorite: souhaitable
-    statut: en_cours
+    statut: a_recetter
     taille: M
     estimation_h: 5
     dependances:
@@ -66,14 +66,14 @@ items:
       - Deux passages de suite produisent un fichier identique.
     audience: interne
     a_valider: false
-    commit: null
+    commit: b33acb0
     maj: 2026-10-15
   - id: OPS-205
     titre: Méthode de calcul du prix conseillé et de la confiance
     module: null
     lot: 2
     priorite: souhaitable
-    statut: en_cours
+    statut: a_recetter
     taille: S
     estimation_h: 3
     dependances:
@@ -82,14 +82,14 @@ items:
       - catalogue/README.md explique comment prix_conseille_ht et confiance découlent des mesures et des tarifs.
     audience: interne
     a_valider: false
-    commit: null
+    commit: 90d4d5a
     maj: 2026-10-15
   - id: OPS-206
     titre: Saisie et relecture du temps, temps.py
     module: null
     lot: 1
     priorite: indispensable
-    statut: en_cours
+    statut: a_recetter
     taille: M
     estimation_h: 4
     dependances: []
@@ -98,7 +98,7 @@ items:
       - python catalogue/scripts/temps.py week produit la synthèse de la semaine et passe valide à true seulement après confirmation de Théo.
     audience: interne
     a_valider: false
-    commit: null
+    commit: 7bfbcd3
     maj: 2026-10-15
     notes: Demandé par Théo le 2026-10-15 dans la consigne du chantier catalogue.
   - id: OPS-207
@@ -106,7 +106,7 @@ items:
     module: null
     lot: 1
     priorite: souhaitable
-    statut: en_cours
+    statut: a_recetter
     taille: S
     estimation_h: 3
     dependances:
@@ -115,7 +115,7 @@ items:
       - calibrer.py écrit catalogue/out/calibration.md avec les écarts entre estimation et réel, par module et par client.
     audience: interne
     a_valider: false
-    commit: null
+    commit: b33acb0
     maj: 2026-10-15
     notes: Demandé par Théo le 2026-10-15 dans la consigne du chantier catalogue.
   - id: OPS-208
@@ -123,7 +123,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: en_cours
+    statut: a_recetter
     taille: M
     estimation_h: 4
     dependances:
@@ -135,6 +135,6 @@ items:
       - python -m unittest discover -s catalogue/tests -p "test_*.py" passe sans erreur.
     audience: interne
     a_valider: false
-    commit: null
+    commit: 5b0366e
     maj: 2026-10-15
     notes: Demandé par Théo le 2026-10-15 dans la consigne du chantier catalogue.
