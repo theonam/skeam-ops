@@ -38,7 +38,7 @@ Lire d'abord `skills/commun.md` dans le clone de skeam-ops, puis CONTRAT.md sect
 ### 1. Préparer
 
 1. Étape 0 et identification du ou des clients, `skills/commun.md` sections 1 et 2.
-2. Pour chaque client, lire `todoist.projet_id` et `todoist.section_id` de `client.yaml`. Section absente : chercher la section `Client · <nom>` par `find-sections` dans le projet `6h6qfvrgr83M56Gq`. Trouvée : proposer d'écrire son id dans `client.yaml`. Pas trouvée : proposer de la créer, comme à l'étape 6 de `/skeam-nouveau-client`.
+2. Pour chaque client, lire `todoist.projet_id` et `todoist.section_id` de `client.yaml`. Section absente : chercher la section `Client · <nom>` par `find-sections` dans le projet `6h6qfvrgr83M56Gq`, en comparant les noms sans espaces, casse ni accents comme à l'étape 6 de `/skeam-nouveau-client`. Trouvée : proposer d'écrire son id dans `client.yaml`. Pas trouvée : proposer de la créer, comme à l'étape 6 de `/skeam-nouveau-client`.
 
 ### 2. Lire l'état des deux côtés
 
