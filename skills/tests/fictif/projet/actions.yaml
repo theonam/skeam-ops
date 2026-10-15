@@ -1,0 +1,28 @@
+items:
+  - id: ACT-FICTIF-001
+    titre: Relancer Léa Fictive pour le format d'export comptable
+    contexte: Attendu du client noté en réunion de lancement ; bloque FICTIF-003.
+    priorite: p2
+    points: 1pt
+    echeance: 2026-10-30
+    statut: ouverte
+    todoist_id: null
+    source: syntheses/2026-10-20-lancement.md
+  - id: ACT-FICTIF-002
+    titre: Envoyer la démo de la connexion
+    contexte: Promise en réunion de lancement, sans jour précis.
+    priorite: p3
+    points: 2pt
+    echeance: null
+    statut: ouverte
+    todoist_id: null
+    source: syntheses/2026-10-20-lancement.md
+  - id: ACT-FICTIF-003
+    titre: Préparer une maquette du tableau des commandes
+    contexte: Idée abandonnée, le tableau sera montré directement en démo.
+    priorite: p4
+    points: 3pt
+    echeance: null
+    statut: annulee
+    todoist_id: null
+    source: manuel

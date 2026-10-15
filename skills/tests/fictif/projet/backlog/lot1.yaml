@@ -1,0 +1,67 @@
+items:
+  - id: FICTIF-001
+    titre: Connexion des compagnons sur téléphone
+    module: null
+    lot: 0
+    priorite: indispensable
+    statut: fait
+    taille: S
+    estimation_h: 3
+    dependances: []
+    criteres_acceptation:
+      - Un compagnon se connecte depuis son téléphone sans mot de passe.
+    audience: client
+    a_valider: false
+    commit: 1a2b3c4
+    maj: 2026-10-22
+  - id: FICTIF-002
+    titre: Saisie des heures par commande
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_faire
+    taille: M
+    estimation_h: 6
+    dependances:
+      - FICTIF-001
+    criteres_acceptation:
+      - Un compagnon saisit ses heures sur une commande en moins de 30 secondes.
+      - Une journée au-delà de 10 heures est refusée, conformément à RG1.
+    audience: client
+    a_valider: false
+    commit: null
+    maj: 2026-10-20
+  - id: FICTIF-003
+    titre: Export mensuel des heures pour le cabinet comptable
+    module: null
+    lot: 1
+    priorite: souhaitable
+    statut: a_faire
+    taille: M
+    estimation_h: 4
+    dependances:
+      - FICTIF-002
+      - "externe: format d'export fourni par le cabinet comptable"
+    criteres_acceptation:
+      - Le chef d'atelier télécharge un fichier mensuel des heures par commande.
+    audience: commercial
+    a_valider: false
+    commit: null
+    maj: 2026-10-20
+    notes: Format du cabinet à confirmer, voir ACT-FICTIF-001.
+  - id: FICTIF-004
+    titre: Sauvegarde quotidienne des données
+    module: null
+    lot: 1
+    priorite: souhaitable
+    statut: a_faire
+    taille: XS
+    estimation_h: 1
+    dependances: []
+    criteres_acceptation:
+      - Une copie des données est conservée chaque nuit pendant 30 jours.
+    audience: interne
+    a_valider: true
+    commit: null
+    maj: 2026-10-20
+    notes: Estimation provisoire, besoin non exprimé par le client.

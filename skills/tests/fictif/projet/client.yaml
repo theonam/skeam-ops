@@ -1,0 +1,41 @@
+# Client fictif des scénarios de test de skills/tests. Aucune donnée réelle.
+slug: fictif
+nom: Atelier Fictif
+raison_sociale: Atelier Fictif SAS
+siren: null
+adresse:
+  rue: 12 quai de l'Essai
+  code_postal: "44000"
+  ville: Nantes
+  pays: France
+contacts:
+  - nom: Léa Fictive
+    role: Gérante
+    email: lea.fictive@atelier-fictif.example
+    tel: "+33 6 00 00 00 01"
+  - nom: Marc Essai
+    role: Chef d'atelier
+    email: null
+    tel: null
+statut: cadrage
+apporteur: theo
+dates:
+  premier_contact: 2026-10-16
+  cadrage: 2026-10-20
+  signature: null
+  mise_en_service: null
+montants_ht:
+  build_signe: 0
+  options_signees: 0
+  run_annuel: 0
+devis: []
+liens:
+  depot: theonam/skeam-test-fictif
+  demo: null
+  prod: null
+  docs_interne: null
+  docs_commercial: null
+  docs_client: null
+todoist:
+  projet_id: "6h6qfvrgr83M56Gq"
+  section_id: null
