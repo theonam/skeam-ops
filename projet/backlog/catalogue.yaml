@@ -5,7 +5,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_faire
+    statut: en_cours
     taille: M
     estimation_h: 4
     dependances: []
@@ -21,7 +21,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_faire
+    statut: en_cours
     taille: XS
     estimation_h: 1
     dependances: []
@@ -37,7 +37,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_faire
+    statut: en_cours
     taille: L
     estimation_h: 8
     dependances:
@@ -56,7 +56,7 @@ items:
     module: null
     lot: 1
     priorite: souhaitable
-    statut: a_faire
+    statut: en_cours
     taille: M
     estimation_h: 5
     dependances:
@@ -73,7 +73,7 @@ items:
     module: null
     lot: 2
     priorite: souhaitable
-    statut: a_faire
+    statut: en_cours
     taille: S
     estimation_h: 3
     dependances:
@@ -84,3 +84,57 @@ items:
     a_valider: false
     commit: null
     maj: 2026-10-15
+  - id: OPS-206
+    titre: Saisie et relecture du temps, temps.py
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: en_cours
+    taille: M
+    estimation_h: 4
+    dependances: []
+    criteres_acceptation:
+      - python catalogue/scripts/temps.py start, stop et log écrivent une ligne conforme à CONTRAT.md section 6 dans le bon fichier AAAA-MM-<agent>.jsonl.
+      - python catalogue/scripts/temps.py week produit la synthèse de la semaine et passe valide à true seulement après confirmation de Théo.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15
+    notes: Demandé par Théo le 2026-10-15 dans la consigne du chantier catalogue.
+  - id: OPS-207
+    titre: Rapport de calibration, écarts estimation contre réel
+    module: null
+    lot: 1
+    priorite: souhaitable
+    statut: en_cours
+    taille: S
+    estimation_h: 3
+    dependances:
+      - OPS-204
+    criteres_acceptation:
+      - calibrer.py écrit catalogue/out/calibration.md avec les écarts entre estimation et réel, par module et par client.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15
+    notes: Demandé par Théo le 2026-10-15 dans la consigne du chantier catalogue.
+  - id: OPS-208
+    titre: Projet fictif et tests du chantier catalogue
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: en_cours
+    taille: M
+    estimation_h: 4
+    dependances:
+      - OPS-203
+      - OPS-204
+      - OPS-206
+    criteres_acceptation:
+      - catalogue/tests/ contient un projet fictif valide et des tests de chiffrer.py, calibrer.py et temps.py.
+      - python -m unittest discover -s catalogue/tests -p "test_*.py" passe sans erreur.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15
+    notes: Demandé par Théo le 2026-10-15 dans la consigne du chantier catalogue.
