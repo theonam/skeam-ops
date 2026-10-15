@@ -50,6 +50,7 @@ Proposées, puis écrites seulement si Théo les accepte :
 2. `get_transcript` avec `block: mark_memo` : les moments marqués par Théo pendant la réunion sont à traiter en priorité dans la synthèse.
 3. `get_note` : le résumé Plaud sert seulement à repérer des sujets. Il n'est jamais une source de fait ; tout fait se vérifie dans le transcript.
 4. Locuteurs non nommés, `Speaker 1` par exemple : proposer à Théo une correspondance avec les contacts de `client.yaml` et lui-même, en citant pour chacun une phrase caractéristique. Sans réponse, garder le libellé Plaud.
+5. Aucun locuteur du tout, `speaker` vide sur tous les segments : chaque segment mêle plusieurs voix et ne peut pas être attribué. Écrire `Non attribué` comme locuteur, ne pas tenter d'attribution phrase par phrase, et le signaler en premier point des Zones d'incertitude. Les participants viennent alors de Théo ou d'un document qu'il désigne.
 
 ### 4. Écrire le transcript
 
@@ -103,6 +104,8 @@ Comparer avec l'existant : ne pas proposer un item, une action ou une décision 
 ### 7. Arbitrage, élément par élément
 
 Présenter les propositions groupées par type, puis les arbitrer par questions à choix multiples, quatre par appel : `Accepter`, `Modifier`, `Rejeter`. Une proposition modifiée est représentée avant d'être acceptée. Aucun accord global : chaque proposition reçoit sa réponse.
+
+Au-delà de huit propositions d'un même type, typiquement les items d'un premier cadrage, les arbitrer par groupe, par lot ou par module : chaque groupe est présenté en entier, puis `Accepter le groupe`, `Voir un par un`, `Rejeter le groupe`. Les décisions et les actions restent arbitrées une par une, au besoin en question à choix multiples cochables.
 
 ### 8. Appliquer ce qui est accepté
 
