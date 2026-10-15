@@ -18,5 +18,5 @@ items:
       - Le README donne la carte des dossiers et les règles de collaboration.
     audience: interne
     a_valider: false
-    commit: null
+    commit: e6b1ca9
     maj: 2026-10-15
