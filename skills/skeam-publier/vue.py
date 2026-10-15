@@ -10,6 +10,11 @@ projet/interne/ n'est jamais lu. Les commentaires HTML des documents sont
 retirés. Pour l'audience client, la vue est refusée, code 1, si elle contient
 un tiret cadratin ou une parenthèse.
 
+La vue est découpée en onglets. Chaque onglet commence par une ligne
+`<!-- onglet: Nom -->` ; /skeam-publier en fait un onglet du doc Claude.
+Onglets, selon l'audience : Accueil, Backlog, Cadrage, Réunions, Fiche client
+pour commercial et interne, Suivi interne pour interne.
+
 Sortie : la vue sur la sortie standard, ou dans le fichier --sortie.
 Code de sortie : 0 succès, 1 dossier invalide ou vue client non conforme,
 2 usage incorrect.
@@ -52,10 +57,17 @@ STATUTS_ITEM = {
 }
 STATUTS_DEVIS = {"brouillon": "brouillon", "envoye": "envoyé", "accepte": "accepté", "refuse": "refusé"}
 STATUTS_ACTION = {"ouverte": "ouverte", "faite": "faite", "annulee": "annulée"}
+APPORTEURS = {"theo": "Théo", "jonathan": "Jonathan", "autre": "autre"}
+CONSTRUITS = ("a_recetter", "fait")
 
 RE_COMMENTAIRE = re.compile(r"[ \t]*<!--.*?-->", re.S)
 RE_TITRE = re.compile(r"^(#{1,6})([ \t]+.*)$")
 RE_INTERDIT_CLIENT = re.compile(r"[—()]")
+RE_LOT_CADRAGE = re.compile(r"^- \*\*Lot (\d+)\*\* : (.+)$")
+
+
+def onglet(nom: str) -> str:
+    return f"<!-- onglet: {nom} -->"
 
 
 def voit(audience: str, niveau_minimal: str) -> bool:
@@ -72,6 +84,16 @@ def montant(valeur: float) -> str:
 def heures(valeur: float) -> str:
     texte = f"{valeur:.2f}".rstrip("0").rstrip(".").replace(".", ",")
     return f"{texte} h"
+
+
+def cellule(texte: str) -> str:
+    return texte.replace("|", "\\|").replace("\n", " ")
+
+
+def tableau(entetes: list[str], lignes: list[list[str]]) -> list[str]:
+    sortie = ["| " + " | ".join(entetes) + " |", "|" + "---|" * len(entetes)]
+    sortie += ["| " + " | ".join(cellule(c) for c in ligne) + " |" for ligne in lignes]
+    return sortie
 
 
 def retirer_commentaires(texte: str) -> str:
@@ -113,172 +135,220 @@ def document(chemin: Path, decalage: int) -> tuple[str | None, str]:
     return titre_niveau1(corps), decaler_titres(corps, decalage)
 
 
+def section_cadrage(projet: Path, nom: str) -> list[str]:
+    """Puces d'une section de niveau 2 de cadrage.md, sans commentaires."""
+    _, corps = document(projet / "cadrage.md", 0)
+    puces: list[str] = []
+    dedans = False
+    for ligne in corps.split("\n"):
+        if ligne.startswith("## "):
+            dedans = ligne[3:].strip() == nom
+            continue
+        if dedans and ligne.startswith("- "):
+            puces.append(ligne)
+    return puces
+
+
 def items_visibles(items: list[dict], audience: str) -> list[dict]:
     if audience == "interne":
         return list(items)
     return [i for i in items if not i["a_valider"] and voit(audience, i["audience"])]
 
 
-def avancement(items: list[dict], avec_a_valider: bool = False) -> dict[int, tuple[int, int]]:
-    """Par lot : items faits et items comptés, hors abandonne, toutes audiences confondues.
+def avancement(items: list[dict], avec_a_valider: bool = False) -> dict[int, dict[str, int]]:
+    """Par lot : items comptés, construits et recettés, hors abandonne, toutes audiences confondues.
 
-    Les items a_valider sont exclus, CONTRAT.md section 10, sauf pour la vue interne, libre.
+    Recettés = fait, seul compté par CONTRAT.md section 10. Construits = a_recetter ou fait.
+    Les items a_valider sont exclus, sauf pour la vue interne, libre.
     """
-    comptes: dict[int, list[int]] = defaultdict(lambda: [0, 0])
+    comptes: dict[int, dict[str, int]] = defaultdict(lambda: {"total": 0, "construits": 0, "recettes": 0, "a_valider": 0})
     for item in items:
         if item["statut"] == "abandonne" or (item["a_valider"] and not avec_a_valider):
             continue
-        comptes[item["lot"]][1] += 1
-        if item["statut"] == "fait":
-            comptes[item["lot"]][0] += 1
-    return {lot: (faits, total) for lot, (faits, total) in comptes.items()}
+        lot = comptes[item["lot"]]
+        lot["total"] += 1
+        lot["construits"] += item["statut"] in CONSTRUITS
+        lot["recettes"] += item["statut"] == "fait"
+        lot["a_valider"] += bool(item["a_valider"])
+    return comptes
 
 
-def section_projet(client: dict, audience: str) -> list[str]:
-    lignes = ["## Projet", "", f"- **Client** : {client['nom']}", f"- **Statut** : {STATUTS_PROJET[client['statut']]}"]
-    if voit(audience, "commercial"):
-        if client["raison_sociale"]:
-            lignes.append(f"- **Raison sociale** : {client['raison_sociale']}")
-        if client["siren"]:
-            lignes.append(f"- **SIREN** : {client['siren']}")
-        adresse = client["adresse"]
-        if adresse:
-            lignes.append(f"- **Adresse** : {adresse['rue']}, {adresse['code_postal']} {adresse['ville']}, {adresse['pays']}")
-        lignes.append(f"- **Apporteur** : {client['apporteur']}")
-        for cle, libelle in (("premier_contact", "Premier contact"), ("cadrage", "Cadrage"), ("signature", "Signature"), ("mise_en_service", "Mise en service")):
-            if client["dates"][cle]:
-                lignes.append(f"- **{libelle}** : {client['dates'][cle]}")
-        montants = client["montants_ht"]
-        lignes.append(f"- **Build signé** : {montant(montants['build_signe'])}")
-        lignes.append(f"- **Options signées** : {montant(montants['options_signees'])}")
-        lignes.append(f"- **Run annuel** : {montant(montants['run_annuel'])}")
-        if audience == "interne":
-            todoist = client["todoist"]
-            lignes.append(f"- **Todoist** : projet {todoist['projet_id'] or 'non renseigné'}, section {todoist['section_id'] or 'non renseignée'}")
-        if client["contacts"]:
-            lignes += ["", "### Contacts", ""]
-            for contact in client["contacts"]:
-                details = [d for d in (contact["role"], contact["email"], contact["tel"]) if d]
-                lignes.append(f"- **{contact['nom']}**" + (f" : {', '.join(details)}" if details else ""))
-        if client["devis"]:
-            lignes += ["", "### Devis", ""]
-            for devis in client["devis"]:
-                lignes.append(f"- {devis['objet']} : {montant(devis['montant_ht'])}, {STATUTS_DEVIS[devis['statut']]}")
-    return lignes
+def onglet_accueil(projet: Path, client: dict, items: list[dict], audience: str, temps: list[dict]) -> list[str]:
+    interne = audience == "interne"
+    lignes = [onglet("Accueil"), "", f"Projet **{client['nom']}**, statut **{STATUTS_PROJET[client['statut']]}**.", ""]
 
+    lignes += ["## Livrables", ""]
+    comptes = avancement(items, avec_a_valider=interne)
+    contenus = {}
+    for puce in section_cadrage(projet, "Découpage en lots"):
+        correspondance = RE_LOT_CADRAGE.match(puce)
+        if correspondance:
+            contenus[int(correspondance.group(1))] = correspondance.group(2).split(". ")[0].rstrip(".")
+    if comptes:
+        entetes = ["Lot", "Contenu", "Construits", "Recettés"]
+        if interne:
+            entetes += ["À valider", "Estimé", "Passé"]
+            minutes = defaultdict(int)
+            for ligne in temps:
+                minutes[ligne["item"]] += ligne["minutes"]
+        rangees = []
+        for lot in sorted(comptes):
+            c = comptes[lot]
+            rangee = [f"Lot {lot}", contenus.get(lot, ""), f"{c['construits']} sur {c['total']}",
+                      f"{c['recettes']} sur {c['total']}, soit {c['recettes'] * 100 // c['total']} %"]
+            if interne:
+                du_lot = [i for i in items if i["lot"] == lot and i["statut"] != "abandonne"]
+                rangee += [str(c["a_valider"]), heures(sum(i["estimation_h"] for i in du_lot)),
+                           heures(sum(minutes[i["id"]] for i in du_lot) / 60)]
+            rangees.append(rangee)
+        lignes += tableau(entetes, rangees)
+        lignes += ["", "Construits : items livrés par le développement, à recetter ou faits. Recettés : items validés, statut fait."]
+    else:
+        lignes.append("Aucun item à ce jour.")
 
-def section_liens(client: dict, audience: str) -> list[str]:
+    if interne:
+        ouvertes = [a for a in contrat.lire_actions(projet) if a["statut"] == "ouverte"]
+        ouvertes.sort(key=lambda a: (a["echeance"] or "9999-99-99", a["priorite"]))
+        lignes += ["", "## Prochaines actions", ""]
+        if ouvertes:
+            lignes += tableau(["Échéance", "Action", "Priorité", "Points"],
+                              [[a["echeance"] or "", f"{a['id']} {a['titre']}", a["priorite"], a["points"]] for a in ouvertes[:8]])
+            if len(ouvertes) > 8:
+                lignes += ["", f"Et {len(ouvertes) - 8} autres dans l'onglet Suivi interne."]
+        else:
+            lignes.append("Aucune action ouverte.")
+
+    attendus = section_cadrage(projet, "Attendus du client")
+    if attendus:
+        lignes += ["", "## Attendus du client", "", *attendus]
+    questions = section_cadrage(projet, "Questions ouvertes")
+    if questions:
+        lignes += ["", "## Questions ouvertes", "", (f"{len(questions)} questions, détail dans l'onglet Cadrage. Les premières :" if len(questions) > 5 else f"Détail dans l'onglet Cadrage."), "", *questions[:5]]
+
     liens = client["liens"]
     visibles = [("demo", "Démo", "client"), ("prod", "Production", "client"), ("docs_client", "Documents client", "client"),
                 ("docs_commercial", "Documents commerciaux", "commercial"),
                 ("depot", "Dépôt", "interne"), ("docs_interne", "Documents internes", "interne")]
-    lignes = [f"- **{libelle}** : {liens[cle]}" for cle, libelle, niveau in visibles if voit(audience, niveau) and liens[cle]]
-    return ["## Liens", "", *lignes] if lignes else []
-
-
-def section_avancement(items: list[dict], audience: str, temps: list[dict]) -> list[str]:
-    interne = audience == "interne"
-    comptes = avancement(items, avec_a_valider=interne)
-    if not comptes:
-        return ["## Avancement par lot", "", "Aucun item à ce jour."]
-    lignes = ["## Avancement par lot", ""]
-    for lot in sorted(comptes):
-        faits, total = comptes[lot]
-        libelle = "item fait" if faits <= 1 else "items faits"
-        ligne = f"- **Lot {lot}** : {faits} {libelle} sur {total}, soit {faits * 100 // total} %"
-        a_valider = sum(1 for i in items if i["lot"] == lot and i["a_valider"] and i["statut"] != "abandonne")
-        if interne and a_valider:
-            ligne += f", dont {a_valider} à valider"
-        lignes.append(ligne)
-    if audience == "interne":
-        minutes = defaultdict(int)
-        for ligne in temps:
-            minutes[ligne["item"]] += ligne["minutes"]
-        lignes += ["", "### Estimations et temps passé", ""]
-        for lot in sorted({i["lot"] for i in items}):
-            du_lot = [i for i in items if i["lot"] == lot and i["statut"] != "abandonne"]
-            estime = sum(i["estimation_h"] for i in du_lot)
-            passe = sum(minutes[i["id"]] for i in du_lot) / 60
-            lignes.append(f"- **Lot {lot}** : {heures(estime)} estimées, {heures(passe)} passées")
-        hors_item = minutes.get(None, 0) / 60
-        lignes.append(f"- **Hors item** : {heures(hors_item)} passées")
+    puces = [f"- **{libelle}** : {liens[cle]}" for cle, libelle, niveau in visibles if voit(audience, niveau) and liens[cle]]
+    if puces:
+        lignes += ["", "## Liens", "", *puces]
     return lignes
 
 
-def section_backlog(items: list[dict], audience: str) -> list[str]:
+def onglet_backlog(items: list[dict], audience: str) -> list[str]:
     visibles = items_visibles(items, audience)
-    lignes = ["## Backlog", ""]
+    lignes = [onglet("Backlog")]
     if not visibles:
-        return lignes + ["Aucun item à ce jour."]
+        return lignes + ["", "Aucun item à ce jour."]
     for lot in sorted({i["lot"] for i in visibles}):
-        lignes += [f"### Lot {lot}", ""]
+        entetes = ["Id", "Titre", "Statut", "Priorité"]
+        if voit(audience, "commercial"):
+            entetes.append("Module")
+        if audience == "interne":
+            entetes += ["Taille", "Audience"]
+        entetes.append("Critères d'acceptation")
+        if audience == "interne":
+            entetes.append("Notes et dépendances")
+        rangees = []
         for item in (i for i in visibles if i["lot"] == lot):
-            lignes += [f"#### {item['id']} {item['titre']}", ""]
-            lignes.append(f"- **Statut** : {STATUTS_ITEM[item['statut']]}")
-            lignes.append(f"- **Priorité** : {item['priorite']}")
-            if voit(audience, "commercial") and item["module"]:
-                lignes.append(f"- **Module** : {item['module']}")
+            statut = STATUTS_ITEM[item["statut"]]
+            if audience == "interne" and item["a_valider"]:
+                statut += ", à valider"
+            rangee = [item["id"], item["titre"], statut, item["priorite"]]
+            if voit(audience, "commercial"):
+                rangee.append(item["module"] or "")
             if audience == "interne":
-                lignes.append(f"- **Taille** : {item['taille']}, estimation {heures(item['estimation_h'])}")
-                lignes.append(f"- **Audience** : {item['audience']}" + (", à valider" if item["a_valider"] else ""))
+                rangee += [f"{item['taille']}, estimation {heures(item['estimation_h'])}", item["audience"]]
+            rangee.append(" ; ".join(item["criteres_acceptation"]))
+            if audience == "interne":
+                details = [item.get("notes") or ""]
                 if item["dependances"]:
-                    lignes.append(f"- **Dépendances** : {' ; '.join(item['dependances'])}")
+                    details.append("Dépend de " + ", ".join(item["dependances"]))
                 if item["commit"]:
-                    lignes.append(f"- **Commit** : {item['commit']}")
-                if item.get("notes"):
-                    lignes.append(f"- **Notes** : {item['notes']}")
-            lignes.append(f"- **Mis à jour le** : {item['maj']}")
-            lignes.append("- **Critères d'acceptation** :")
-            lignes += [f"  - {critere}" for critere in item["criteres_acceptation"]]
-            lignes.append("")
-    return lignes[:-1] if lignes[-1] == "" else lignes
+                    details.append(f"Commit {item['commit']}")
+                rangee.append(" ".join(d for d in details if d))
+            rangees.append(rangee)
+        lignes += ["", f"## Lot {lot}", "", *tableau(entetes, rangees)]
+    return lignes
 
 
-def section_document(titre: str, chemin: Path) -> list[str]:
-    _, corps = document(chemin, 1)
-    return [f"## {titre}", "", corps] if corps.strip() else []
+def onglet_document(nom: str, chemin: Path) -> list[str]:
+    _, corps = document(chemin, 0)
+    return [onglet(nom), "", corps] if corps.strip() else []
 
 
-def section_syntheses(projet: Path) -> list[str]:
-    fichiers = sorted((projet / "syntheses").glob("*.md"))
+def onglet_reunions(projet: Path) -> list[str]:
+    fichiers = sorted((projet / "syntheses").glob("*.md"), reverse=True)
     if not fichiers:
         return []
-    lignes = ["## Synthèses de réunion"]
+    lignes = [onglet("Réunions")]
     for fichier in fichiers:
-        titre, corps = document(fichier, 2)
-        lignes += ["", f"### {fichier.name[:10]} {titre or fichier.stem}", "", corps]
+        titre, corps = document(fichier, 1)
+        lignes += ["", f"## {fichier.name[:10]} {titre or fichier.stem}", "", corps]
     return lignes
 
 
-def sections_internes(projet: Path, temps: list[dict]) -> list[str]:
-    lignes: list[str] = []
+def onglet_fiche(projet: Path, client: dict, audience: str) -> list[str]:
+    lignes = [onglet("Fiche client"), "", "## Données du client", ""]
+    if client["raison_sociale"]:
+        lignes.append(f"- **Raison sociale** : {client['raison_sociale']}")
+    if client["siren"]:
+        lignes.append(f"- **SIREN** : {client['siren']}")
+    adresse = client["adresse"]
+    if adresse:
+        lignes.append(f"- **Adresse** : {adresse['rue']}, {adresse['code_postal']} {adresse['ville']}, {adresse['pays']}")
+    lignes.append(f"- **Apporteur** : {APPORTEURS[client['apporteur']]}")
+    for cle, libelle in (("premier_contact", "Premier contact"), ("cadrage", "Cadrage"), ("signature", "Signature"), ("mise_en_service", "Mise en service")):
+        if client["dates"][cle]:
+            lignes.append(f"- **{libelle}** : {client['dates'][cle]}")
+    montants = client["montants_ht"]
+    lignes.append(f"- **Build signé** : {montant(montants['build_signe'])}")
+    lignes.append(f"- **Options signées** : {montant(montants['options_signees'])}")
+    lignes.append(f"- **Run annuel** : {montant(montants['run_annuel'])}")
+    if audience == "interne":
+        todoist = client["todoist"]
+        lignes.append(f"- **Todoist** : projet {todoist['projet_id'] or 'non renseigné'}, section {todoist['section_id'] or 'non renseignée'}")
+    if client["contacts"]:
+        lignes += ["", "## Contacts", ""]
+        for contact in client["contacts"]:
+            details = [d for d in (contact["role"], contact["email"], contact["tel"]) if d]
+            lignes.append(f"- **{contact['nom']}**" + (f" : {', '.join(details)}" if details else ""))
+    if client["devis"]:
+        lignes += ["", "## Devis", ""]
+        lignes += [f"- {d['objet']} : {montant(d['montant_ht'])}, {STATUTS_DEVIS[d['statut']]}" for d in client["devis"]]
+    _, fiche = document(projet / "fiche.md", 0)
+    if fiche.strip():
+        lignes += ["", fiche]
+    return lignes
+
+
+def onglet_suivi_interne(projet: Path, temps: list[dict]) -> list[str]:
+    lignes = [onglet("Suivi interne")]
     actions = contrat.lire_actions(projet)
     if actions:
-        lignes += ["## Actions de Théo", ""]
-        for action in actions:
-            echeance = f", échéance {action['echeance']}" if action["echeance"] else ""
-            lignes.append(f"- **{action['id']}** {action['titre']} : {STATUTS_ACTION[action['statut']]}, {action['priorite']}, {action['points']}{echeance}")
-        lignes.append("")
+        lignes += ["", "## Actions de Théo", ""]
+        lignes += tableau(["Id", "Action", "Statut", "Priorité", "Points", "Échéance", "Todoist"],
+                          [[a["id"], a["titre"], STATUTS_ACTION[a["statut"]], a["priorite"], a["points"], a["echeance"] or "",
+                            "oui" if a["todoist_id"] else "non"] for a in actions])
     _, decisions = document(projet / "decisions.md", 1)
     if decisions.strip():
-        lignes += ["## Décisions", "", decisions, ""]
+        lignes += ["", "## Décisions", "", decisions]
     if temps:
         par_agent: dict[str, int] = defaultdict(int)
         a_relire = 0
         for ligne in temps:
             par_agent[ligne["agent"]] += ligne["minutes"]
             a_relire += 0 if ligne["valide"] else ligne["minutes"]
-        lignes += ["## Temps passé", ""]
+        lignes += ["", "## Temps passé", ""]
         lignes += [f"- **{agent}** : {heures(minutes / 60)}" for agent, minutes in sorted(par_agent.items())]
-        lignes += [f"- **À relire** : {heures(a_relire / 60)} non validées", ""]
+        lignes.append(f"- **À relire** : {heures(a_relire / 60)} non validées")
     transcripts = sorted(p.name for p in (projet / "transcripts").glob("*.md"))
     chiffrages = sorted(p.name for p in (projet / "devis").glob("chiffrage-*.md"))
     if transcripts or chiffrages:
-        lignes += ["## Fichiers internes", ""]
+        lignes += ["", "## Fichiers internes", ""]
         lignes += [f"- transcripts/{nom}" for nom in transcripts]
         lignes += [f"- devis/{nom}" for nom in chiffrages]
-        lignes.append("")
-    return lignes[:-1] if lignes and lignes[-1] == "" else lignes
+    return lignes
 
 
 def construire_vue(projet: Path, audience: str, aujourd_hui: str) -> str:
@@ -288,17 +358,15 @@ def construire_vue(projet: Path, audience: str, aujourd_hui: str) -> str:
     titres = {"client": "suivi du projet", "commercial": "vue commerciale", "interne": "vue interne"}
     blocs: list[list[str]] = [
         [f"# {client['nom']} : {titres[audience]}", "", f"Document mis à jour le {aujourd_hui}."],
-        section_projet(client, audience),
-        section_liens(client, audience),
-        section_avancement(items, audience, temps),
-        section_backlog(items, audience),
-        section_document("Cadrage", projet / "cadrage.md"),
-        section_syntheses(projet),
+        onglet_accueil(projet, client, items, audience, temps),
+        onglet_backlog(items, audience),
+        onglet_document("Cadrage", projet / "cadrage.md"),
+        onglet_reunions(projet),
     ]
     if voit(audience, "commercial"):
-        blocs.append(section_document("Fiche client", projet / "fiche.md"))
+        blocs.append(onglet_fiche(projet, client, audience))
     if audience == "interne":
-        blocs.append(sections_internes(projet, temps))
+        blocs.append(onglet_suivi_interne(projet, temps))
     return "\n\n".join("\n".join(bloc) for bloc in blocs if bloc) + "\n"
 
 

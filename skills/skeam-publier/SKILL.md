@@ -23,7 +23,18 @@ Lire d'abord `skills/commun.md` dans le clone de skeam-ops, puis CONTRAT.md sect
 
 ## Contenu de la vue
 
-Produit par `skills/skeam-publier/vue.py`, d'après CONTRAT.md section 10 :
+Produit par `skills/skeam-publier/vue.py`, découpé en onglets marqués `<!-- onglet: Nom -->` :
+
+| Onglet | Audience | Contenu |
+|---|---|---|
+| Accueil | toutes | statut, livrables par lot avec items construits et recettés, attendus du client, questions ouvertes, liens ; en interne, prochaines actions et heures estimées et passées |
+| Backlog | toutes | un tableau par lot |
+| Cadrage | toutes | les quatorze sections |
+| Réunions | toutes | une synthèse par réunion, la plus récente en premier |
+| Fiche client | commercial, interne | données du client, contacts, devis, fiche |
+| Suivi interne | interne | actions, décisions, temps, fichiers internes |
+
+Construits : items `a_recetter` ou `fait`. Recettés : items `fait`, seul chiffre du contrat. Le filtrage suit CONTRAT.md section 10 :
 
 | Bloc | client | commercial | interne |
 |---|---|---|---|
@@ -78,10 +89,11 @@ Une question, deux sous-questions :
 
 ### 5. Publier
 
-1. Charger le guide du connecteur Docs Claude avant le premier appel, rubriques index et édition. Le connecteur n'importe pas de fichier texte : le contenu passe dans les appels. Découper la vue par titre de niveau 2, et le backlog par lot.
+1. Charger le guide du connecteur Docs Claude avant le premier appel, rubriques index, édition et onglets. Le connecteur n'importe pas de fichier texte : le contenu passe dans les appels. Un onglet du doc par marqueur `<!-- onglet: Nom -->`, dans l'ordre de la vue, Accueil en premier ; les marqueurs eux-mêmes ne sont pas recopiés.
 2. `liens.docs_<audience>` renseigné : mettre à jour ce document en remplaçant tout son contenu par la vue. Jamais de second document pour la même audience.
-3. Sinon : créer le document avec le titre de la section Sorties, le bandeau date et auteur, une phrase qui dit d'où vient la vue, et un bloc en attente par section. L'ouvrir pour Théo, puis remplacer chaque bloc en attente par sa section, un appel par section, dans l'ordre de lecture.
-4. Ne jamais partager le document, inviter quelqu'un ni changer sa visibilité.
+3. Sinon : créer le document avec tous ses onglets dans le même appel de naissance, chacun avec un bloc en attente ; l'onglet Accueil porte le bandeau date et auteur et une phrase qui dit d'où vient la vue. L'ouvrir pour Théo, puis remplir chaque onglet, un appel par onglet, et pour le Backlog un appel par lot si l'onglet est long.
+4. Mise à jour d'un document existant : remplacer le contenu de chaque onglet par celui de la vue, ajouter les onglets nouveaux, ne jamais supprimer un onglet ajouté à la main par Théo.
+5. Ne jamais partager le document, inviter quelqu'un ni changer sa visibilité.
 
 ### 6. Enregistrer l'URL
 

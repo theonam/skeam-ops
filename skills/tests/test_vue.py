@@ -71,13 +71,28 @@ class VueDemo(unittest.TestCase):
     def test_avancement_selon_le_contrat(self) -> None:
         # Lot 1 : DEMO-003 et DEMO-004 comptés toutes audiences confondues, DEMO-006 exclu car a_valider.
         for audience in ("client", "commercial"):
-            self.assertIn("**Lot 1** : 0 item fait sur 2, soit 0 %", self.vues[audience])
-            self.assertIn("**Lot 0** : 2 items faits sur 2, soit 100 %", self.vues[audience])
+            self.assertIn("| Lot 1 | pointage et export paie | 0 sur 2 | 0 sur 2, soit 0 % |", self.vues[audience])
+            self.assertIn("| Lot 0 | démo, connexion et liste des chantiers | 2 sur 2 | 2 sur 2, soit 100 % |", self.vues[audience])
 
     def test_avancement_interne_compte_les_items_a_valider(self) -> None:
-        # Vue interne, libre selon le contrat : DEMO-006 compté et signalé.
-        self.assertIn("**Lot 1** : 0 item fait sur 3, soit 0 %, dont 1 à valider", self.vues["interne"])
-        self.assertIn("**Lot 0** : 2 items faits sur 2, soit 100 %", self.vues["interne"])
+        # Vue interne, libre selon le contrat : DEMO-006 compté et signalé, estimé et passé affichés.
+        self.assertIn("| Lot 1 | pointage et export paie | 0 sur 3 | 0 sur 3, soit 0 % | 1 | 12 h | 1,25 h |", self.vues["interne"])
+
+    def test_onglets_selon_l_audience(self) -> None:
+        communs = ["<!-- onglet: Accueil -->", "<!-- onglet: Backlog -->", "<!-- onglet: Cadrage -->", "<!-- onglet: Réunions -->"]
+        for audience in vue.AUDIENCES:
+            for marqueur in communs:
+                self.assertIn(marqueur, self.vues[audience])
+        self.assertNotIn("<!-- onglet: Fiche client -->", self.vues["client"])
+        self.assertIn("<!-- onglet: Fiche client -->", self.vues["commercial"])
+        self.assertNotIn("<!-- onglet: Suivi interne -->", self.vues["commercial"])
+        self.assertIn("<!-- onglet: Suivi interne -->", self.vues["interne"])
+
+    def test_accueil_interne_liste_les_prochaines_actions(self) -> None:
+        accueil = self.vues["interne"].split("<!-- onglet: Backlog -->")[0]
+        self.assertIn("## Prochaines actions", accueil)
+        self.assertIn("ACT-DEMO-001", accueil)
+        self.assertNotIn("Prochaines actions", self.vues["commercial"])
 
 
 class VueCopie(unittest.TestCase):
