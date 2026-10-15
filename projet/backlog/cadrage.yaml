@@ -14,7 +14,7 @@ items:
       - La commande crée le projet et la section Todoist après confirmation de Théo et renseigne client.yaml todoist.
     audience: interne
     a_valider: false
-    commit: d18a75a
+    commit: fa09a7a
     maj: 2026-10-15
   - id: OPS-302
     titre: Commande /skeam-import-transcript
@@ -32,7 +32,7 @@ items:
       - Le dossier projet passe scripts/validate.py après import.
     audience: interne
     a_valider: false
-    commit: 919d1ad
+    commit: 0076e3f
     maj: 2026-10-15
   - id: OPS-303
     titre: Commande /skeam-cadrage
@@ -49,7 +49,7 @@ items:
       - Les items créés sans accord de Théo portent a_valider true et audience interne.
     audience: interne
     a_valider: false
-    commit: 6930c37
+    commit: c8f0152
     maj: 2026-10-15
   - id: OPS-304
     titre: Commande /skeam-chiffrage
@@ -83,7 +83,7 @@ items:
       - todoist_id et statut sont reportés dans actions.yaml ; une seconde synchronisation ne crée aucun doublon.
     audience: interne
     a_valider: false
-    commit: dd09982
+    commit: 7fb7336
     maj: 2026-10-15
   - id: OPS-306
     titre: Commande /skeam-publier
@@ -101,7 +101,7 @@ items:
       - Le document est publié en doc Claude après validation de Théo et son URL est écrite dans client.yaml liens.
     audience: interne
     a_valider: false
-    commit: "9032265"
+    commit: 1121e09
     maj: 2026-10-15
     notes: Demandée par Théo dans la consigne du chantier cadrage ; CONTRAT.md section 11.7 la range au chantier dashboard, voir skills/PROPOSITIONS-CONTRAT.md.
   - id: OPS-307
@@ -123,3 +123,21 @@ items:
     commit: null
     maj: 2026-10-15
     notes: Besoin découvert pendant OPS-306, voir skills/PROPOSITIONS-CONTRAT.md, entrée Script de vue par audience.
+  - id: OPS-308
+    titre: Backlog en tableau par lot dans la vue publiée
+    module: null
+    lot: 2
+    priorite: souhaitable
+    statut: a_faire
+    taille: S
+    estimation_h: 2
+    dependances:
+      - OPS-306
+    criteres_acceptation:
+      - Le backlog de la vue publiée tient en un tableau par lot, une ligne par item, avec les critères en dessous ou dans une colonne.
+      - test_vue.py vérifie toujours le filtrage par audience.
+    audience: interne
+    a_valider: true
+    commit: null
+    maj: 2026-10-15
+    notes: Besoin découvert au test réel sur E G M, 46 items publiés en fiches une par une, document long à lire et à remplir.
