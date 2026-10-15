@@ -65,7 +65,9 @@ Un item hors catalogue, `module: null`, ou sur un module absent du catalogue, es
 
 **Prix conseillé d'une ligne** : somme, sur ses items, des heures probables multipliées par 1 plus la marge de sécurité de la taille de l'item, multipliées par le taux horaire cible ; arrondi au multiple de 50 euros supérieur.
 
-**Lignes du devis** : une ligne forfaitaire par lot pour les items `indispensable` et `souhaitable`, et une ligne `Options du lot n` pour les items `optionnel`, que le client peut retirer. Titre : `Lot n : ` suivi du libellé du lot lu dans `cadrage.md`, section Découpage en lots. Description : titres des items d'audience `client`, les autres sont chiffrés sans être nommés. Typographie du contrat 2.3 appliquée. TVA 20 %.
+**Lignes du devis** : une ligne forfaitaire par lot pour les items `indispensable` et `souhaitable`, et une ligne `Options du lot n` pour les items `optionnel`, que le client peut retirer. Titre : `Lot n : ` suivi du libellé du lot lu dans `cadrage.md`, section Découpage en lots. Description : la liste des fonctionnalités, une par ligne, titres des items d'audience `client` ; les autres sont chiffrés sans être nommés. Typographie du contrat 2.3 appliquée. TVA 20 %.
+
+**Ordre des fonctionnalités** : règle de Théo, le devis liste les fonctionnalités de la plus importante pour le client, telle qu'elle ressort du transcript, à la moins importante. Le contrat n'ayant pas de champ pour cette importance, l'ordre suit la priorité de l'item, `indispensable` puis `souhaitable` puis `optionnel`, puis, à priorité égale, l'ordre des items dans le backlog. C'est donc à la rédaction du backlog, `/cadrage`, d'écrire les items dans l'ordre d'importance exprimé par le client. Voir `PROPOSITIONS-CONTRAT.md` pour un champ explicite.
 
 **Plancher** : si le total des lignes hors options est sous `plancher_ht`, ces lignes sont relevées au prorata puis arrondies.
 

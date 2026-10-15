@@ -75,6 +75,44 @@ class TestChiffrer(BaseTemporaire):
             self.assertNotIn(titre, descriptions)
         self.assertIn("Relance des impayés", descriptions)
 
+    def test_fonctionnalites_par_importance_pour_le_client(self):
+        self.chiffrer()
+        donnees, md = self.lire()
+        # Lot 1 : FICTIF-003 indispensable, puis FICTIF-004 et FICTIF-006 souhaitables dans l'ordre du backlog.
+        self.assertEqual(
+            donnees["lignes"][1]["description"],
+            "- Création et envoi des devis\n- Transformation du devis en facture\n- Relance des impayés",
+        )
+        self.assertIn("- Création et envoi des devis<br>- Transformation du devis en facture<br>- Relance des impayés", md)
+        self.assertIn("de la plus importante pour le client", md)
+
+    def test_priorite_avant_ordre_du_backlog(self):
+        backlog = self.projet / "backlog" / "backlog.yaml"
+        texte = backlog.read_text(encoding="utf-8")
+        debut = texte.index("  - id: FICTIF-006")
+        texte = texte[:debut] + texte[debut:].replace("priorite: souhaitable", "priorite: indispensable", 1)
+        backlog.write_text(texte, encoding="utf-8")
+        self.chiffrer()
+        donnees, _ = self.lire()
+        self.assertEqual(
+            donnees["lignes"][1]["description"].split("\n"),
+            ["- Création et envoi des devis", "- Relance des impayés", "- Transformation du devis en facture"],
+        )
+
+    def test_ordre_du_backlog_a_priorite_egale(self):
+        backlog = self.projet / "backlog" / "backlog.yaml"
+        texte = backlog.read_text(encoding="utf-8")
+        debut, milieu, fin = texte.index("  - id: FICTIF-004"), texte.index("  - id: FICTIF-005"), texte.index("  - id: FICTIF-006")
+        suite = texte.index("  - id: FICTIF-007")
+        texte = texte[:debut] + texte[fin:suite] + texte[milieu:fin] + texte[debut:milieu] + texte[suite:]
+        backlog.write_text(texte, encoding="utf-8")
+        self.chiffrer()
+        donnees, _ = self.lire()
+        self.assertEqual(
+            donnees["lignes"][1]["description"].split("\n"),
+            ["- Création et envoi des devis", "- Relance des impayés", "- Transformation du devis en facture"],
+        )
+
     def test_reproductible(self):
         autre = self.tmp / "autre"
         self.chiffrer()

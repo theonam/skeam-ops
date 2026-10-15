@@ -36,3 +36,10 @@ Format : CONTRAT.md section 14. Décisions réservées à Théo.
 - **Proposition** : en 11, ajouter : « Exception : `temps.py` écrit une ligne dès que `client.yaml`, `backlog/` et `temps/` sont valides ; il signale les autres erreurs sans s'arrêter. »
 - **Hypothèse retenue en attendant** : application stricte. `temps.py` refuse d'écrire dans un projet invalide, code 1, avec la liste des erreurs à corriger.
 - **Impact** : CONTRAT.md 11 ; `temps.py`.
+
+## 2026-10-15 Importance des fonctionnalités pour le client
+
+- **Besoin** : règle de rédaction de Théo : le devis liste les fonctionnalités souhaitées par le client de la plus importante à la moins importante pour lui, telle que l'importance ressort du transcript. `priorite` n'a que trois valeurs et aucun champ d'item ne porte ce classement ; `chiffrer.py` ne lit pas les transcripts et n'a pas à les interpréter.
+- **Proposition** : en 5, ajouter un champ facultatif `rang_client`, entier strictement positif ou null : rang de la fonctionnalité dans les attentes du client, 1 la plus importante, fixé par `/cadrage` à partir des transcripts et des synthèses. Audience interne. `chiffrer.py` trie alors chaque ligne de devis par `rang_client`, puis par priorité. Dans `skills/cadrage/`, demander d'attribuer ce rang en citant le transcript source.
+- **Hypothèse retenue en attendant** : `chiffrer.py` trie par priorité, puis par ordre des items dans le backlog. `/cadrage` et Théo écrivent les items dans l'ordre d'importance pour le client ; le chiffrage `.md` rappelle de vérifier cet ordre au regard du transcript.
+- **Impact** : CONTRAT.md 5 et 10, `schemas/backlog.schema.json` ; `skills/cadrage/`, chantier cadrage ; `chiffrer.py`.

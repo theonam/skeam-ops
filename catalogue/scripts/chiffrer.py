@@ -29,6 +29,9 @@ import methode  # noqa: E402
 from methode import ErreurDonnees, contrat, validate  # noqa: E402
 
 RE_LOT_CADRAGE = re.compile(r"^- \*\*Lot ([0-9]+)\*\* : (\S.*)$")
+# Ordre des fonctionnalités dans une ligne de devis : de la plus importante pour le client à la moins importante.
+# Priorité d'abord ; à priorité égale, ordre du backlog, que /cadrage écrit selon l'importance exprimée dans le transcript.
+RANG_PRIORITE = {"indispensable": 0, "souhaitable": 1, "optionnel": 2}
 
 
 @dataclass
@@ -137,8 +140,9 @@ def composer_lignes(chiffres: list[Chiffre], libelles: dict[int, str], tarifs: d
             ligne.titre = f"Options du lot {ligne.lot}"
         else:
             ligne.titre = f"Lot {ligne.lot} : {libelle}" if libelle else f"Lot {ligne.lot}"
+        ligne.chiffres.sort(key=lambda c: RANG_PRIORITE[c.item["priorite"]])
         visibles = [methode.nettoyer_typo(c.item["titre"]).rstrip(" .") for c in ligne.chiffres if c.item["audience"] == "client"]
-        ligne.description = ". ".join(visibles) + "." if visibles else ""
+        ligne.description = "\n".join(f"- {titre}" for titre in visibles)
         ligne.prix = methode.arrondi_sup(ligne.somme("brut"))
 
     fermes = [ligne for ligne in resultat if not ligne.options] or resultat
@@ -245,10 +249,12 @@ def rendre_markdown(
     md += ["", "## Lignes du devis", "", f"Objet : {donnees['objet']}", ""]
     md += tableau(
         ["Titre", "Description", "Quantité", "Unité", "Prix unitaire HT", "TVA"],
-        [[l["titre"], l["description"] or "", methode.texte_nombre(l["quantite"]), l["unite"],
+        [[l["titre"], l["description"].replace("\n", "<br>"), methode.texte_nombre(l["quantite"]), l["unite"],
           methode.fr(l["prix_unitaire_ht"], 2), methode.pourcentage(l["tva"])] for l in donnees["lignes"]],
     )
-    md += ["", f"Total HT : {methode.fr(total, 2)} euros. Relire titres et descriptions avant de créer le brouillon Dougs."]
+    md += ["", f"Total HT : {methode.fr(total, 2)} euros. Relire titres et descriptions avant de créer le brouillon Dougs.",
+           "", "Dans chaque ligne, fonctionnalités listées de la plus importante pour le client à la moins importante : "
+           "priorité de l'item, puis ordre du backlog. Vérifier cet ordre au regard du transcript."]
 
     md += ["", "## Détail par lot et par module", ""]
     for ligne in lignes:

@@ -138,3 +138,21 @@ items:
     commit: 5b0366e
     maj: 2026-10-15
     notes: Demandé par Théo le 2026-10-15 dans la consigne du chantier catalogue.
+  - id: OPS-209
+    titre: Fonctionnalités du devis listées par importance pour le client
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: en_cours
+    taille: S
+    estimation_h: 1
+    dependances:
+      - OPS-203
+    criteres_acceptation:
+      - Chaque ligne du devis liste ses fonctionnalités une par ligne, de la plus importante pour le client à la moins importante.
+      - L'ordre suit la priorité de l'item puis l'ordre du backlog, en attendant un champ dédié proposé dans catalogue/PROPOSITIONS-CONTRAT.md.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15
+    notes: Règle de rédaction des devis donnée par Théo le 2026-10-15. L'ordre d'importance tiré du transcript relève de /cadrage, chantier cadrage.
