@@ -45,11 +45,24 @@ Un backlog repris d'un document sans heures : `estimation_h` provisoire déduite
 
 Étape 0 et identification du client, `skills/commun.md` sections 1 et 2. Mode **création** si `cadrage.md` n'a encore aucun contenu sous ses titres, mode **mise à jour** sinon.
 
-### 2. Construire le registre des faits
+### 2. Relever l'avancement réel du développement
+
+Les statuts du backlog doivent refléter le code, pas seulement les réunions. Si le dépôt client contient un état d'avancement tenu par l'agent de développement, `docs/AUDIT.md` ou un fichier que Théo désigne, le lire et proposer pour chaque item concerné :
+
+| L'état dit | Statut proposé |
+|---|---|
+| fait, testé | `a_recetter` : le code est livré, Théo n'a pas encore recetté |
+| partiel, construit mais à essayer sur les appareils du client ou en attente d'un élément du client | `a_recetter`, avec ce qui manque en `notes` |
+| partiel, une partie du besoin reste à coder | `en_cours` |
+| à faire, ou absent | inchangé |
+
+Jamais `fait` ni `abandonne` : ce sont les décisions de Théo. Présenter un tableau item, statut actuel, statut proposé, ligne de l'état qui le justifie, puis valider par groupe. Un hash de commit cité dans l'état va dans `commit`. La note de l'item cite la source : `Statut d'après docs/AUDIT.md du AAAA-MM-JJ, ligne D5.`
+
+### 3. Construire le registre des faits
 
 Pour chaque source, extraire les affirmations utiles au cadrage, chacune avec sa source précise : chemin et horodatage, ou chemin et titre d'entrée de décision. Les regrouper par sujet : profil, processus, objet métier, règle, exigence, donnée, intégration, lot, attendu du client.
 
-### 3. Détecter les contradictions
+### 4. Détecter les contradictions
 
 Il y a contradiction quand deux sources donnent sur un même sujet des valeurs incompatibles : un plafond, un délai, un périmètre de lot, un droit, un format. Pour chacune :
 
@@ -59,24 +72,24 @@ Il y a contradiction quand deux sources donnent sur un même sujet des valeurs i
 
 Une évolution explicitement décidée, par exemple une décision qui dit remplacer l'ancienne règle, n'est pas une contradiction : elle se traite comme une mise à jour, en citant la décision.
 
-### 4. Rédiger la proposition de cadrage
+### 5. Rédiger la proposition de cadrage
 
 Pour chacune des quatorze sections, dans l'ordre imposé :
 
 - **Objet et statut** : objet, numéro de version incrémenté, date du jour, statut visé.
 - **Règles de gestion** : `- **RGn** : énoncé`. Les numéros existants sont conservés. Une nouvelle règle prend le numéro suivant. Une règle retirée garde son numéro avec l'énoncé `abrogée`. Jamais de renumérotation, car les critères d'acceptation citent ces numéros.
 - **Décisions** : résumé des décisions de `decisions.md` utiles au client, sans raison interne.
-- **Questions ouvertes** : contradictions de l'étape 3 et tout ce qui n'a pas de source.
+- **Questions ouvertes** : contradictions de l'étape 4 et tout ce qui n'a pas de source.
 - **Sources** : un chemin par ligne, toutes les synthèses utilisées.
 - Autres sections : uniquement des faits du registre. Une section sans fait reste vide ou porte `À préciser.`
 
 Rédaction pour le client : ni tiret cadratin, ni parenthèse, ni estimation, ni prix, ni nom d'outil interne. Chaque paragraphe ou puce se termine par sa source en commentaire HTML : `<!-- syntheses/2026-10-08-lancement.md 00:12:30 -->`.
 
-### 5. Arbitrage du cadrage, section par section
+### 6. Arbitrage du cadrage, section par section
 
 Pour chaque section qui change, montrer l'avant et l'après, puis demander `Accepter`, `Modifier`, `Rejeter`, quatre sections par question. Les sections inchangées ne sont pas présentées.
 
-### 6. Proposer le backlog
+### 7. Proposer le backlog
 
 Comparer le cadrage accepté au backlog :
 
@@ -89,21 +102,21 @@ Comparer le cadrage accepté au backlog :
 
 Les champs `statut`, `commit` et `maj` d'un item existant ne sont jamais modifiés par cette commande, sauf `maj` qui suit toute modification acceptée.
 
-### 7. Valider les items en attente
+### 8. Valider les items en attente
 
-Lister les items `a_valider: true`, y compris ceux ajoutés à l'étape 6, avec titre, lot, critères et source. Pour chacun :
+Lister les items `a_valider: true`, y compris ceux ajoutés à l'étape 7, avec titre, lot, critères et source. Pour chacun :
 
 1. `Valider`, `Laisser en attente`, `Abandonner`.
 2. `Valider` : demander l'audience, `client`, `commercial` ou `interne`, puis écrire `a_valider: false` et l'audience. Si l'audience est `client`, vérifier titre et critères : ni tiret cadratin ni parenthèse.
 3. `Abandonner` : `statut: abandonne`, sur choix explicite de Théo uniquement.
 
-### 8. Appliquer et valider
+### 9. Appliquer et valider
 
 1. Écrire `cadrage.md` et le backlog pour les seuls éléments acceptés.
 2. Proposer, si le statut client est `prospect`, le passage à `cadrage` et `dates.cadrage` du jour : `Valider`, `Annuler`. Si accepté, reporter aussi le statut dans `clients.yaml` de skeam-ops, par un commit distinct sur skeam-ops, comme à l'étape 8 de `/skeam-nouveau-client`.
 3. `python3 scripts/validate.py ../<nom>/projet`, puis traiter chaque avertissement de règle citée absente.
 
-### 9. Committer et rendre compte
+### 10. Committer et rendre compte
 
 Question de commit, message `projet: skeam-cadrage version <n>`. Compte rendu selon `skills/commun.md` section 8, avec la liste des contradictions restées ouvertes. Suggérer `/skeam-chiffrage` si le backlog est stable, `/skeam-publier` si le cadrage doit être relu.
 
