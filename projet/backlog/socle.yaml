@@ -5,7 +5,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: en_cours
+    statut: a_recetter
     taille: L
     estimation_h: 12
     dependances: []
@@ -15,14 +15,14 @@ items:
       - Le choix de pile technique est documenté dans socle/README.md.
     audience: interne
     a_valider: false
-    commit: null
+    commit: "9844693"
     maj: 2026-10-15
   - id: OPS-102
     titre: Comptes, profils et droits génériques
     module: null
     lot: 1
     priorite: indispensable
-    statut: en_cours
+    statut: a_recetter
     taille: M
     estimation_h: 8
     dependances:
@@ -32,14 +32,14 @@ items:
       - Un utilisateur ne voit que ce que son profil autorise.
     audience: interne
     a_valider: false
-    commit: null
+    commit: "9844693"
     maj: 2026-10-15
   - id: OPS-103
     titre: Script socle/scripts/init_app.sh
     module: null
     lot: 1
     priorite: indispensable
-    statut: en_cours
+    statut: a_recetter
     taille: M
     estimation_h: 4
     dependances:
@@ -50,14 +50,14 @@ items:
       - Le CLAUDE.md racine produit contient la ligne @projet/CLAUDE-projet.md.
     audience: interne
     a_valider: false
-    commit: null
+    commit: "9844693"
     maj: 2026-10-15
   - id: OPS-104
     titre: Déploiement des environnements démo et production
     module: null
     lot: 1
     priorite: souhaitable
-    statut: en_cours
+    statut: a_recetter
     taille: M
     estimation_h: 5
     dependances:
@@ -67,7 +67,7 @@ items:
       - Les URL obtenues se reportent dans liens.demo et liens.prod de client.yaml.
     audience: interne
     a_valider: false
-    commit: null
+    commit: "9844693"
     maj: 2026-10-15
   - id: OPS-105
     titre: Modules socle réutilisables alignés sur le catalogue
@@ -111,7 +111,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: en_cours
+    statut: a_recetter
     taille: S
     estimation_h: 5
     dependances:
@@ -123,7 +123,7 @@ items:
       - Les tests sur base réelle utilisent une base propre à chaque lancement.
     audience: interne
     a_valider: false
-    commit: null
+    commit: "9844693"
     maj: 2026-10-15
     notes: Demandé par Théo, brief du chantier socle du 2026-10-15.
   - id: OPS-108
@@ -131,7 +131,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: en_cours
+    statut: a_recetter
     taille: S
     estimation_h: 4
     dependances:
@@ -141,7 +141,7 @@ items:
       - La TVA est calculée par taux sur la base HT cumulée de ce taux.
     audience: interne
     a_valider: false
-    commit: null
+    commit: "9844693"
     maj: 2026-10-15
     notes: Demandé par Théo, brief du chantier socle du 2026-10-15.
   - id: OPS-109
@@ -149,7 +149,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: en_cours
+    statut: a_recetter
     taille: M
     estimation_h: 6
     dependances:
@@ -160,7 +160,7 @@ items:
       - Le PDF d'un document émis est archivé une seule fois et toujours resservi à l'identique, même sur demandes simultanées.
     audience: interne
     a_valider: false
-    commit: null
+    commit: "9844693"
     maj: 2026-10-15
     notes: Demandé par Théo, brief du chantier socle du 2026-10-15.
   - id: OPS-110
@@ -168,7 +168,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: en_cours
+    statut: a_recetter
     taille: M
     estimation_h: 5
     dependances:
@@ -179,7 +179,7 @@ items:
       - Toute liste s'exporte en xlsx.
     audience: interne
     a_valider: false
-    commit: null
+    commit: "9844693"
     maj: 2026-10-15
     notes: Demandé par Théo, brief du chantier socle du 2026-10-15.
   - id: OPS-111
@@ -187,7 +187,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: en_cours
+    statut: a_recetter
     taille: S
     estimation_h: 4
     dependances:
@@ -197,7 +197,7 @@ items:
       - Chaque colonne se filtre et se trie ; les filtres se combinent.
     audience: interne
     a_valider: false
-    commit: null
+    commit: "9844693"
     maj: 2026-10-15
     notes: Demandé par Théo, brief du chantier socle du 2026-10-15.
   - id: OPS-112
@@ -205,7 +205,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: en_cours
+    statut: a_recetter
     taille: M
     estimation_h: 6
     dependances:
@@ -215,7 +215,7 @@ items:
       - Un croquis au stylet se trace sur une photo ou une page blanche et reste modifiable.
     audience: interne
     a_valider: false
-    commit: null
+    commit: "9844693"
     maj: 2026-10-15
     notes: Demandé par Théo, brief du chantier socle du 2026-10-15.
   - id: OPS-113
@@ -223,7 +223,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: en_cours
+    statut: a_recetter
     taille: XS
     estimation_h: 2
     dependances:
@@ -232,7 +232,7 @@ items:
       - L'application produit un brouillon .eml prêt à envoyer dans Outlook, PDF joint, et trace l'envoi.
     audience: interne
     a_valider: false
-    commit: null
+    commit: "9844693"
     maj: 2026-10-15
     notes: Demandé par Théo, brief du chantier socle du 2026-10-15.
   - id: OPS-114
@@ -240,7 +240,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: en_cours
+    statut: a_recetter
     taille: M
     estimation_h: 5
     dependances:
@@ -251,7 +251,7 @@ items:
       - L'effacement ne remet jamais à zéro les compteurs de documents légaux hors édition démo.
     audience: interne
     a_valider: false
-    commit: null
+    commit: "9844693"
     maj: 2026-10-15
     notes: Demandé par Théo, brief du chantier socle du 2026-10-15.
   - id: OPS-115
@@ -259,7 +259,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: en_cours
+    statut: a_recetter
     taille: S
     estimation_h: 3
     dependances:
@@ -269,7 +269,7 @@ items:
       - Un script efface les données métier en gardant les comptes.
     audience: interne
     a_valider: false
-    commit: null
+    commit: "9844693"
     maj: 2026-10-15
     notes: Demandé par Théo, brief du chantier socle du 2026-10-15.
   - id: OPS-116
@@ -277,7 +277,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: en_cours
+    statut: a_recetter
     taille: XS
     estimation_h: 2
     dependances:
@@ -287,6 +287,6 @@ items:
       - socle/REPORTS-EGM.md liste les corrections du socle à reporter dans egm-app après la démo.
     audience: interne
     a_valider: false
-    commit: null
+    commit: "9844693"
     maj: 2026-10-15
     notes: Demandé par Théo, brief du chantier socle du 2026-10-15.
