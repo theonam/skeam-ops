@@ -14,7 +14,7 @@ modules:
     heures_max: 8
     confiance: faible
     mesures: []
-    prix_conseille_ht: 450
+    prix_conseille_ht: 650
   - code: numerotation-legale
     nom: Numérotation légale
     description: Numérotation continue et sans trou des devis, factures et avoirs, par type et par exercice, attribuée à la validation et verrouillée.
@@ -23,7 +23,7 @@ modules:
     heures_max: 4
     confiance: faible
     mesures: []
-    prix_conseille_ht: 250
+    prix_conseille_ht: 350
   - code: pdf
     nom: Génération PDF
     description: Moteur de génération PDF et charte commune des documents, en-tête, pied de page, mentions légales, pagination et logo.
@@ -32,7 +32,7 @@ modules:
     heures_max: 8
     confiance: faible
     mesures: []
-    prix_conseille_ht: 450
+    prix_conseille_ht: 650
   - code: import-export-excel
     nom: Import et export Excel
     description: Export Excel des listes et import de fichiers Excel avec correspondance des colonnes, contrôle ligne à ligne et rapport d'erreurs.
@@ -41,7 +41,7 @@ modules:
     heures_max: 10
     confiance: faible
     mesures: []
-    prix_conseille_ht: 600
+    prix_conseille_ht: 850
   - code: listes-filtres
     nom: Listes et filtres
     description: Listes paginées avec tri, recherche plein texte, filtres combinés, vues enregistrées et affichage adapté au téléphone.
@@ -50,7 +50,7 @@ modules:
     heures_max: 6
     confiance: faible
     mesures: []
-    prix_conseille_ht: 400
+    prix_conseille_ht: 550
   - code: glisser-deposer
     nom: Glisser-déposer
     description: Réordonnancement et affectation par glisser-déposer sur ordinateur et au doigt sur tablette, avec enregistrement immédiat.
@@ -59,7 +59,7 @@ modules:
     heures_max: 5
     confiance: faible
     mesures: []
-    prix_conseille_ht: 300
+    prix_conseille_ht: 450
   - code: croquis
     nom: Croquis
     description: Dessin à main levée sur fond vierge ou sur photo, formes simples, cotes et texte, enregistré en image rattachée à un objet.
@@ -68,7 +68,7 @@ modules:
     heures_max: 10
     confiance: faible
     mesures: []
-    prix_conseille_ht: 600
+    prix_conseille_ht: 850
   - code: app-installable
     nom: Application installable
     description: Application web installable sur téléphone, tablette et ordinateur, icônes, écran de démarrage, mise à jour et consultation sans réseau des écrans déjà ouverts.
@@ -77,7 +77,7 @@ modules:
     heures_max: 5
     confiance: faible
     mesures: []
-    prix_conseille_ht: 300
+    prix_conseille_ht: 450
   - code: mails-outlook
     nom: Mails Outlook
     description: Envoi de courriels depuis la messagerie Microsoft 365 du client avec pièces jointes, modèles de message et historique des envois.
@@ -86,7 +86,7 @@ modules:
     heures_max: 10
     confiance: faible
     mesures: []
-    prix_conseille_ht: 600
+    prix_conseille_ht: 850
   - code: donnees-demo
     nom: Données de démo
     description: Jeu de données fictives réalistes pour la démo et la recette, rechargeable par une commande.
@@ -95,7 +95,7 @@ modules:
     heures_max: 4
     confiance: faible
     mesures: []
-    prix_conseille_ht: 250
+    prix_conseille_ht: 350
   # Modules métier vus chez E G M
   - code: referentiels
     nom: Référentiels clients et prestations
@@ -105,7 +105,7 @@ modules:
     heures_max: 10
     confiance: faible
     mesures: []
-    prix_conseille_ht: 650
+    prix_conseille_ht: 900
   - code: demandes-devis
     nom: Demandes de devis
     description: Enregistrement des demandes entrantes, qualification, affectation, relance et transformation en devis.
@@ -114,7 +114,7 @@ modules:
     heures_max: 7
     confiance: faible
     mesures: []
-    prix_conseille_ht: 450
+    prix_conseille_ht: 600
   - code: devis
     nom: Devis
     description: Devis à lignes et sections, quantités, remises, TVA multi-taux, totaux, versions, statuts, PDF, envoi et transformation en commande.
@@ -123,7 +123,7 @@ modules:
     heures_max: 20
     confiance: faible
     mesures: []
-    prix_conseille_ht: 1400
+    prix_conseille_ht: 1950
   - code: commandes-clients
     nom: Commandes clients
     description: Commandes issues d'un devis ou d'un bon de commande client, référence client, statut, avancement et rattachement aux interventions.
@@ -132,7 +132,7 @@ modules:
     heures_max: 10
     confiance: faible
     mesures: []
-    prix_conseille_ht: 650
+    prix_conseille_ht: 900
   - code: lecture-commandes-ia
     nom: Lecture de commandes PDF par IA
     description: Extraction par IA des champs d'un bon de commande PDF, rapprochement avec clients et prestations, écran de vérification avant création de la commande.
@@ -141,7 +141,7 @@ modules:
     heures_max: 18
     confiance: faible
     mesures: []
-    prix_conseille_ht: 1200
+    prix_conseille_ht: 1700
   - code: bons-intervention
     nom: Bons d'intervention
     description: Bons d'intervention créés depuis une commande, affectés à une équipe, suivis par statut, avec PDF signé.
@@ -150,7 +150,7 @@ modules:
     heures_max: 12
     confiance: faible
     mesures: []
-    prix_conseille_ht: 800
+    prix_conseille_ht: 1100
   - code: planning-equipes
     nom: Planning des équipes
     description: Planning par jour et par semaine des équipes et des interventions, affectation par glisser-déposer, absences et conflits signalés.
@@ -159,7 +159,7 @@ modules:
     heures_max: 24
     confiance: faible
     mesures: []
-    prix_conseille_ht: 1650
+    prix_conseille_ht: 2350
   - code: app-terrain
     nom: App terrain avec photos, croquis et signature
     description: Écrans mobiles des techniciens, interventions du jour, compte rendu, photos compressées, croquis et signature du client sur place.
@@ -168,7 +168,7 @@ modules:
     heures_max: 20
     confiance: faible
     mesures: []
-    prix_conseille_ht: 1400
+    prix_conseille_ht: 1950
   - code: facturation-simple
     nom: Facturation simple
     description: Factures et avoirs depuis une commande ou un bon d'intervention, mentions légales, acomptes, PDF, envoi et export comptable.
@@ -177,7 +177,7 @@ modules:
     heures_max: 14
     confiance: faible
     mesures: []
-    prix_conseille_ht: 950
+    prix_conseille_ht: 1350
   - code: facturation-electronique
     nom: Facturation électronique
     description: Émission et réception des factures électroniques au format Factur-X via une plateforme agréée, dépôt sur Chorus Pro pour les clients publics, suivi des statuts.
@@ -186,7 +186,7 @@ modules:
     heures_max: 36
     confiance: faible
     mesures: []
-    prix_conseille_ht: 2550
+    prix_conseille_ht: 3650
   - code: situations-travaux
     nom: Situations de travaux
     description: Situations mensuelles par avancement des lignes du marché, cumul, déduction des situations précédentes et des acomptes, PDF et facture de situation.
@@ -195,7 +195,7 @@ modules:
     heures_max: 20
     confiance: faible
     mesures: []
-    prix_conseille_ht: 1400
+    prix_conseille_ht: 1950
   - code: retenue-garantie
     nom: Retenue de garantie
     description: Retenue de garantie de 5 % sur situations et factures, caution bancaire en remplacement, échéance de libération et relance.
@@ -204,7 +204,7 @@ modules:
     heures_max: 6
     confiance: faible
     mesures: []
-    prix_conseille_ht: 400
+    prix_conseille_ht: 550
   - code: suivi-paiements
     nom: Suivi des paiements
     description: Échéances, encaissements partiels ou complets, retards, relances et état des impayés par client.
@@ -213,7 +213,7 @@ modules:
     heures_max: 10
     confiance: faible
     mesures: []
-    prix_conseille_ht: 650
+    prix_conseille_ht: 900
   - code: commandes-fournisseurs
     nom: Commandes fournisseurs
     description: Fournisseurs, commandes rattachées à un chantier ou une commande client, PDF, envoi, réception totale ou partielle.
@@ -222,7 +222,7 @@ modules:
     heures_max: 12
     confiance: faible
     mesures: []
-    prix_conseille_ht: 800
+    prix_conseille_ht: 1100
   - code: tableau-de-bord
     nom: Tableau de bord
     description: Indicateurs de pilotage, chiffre d'affaires, carnet de commandes, devis en cours et taux de transformation, impayés, avec graphiques et filtres de période.
@@ -231,7 +231,7 @@ modules:
     heures_max: 10
     confiance: faible
     mesures: []
-    prix_conseille_ht: 650
+    prix_conseille_ht: 900
   - code: reprise-donnees
     nom: Reprise de données
     description: Reprise des données existantes d'une source, analyse, nettoyage, script d'import rejouable, contrôle des volumes et recette avec le client.
@@ -240,4 +240,4 @@ modules:
     heures_max: 12
     confiance: faible
     mesures: []
-    prix_conseille_ht: 700
+    prix_conseille_ht: 1000

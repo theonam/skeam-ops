@@ -12,7 +12,7 @@ Audience interne. Justification des fourchettes de `modules.yaml`, graine du 202
 - **Application connectée** : les écrans supposent un réseau disponible, avec reprise sur erreur. Un vrai fonctionnement hors ligne avec synchronisation et résolution de conflits n'est dans aucun module ; il se chiffre à part, au moins 15 à 30 heures.
 - **Hors catalogue** : hébergement, maintenance et run, formation, achats de licences ou d'API, coût des appels IA. Ils se vendent sur des lignes à part.
 - **Taille** : `taille_type` découle du milieu de la fourchette ; XS jusqu'à 3 heures, S jusqu'à 6, M jusqu'à 12, L jusqu'à 24, XL au-delà. Cette règle est vérifiée par `tests/test_catalogue.py`.
-- **Ordre de grandeur** : la somme des milieux de fourchette des 26 modules fait 228 heures, environ 20 500 euros HT au taux de 70 euros avec marges. C'est le coût d'un outil de gestion complet du type E G M, socle compris ; un premier lot réaliste en prend un tiers à la moitié.
+- **Ordre de grandeur** : la somme des milieux de fourchette des 26 modules fait 228 heures, environ 28 850 euros HT au taux de 100 euros avec marges. Contrôle sur l'offre E G M : les 21 modules de l'outil vendu 24 000 euros HT font 184,5 heures, que le catalogue rechiffre à 23 800 euros formation comprise. Les quatre options E G M, vendues de 2 500 à 3 500 euros, sortent du catalogue entre 900 et 2 500 euros : une option se vend à sa valeur, avec un minimum, et non à ses heures.
 
 ## Modules du socle
 

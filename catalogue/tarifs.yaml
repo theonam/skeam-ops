@@ -1,7 +1,11 @@
 # Tarifs SKEAM. Format : CONTRAT.md section 8.2. Audience interne uniquement.
-# Valeurs proposées le 2026-10-15, arrêtées et modifiables par Théo.
-# Après modification, relancer calibrer.py --recalculer pour mettre à jour prix_conseille_ht.
-taux_horaire_cible: 70
+# Valeurs du 2026-10-15, calées sur l'offre E G M, jugée alignée sur le marché avec une bonne marge.
+# Modifiables par Théo ; après modification, relancer calibrer.py --recalculer pour mettre à jour prix_conseille_ht.
+#
+# Prix par heure de développement estimée au catalogue. Il couvre aussi le temps hors item :
+# réunions, gestion de projet, formation. Repère : l'outil E G M à 24 000 € HT pour environ 185 heures
+# de catalogue, marges comprises, donne 101 € de l'heure ; ce taux le rechiffre à 23 800 €.
+taux_horaire_cible: 100
 # Fraction ajoutée aux heures probables d'un item selon sa taille : 0.2 signifie plus 20 %.
 # Croît avec la taille : plus un item est gros, plus l'incertitude et la recette pèsent.
 marge_securite:
@@ -10,5 +14,5 @@ marge_securite:
   M: 0.2
   L: 0.3
   XL: 0.4
-# Montant HT minimal d'un chiffrage complet : couvre cadrage, devis et mise en route.
-plancher_ht: 1500
+# Montant HT minimal d'un chiffrage complet. Repère : le plus petit devis E G M, une option seule à 2 500 €.
+plancher_ht: 2500

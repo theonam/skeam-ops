@@ -43,3 +43,10 @@ Format : CONTRAT.md section 14. Décisions réservées à Théo.
 - **Proposition** : en 5, ajouter un champ facultatif `rang_client`, entier strictement positif ou null : rang de la fonctionnalité dans les attentes du client, 1 la plus importante, fixé par `/cadrage` à partir des transcripts et des synthèses. Audience interne. `chiffrer.py` trie alors chaque ligne de devis par `rang_client`, puis par priorité. Dans `skills/cadrage/`, demander d'attribuer ce rang en citant le transcript source.
 - **Hypothèse retenue en attendant** : `chiffrer.py` trie par priorité, puis par ordre des items dans le backlog. `/cadrage` et Théo écrivent les items dans l'ordre d'importance pour le client ; le chiffrage `.md` rappelle de vérifier cet ordre au regard du transcript.
 - **Impact** : CONTRAT.md 5 et 10, `schemas/backlog.schema.json` ; `skills/cadrage/`, chantier cadrage ; `chiffrer.py`.
+
+## 2026-10-15 Plancher par option
+
+- **Besoin** : dans l'offre E G M, chaque option se vend seule, sur sa propre ligne, au moins 2 500 euros HT, alors que ses heures de catalogue n'en justifient que 900 à 2 500. `plancher_ht` ne s'applique qu'au total d'un chiffrage complet ; rien ne fixe un minimum par option.
+- **Proposition** : ajouter à 8.2 et à `schemas/catalogue-tarifs.schema.json` une clé facultative `plancher_option_ht`, montant HT minimal d'une ligne d'option. `chiffrer.py` relève toute ligne d'option à ce montant.
+- **Hypothèse retenue en attendant** : pas de plancher par option. Une option chiffrée seule tombe sous `plancher_ht`, fixé à 2 500 euros, ce qui donne le même résultat ; une option chiffrée avec le reste du projet sort à son prix calculé, et le `.md` de chiffrage le montre.
+- **Impact** : CONTRAT.md 8.2, `schemas/catalogue-tarifs.schema.json` ; `chiffrer.py`.
