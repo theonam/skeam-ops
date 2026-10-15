@@ -5,7 +5,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_faire
+    statut: en_cours
     taille: L
     estimation_h: 12
     dependances: []
@@ -22,7 +22,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_faire
+    statut: en_cours
     taille: M
     estimation_h: 8
     dependances:
@@ -39,7 +39,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_faire
+    statut: en_cours
     taille: M
     estimation_h: 4
     dependances:
@@ -57,7 +57,7 @@ items:
     module: null
     lot: 1
     priorite: souhaitable
-    statut: a_faire
+    statut: en_cours
     taille: M
     estimation_h: 5
     dependances:
@@ -111,7 +111,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_faire
+    statut: en_cours
     taille: S
     estimation_h: 5
     dependances:
@@ -131,7 +131,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_faire
+    statut: en_cours
     taille: S
     estimation_h: 4
     dependances:
@@ -149,7 +149,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_faire
+    statut: en_cours
     taille: M
     estimation_h: 6
     dependances:
@@ -168,7 +168,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_faire
+    statut: en_cours
     taille: M
     estimation_h: 5
     dependances:
@@ -187,7 +187,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_faire
+    statut: en_cours
     taille: S
     estimation_h: 4
     dependances:
@@ -205,7 +205,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_faire
+    statut: en_cours
     taille: M
     estimation_h: 6
     dependances:
@@ -223,7 +223,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_faire
+    statut: en_cours
     taille: XS
     estimation_h: 2
     dependances:
@@ -240,7 +240,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_faire
+    statut: en_cours
     taille: M
     estimation_h: 5
     dependances:
@@ -259,7 +259,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_faire
+    statut: en_cours
     taille: S
     estimation_h: 3
     dependances:
@@ -277,7 +277,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_faire
+    statut: en_cours
     taille: XS
     estimation_h: 2
     dependances:
