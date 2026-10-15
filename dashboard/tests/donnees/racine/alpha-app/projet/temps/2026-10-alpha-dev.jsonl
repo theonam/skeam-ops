@@ -1,0 +1,6 @@
+{"date":"2026-10-01","debut":"20:00","fin":"22:00","minutes":120,"item":"ALPHA-001","source":"claude-code","agent":"alpha-dev","note":"","valide":true}
+{"date":"2026-10-02","debut":"20:00","fin":"21:30","minutes":90,"item":"ALPHA-001","source":"claude-code","agent":"alpha-dev","note":"","valide":true}
+{"date":"2026-10-03","debut":"19:00","fin":"21:00","minutes":120,"item":"ALPHA-001","source":"claude-code","agent":"alpha-dev","note":"Reprise de l'envoi des SMS","valide":true}
+{"date":"2026-10-05","debut":"20:00","fin":"23:00","minutes":180,"item":"ALPHA-002","source":"claude-code","agent":"alpha-dev","note":"","valide":true}
+{"date":"2026-10-07","debut":"20:00","fin":"22:00","minutes":120,"item":"ALPHA-003","source":"claude-code","agent":"alpha-dev","note":"","valide":true}
+{"date":"2026-10-14","debut":"21:00","fin":"23:30","minutes":150,"item":"ALPHA-004","source":"claude-code","agent":"alpha-dev","note":"","valide":false}

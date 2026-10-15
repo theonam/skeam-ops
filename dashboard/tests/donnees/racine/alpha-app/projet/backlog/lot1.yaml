@@ -1,0 +1,83 @@
+items:
+  - id: ALPHA-003
+    titre: Calcul des devis de pose
+    module: devis
+    lot: 1
+    priorite: indispensable
+    statut: en_cours
+    taille: M
+    estimation_h: 6
+    dependances:
+      - ALPHA-002
+      - "externe: grille tarifaire de pose fournie par le client"
+    criteres_acceptation:
+      - Le devis de pose est calculé à partir des dimensions saisies sur le chantier.
+    audience: client
+    a_valider: false
+    commit: null
+    maj: 2026-10-02
+  - id: ALPHA-004
+    titre: Export des commandes fournisseurs
+    module: export-fournisseurs
+    lot: 1
+    priorite: souhaitable
+    statut: a_recetter
+    taille: S
+    estimation_h: 3
+    dependances:
+      - ALPHA-002
+    criteres_acceptation:
+      - Un fichier CSV par fournisseur regroupe les commandes de la semaine.
+    audience: commercial
+    a_valider: false
+    commit: c3c3c3c
+    maj: 2026-10-14
+  - id: ALPHA-005
+    titre: Migration du schéma des tarifs
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_faire
+    taille: S
+    estimation_h: 2
+    dependances: []
+    criteres_acceptation:
+      - Les tarifs existants sont repris sans perte.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-10
+    notes: NOTE-INTERNE-ALPHA, ne doit apparaître dans aucune vue partagée.
+  - id: ALPHA-006
+    titre: Journal des connexions
+    module: null
+    lot: 1
+    priorite: souhaitable
+    statut: a_faire
+    taille: XS
+    estimation_h: 1
+    dependances:
+      - ALPHA-001
+    criteres_acceptation:
+      - Chaque connexion est tracée avec sa date et son appareil.
+    audience: interne
+    a_valider: true
+    commit: null
+    maj: 2026-10-14
+    notes: Besoin découvert par alpha-dev pendant ALPHA-003.
+  - id: ALPHA-008
+    titre: Fiche chantier
+    module: chantiers
+    lot: 1
+    priorite: indispensable
+    statut: fait
+    taille: S
+    estimation_h: 2
+    dependances:
+      - ALPHA-001
+    criteres_acceptation:
+      - La fiche chantier affiche adresse, client et menuiseries à poser.
+    audience: client
+    a_valider: false
+    commit: d4d4d4d
+    maj: 2026-10-09

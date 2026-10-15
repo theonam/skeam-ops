@@ -1,0 +1,45 @@
+# Client fictif des tests du dashboard : en développement, un dépassement, un blocage, une action en retard.
+slug: alpha
+nom: Alpha Menuiserie
+raison_sociale: Alpha Menuiserie SAS
+siren: "987654321"
+adresse:
+  rue: 12 rue des Artisans
+  code_postal: "38000"
+  ville: Grenoble
+  pays: France
+contacts:
+  - nom: Paul Durand
+    role: Gérant
+    email: paul.durand@alpha-menuiserie.example
+    tel: "+33 6 98 76 54 32"
+statut: en_dev
+apporteur: jonathan
+dates:
+  premier_contact: 2026-09-10
+  cadrage: 2026-10-01
+  signature: 2026-10-03
+  mise_en_service: null
+montants_ht:
+  build_signe: 8400
+  options_signees: 600
+  run_annuel: 1440
+devis:
+  - dougs_id: 0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d
+    objet: Application Alpha Menuiserie, lots 0 et 1, options et maintenance
+    montant_ht: 10440
+    statut: accepte
+  - dougs_id: 1b2c3d4e-5f6a-4b7c-9d8e-0f1a2b3c4d5e
+    objet: Option export comptable
+    montant_ht: 1200
+    statut: brouillon
+liens:
+  depot: theonam/alpha-app
+  demo: https://alpha-app.example/demo
+  prod: null
+  docs_interne: https://docs.example/alpha-interne
+  docs_commercial: https://docs.example/alpha-commercial
+  docs_client: https://docs.example/alpha-client
+todoist:
+  projet_id: "7Kg9WRYyqxw67WR8"
+  section_id: null

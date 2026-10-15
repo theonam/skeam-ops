@@ -1,0 +1,32 @@
+items:
+  - id: OPS-401
+    titre: Script d'agrégation
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: en_cours
+    taille: L
+    estimation_h: 8
+    dependances: []
+    criteres_acceptation:
+      - La vue interne agrège tous les projets actifs.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15
+  - id: OPS-402
+    titre: Rendu du dashboard
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_faire
+    taille: M
+    estimation_h: 6
+    dependances:
+      - OPS-401
+    criteres_acceptation:
+      - La page affiche le JSON intégré.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-15

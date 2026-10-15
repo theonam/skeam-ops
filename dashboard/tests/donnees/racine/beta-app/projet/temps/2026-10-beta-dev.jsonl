@@ -1,0 +1,5 @@
+{"date":"2026-10-01","debut":"19:00","fin":"22:00","minutes":180,"item":"BETA-002","source":"claude-code","agent":"beta-dev","note":"","valide":true}
+{"date":"2026-10-02","debut":"20:00","fin":"23:30","minutes":210,"item":"BETA-002","source":"claude-code","agent":"beta-dev","note":"","valide":true}
+{"date":"2026-10-08","debut":"20:00","fin":"23:00","minutes":180,"item":"BETA-003","source":"claude-code","agent":"beta-dev","note":"","valide":true}
+{"date":"2026-10-12","debut":"21:00","fin":"23:45","minutes":165,"item":"BETA-003","source":"claude-code","agent":"beta-dev","note":"","valide":true}
+{"date":"2026-10-14","debut":"22:30","fin":"23:30","minutes":60,"item":"BETA-004","source":"claude-code","agent":"beta-dev","note":"","valide":false}

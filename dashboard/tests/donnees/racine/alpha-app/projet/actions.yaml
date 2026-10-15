@@ -1,0 +1,37 @@
+items:
+  - id: ACT-ALPHA-001
+    titre: Relancer Paul Durand pour la grille tarifaire de pose
+    contexte: Dépendance externe d'ALPHA-003, promise pour le 2026-10-09.
+    priorite: p1
+    points: 1pt
+    echeance: 2026-10-12
+    statut: ouverte
+    todoist_id: null
+    source: ALPHA-003
+  - id: ACT-ALPHA-002
+    titre: Préparer la démo du lot 1
+    contexte: Démo prévue avec Paul Durand.
+    priorite: p2
+    points: 3pt
+    echeance: 2026-10-22
+    statut: ouverte
+    todoist_id: null
+    source: syntheses/2026-10-13-point-avancement.md
+  - id: ACT-ALPHA-003
+    titre: Classer les photos de chantier
+    contexte: Rangement, sans urgence.
+    priorite: p3
+    points: 1pt
+    echeance: 2026-10-16
+    statut: ouverte
+    todoist_id: null
+    source: manuel
+  - id: ACT-ALPHA-004
+    titre: Envoyer le devis des lots 0 et 1
+    contexte: Fait le 2026-10-02.
+    priorite: p1
+    points: 2pt
+    echeance: 2026-10-02
+    statut: faite
+    todoist_id: null
+    source: manuel
