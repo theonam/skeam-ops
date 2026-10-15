@@ -1,3 +1,4 @@
+// Nouveau dans le socle.
 /**
  * Sauvegarde de la base dans le stockage de fichiers, préfixe backups/, avec rotation.
  *   pnpm db:backup            sauvegarde maintenant ; garde BACKUP_RETENTION_DAYS jours, 30 par défaut

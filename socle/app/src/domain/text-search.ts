@@ -1,3 +1,4 @@
+// Origine : egm-app `src/domain/text-search.ts`.
 /**
  * Recherche « comme on le pense » : sans tenir compte des majuscules ni des accents, chaque mot tapé
  * doit se trouver quelque part (dans n'importe quel champ), dans n'importe quel ordre.

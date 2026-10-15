@@ -1,3 +1,4 @@
+// Origine : egm-app `src/domain/text-search.test.ts`.
 import { describe, expect, it } from "vitest";
 import { fold, highlight, hitsAny, matchesAll, searchWords } from "./text-search";
 

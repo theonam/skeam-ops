@@ -1,4 +1,5 @@
 "use client";
+// Origine : egm-app `src/components/ui/popover.tsx`.
 
 import * as PopoverPrimitive from "@radix-ui/react-popover";
 import type { ComponentProps } from "react";

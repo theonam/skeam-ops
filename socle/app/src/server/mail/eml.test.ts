@@ -1,3 +1,4 @@
+// Origine : egm-app `src/server/mail/eml.test.ts`.
 import PostalMime from "postal-mime";
 import { describe, expect, it } from "vitest";
 import { buildEml, encodeHeaderValue } from "./eml";

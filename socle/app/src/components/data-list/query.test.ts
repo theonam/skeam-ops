@@ -1,3 +1,4 @@
+// Origine : egm-app `src/components/data-list/query.test.ts`.
 import { describe, expect, it } from "vitest";
 import { applyQuery, EMPTY_VALUE, filterOptions, resolveVisibleColumns, type ListQuery, type QueryColumn } from "./query";
 

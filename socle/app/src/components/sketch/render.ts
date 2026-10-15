@@ -1,4 +1,5 @@
 "use client";
+// Origine : egm-app `src/components/sketch/render.ts`.
 
 import { getStroke } from "perfect-freehand";
 import {

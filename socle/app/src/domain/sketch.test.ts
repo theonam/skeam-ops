@@ -1,3 +1,4 @@
+// Origine : egm-app `src/domain/sketch.test.ts`.
 import { describe, expect, it } from "vitest";
 import {
   arrowHead,

@@ -1,4 +1,5 @@
 "use client";
+// Origine : egm-app `src/components/sketch/sketch-editor.tsx`.
 
 import { Eraser, Loader2, Minus, MoveUpRight, Pencil, Redo2, Ruler, Type, Undo2, X } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";

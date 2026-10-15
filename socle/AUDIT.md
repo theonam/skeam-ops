@@ -298,11 +298,9 @@ Le contrat, section 11.6, prévoit `init_app.sh` qui copie le socle dans le dép
 
 ## 9. Propriété du code
 
-Le brief pose que SKEAM reste propriétaire du code du socle. Le `CLAUDE.md` d'egm-app indique au contraire que « le client en deviendra propriétaire au terme prévu par le contrat ». Si le contrat cède à E G M les droits sur l'ensemble du code livré, la réutilisation des parties génériques pour d'autres clients pourrait être contestée.
+Le `CLAUDE.md` d'egm-app indique que « le client en deviendra propriétaire au terme prévu par le contrat ». **Théo a confirmé le 2026-10-15 que ce n'est pas le cas : le code reste la propriété de SKEAM.** La phrase d'egm-app est à corriger après la démo, voir `REPORTS-EGM.md`, R16.
 
-À vérifier dans le contrat signé avant toute extraction : une clause qui réserve à SKEAM ses outils et composants génériques, préexistants ou non spécifiques, et n'accorde au client qu'une licence d'usage sur ces parties. À défaut, prévoir un avenant. Ce point relève d'un conseil juridique ; l'audit se limite à le signaler.
-
-En attendant, le socle sera réécrit comme du code générique SKEAM, sans nom de client ni règle propre à E G M ; la mention d'origine demandée pour chaque composant documente la provenance.
+Le socle est écrit comme du code générique SKEAM, sans nom de client ni règle propre à E G M ; la mention d'origine portée par chaque fichier documente la provenance.
 
 ## 10. Plan de la phase 2
 
@@ -329,7 +327,7 @@ Total : environ 71 heures. OPS-105, alignement sur le catalogue, dépend du chan
 
 ## 11. Questions pour Théo
 
-Chaque question a une proposition par défaut, appliquée si tu valides sans commentaire.
+Validées le 2026-10-15 : propriété confirmée à SKEAM, profils validés, propositions par défaut retenues pour les autres points. Questions telles que posées :
 
 1. **Pile** : garder la pile d'egm-app avec les ajustements A1 à A6. Défaut : oui.
 2. **Propriété** : vérifier la clause du contrat E G M, section 9. Défaut : je construis le socle en code générique réécrit, la décision juridique reste de ton ressort.

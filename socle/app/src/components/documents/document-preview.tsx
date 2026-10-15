@@ -11,6 +11,7 @@ const SHEET_WIDTH_PX = 794 + 32;
  * Aperçu d'un document dans un iframe, avec le même HTML que le PDF.
  * Mis à jour en direct sans recharger la page affichée (le défilement reste en place),
  * et mis à l'échelle de la place disponible. Aucun script ne s'exécute dans l'aperçu.
+ * Origine : egm-app `src/components/documents/document-preview.tsx`.
  */
 export function DocumentPreview({ view, title }: { view: DocumentView; title: string }) {
   const frameRef = useRef<HTMLIFrameElement>(null);

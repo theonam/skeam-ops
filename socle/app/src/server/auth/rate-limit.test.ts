@@ -1,3 +1,4 @@
+// Origine : egm-app `src/server/auth/rate-limit.test.ts`.
 import { describe, expect, it } from "vitest";
 import { AttemptLimiter } from "./rate-limit";
 

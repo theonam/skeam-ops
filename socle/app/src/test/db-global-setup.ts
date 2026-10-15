@@ -1,3 +1,4 @@
+// Nouveau dans le socle.
 import "dotenv/config";
 import { randomBytes } from "node:crypto";
 import { drizzle } from "drizzle-orm/postgres-js";

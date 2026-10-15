@@ -1,3 +1,4 @@
+// Origine : egm-app `src/domain/money.test.ts`.
 import { describe, expect, it } from "vitest";
 import {
   applyRateCents,

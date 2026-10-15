@@ -1,4 +1,5 @@
 "use client";
+// Origine : egm-app `src/components/attachments/camera-dialog.tsx`.
 
 import { Camera, RefreshCcw, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";

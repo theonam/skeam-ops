@@ -1,3 +1,4 @@
+// Origine : egm-app `src/components/ui/page-header.tsx`.
 import type { ReactNode } from "react";
 
 export function PageHeader({ title, actions }: { title: string; actions?: ReactNode }) {

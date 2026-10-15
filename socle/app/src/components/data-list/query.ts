@@ -1,3 +1,4 @@
+// Origine : egm-app `src/components/data-list/query.ts`.
 /**
  * Moteur de la liste générique : recherche, filtres combinés à cases à cocher (comme Excel) et tri.
  * Fonctions pures, testées unitairement, sans dépendance à React.

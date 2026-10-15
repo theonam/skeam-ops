@@ -34,6 +34,7 @@ CREATE TABLE "attachments" (
 	"width" integer,
 	"height" integer,
 	"sort_order" integer DEFAULT 0 NOT NULL,
+	"taken_at" timestamp with time zone,
 	"parent_attachment_id" uuid,
 	"is_origin_email" boolean DEFAULT false NOT NULL,
 	"email_meta" jsonb,

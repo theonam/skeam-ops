@@ -1,3 +1,4 @@
+// Nouveau dans le socle.
 import { authorize, json, route } from "@/server/api";
 import { saveArticle } from "@/server/referentials/service";
 

@@ -1,3 +1,4 @@
+// Origine : egm-app `src/server/db/errors.test.ts`.
 import { describe, expect, it } from "vitest";
 import { pgErrorCode } from "./errors";
 

@@ -1,4 +1,5 @@
 "use client";
+// Origine : egm-app `src/components/attachments/attachments-panel.tsx`.
 
 import { AlertCircle, Camera, Download, ExternalLink, File, FileSpreadsheet, FileText, ImageOff, Images, Mail, Paperclip, PenLine, Plus, RotateCw, Trash2, Upload, X, type LucideIcon } from "lucide-react";
 import { useRouter } from "next/navigation";

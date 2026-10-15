@@ -1,3 +1,4 @@
+// Origine : egm-app `src/domain/sketch.ts`.
 import { z } from "zod";
 
 /**

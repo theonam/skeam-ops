@@ -1,3 +1,4 @@
+// Origine : egm-app `src/components/ui/skeleton.tsx`.
 import { cn } from "@/lib/cn";
 
 export function Skeleton({ className }: { className?: string }) {

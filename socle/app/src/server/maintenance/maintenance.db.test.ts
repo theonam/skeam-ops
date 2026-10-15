@@ -62,8 +62,7 @@ describe("effacement des données", () => {
 describe("sauvegarde et restauration", () => {
   it("une sauvegarde restaurée dans une base neuve redonne les mêmes données et la même numérotation", async () => {
     await issuedInvoice();
-    const env = { ...process.env, PG_BIN_DIR: process.env.PG_BIN_DIR ?? "" };
-    if (!env.PG_BIN_DIR) delete env.PG_BIN_DIR;
+    const env = process.env;
     const { key, size } = await backupDatabase({ databaseUrl: process.env.DATABASE_URL!, storage, retentionDays: 30, env });
     expect(size).toBeGreaterThan(1000);
     expect(await listBackups(storage)).toContain(key);
@@ -93,8 +92,8 @@ describe("sauvegarde et restauration", () => {
   it("supprime les sauvegardes plus anciennes que la durée de conservation", async () => {
     const dir = mkdtempSync(path.join(os.tmpdir(), "socle-backups-"));
     const local = new LocalFileStorage(dir);
-    await local.put("backups/db-2026-01-01t00-00-00z.dump", new Uint8Array([1]), "application/octet-stream");
-    await local.put("backups/db-2026-10-10t00-00-00z.dump", new Uint8Array([1]), "application/octet-stream");
+    await local.put("backups/db-2026-01-01t00-00-00z.dump", new Uint8Array([1]));
+    await local.put("backups/db-2026-10-10t00-00-00z.dump", new Uint8Array([1]));
     const { pruned } = await backupDatabase({ databaseUrl: process.env.DATABASE_URL!, storage: local, retentionDays: 30, now: new Date("2026-10-15T12:00:00Z") });
     expect(pruned).toEqual(["backups/db-2026-01-01t00-00-00z.dump"]);
     expect(await listBackups(local)).toHaveLength(2);

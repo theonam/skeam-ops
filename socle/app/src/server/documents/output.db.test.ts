@@ -1,3 +1,4 @@
+// Nouveau dans le socle.
 import { randomBytes } from "node:crypto";
 import { readdir } from "node:fs/promises";
 import path from "node:path";

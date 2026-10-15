@@ -57,6 +57,7 @@ const CARD_HEIGHT = 84;
  * Liste générique : une seule page fluide à plusieurs milliers de lignes (défilement virtualisé),
  * recherche, filtres combinés à cases à cocher, tri, colonnes choisies et ordonnées par l'utilisateur
  * (mémorisées côté serveur) et export Excel. Cartes sur téléphone, tableau ailleurs.
+ * Origine : egm-app `src/components/data-list/data-list.tsx`.
  */
 export function DataList<R>({
   listKey,

@@ -1,3 +1,4 @@
+// Nouveau dans le socle.
 import { describe, expect, it } from "vitest";
 import { FIELD_POLICY, MATRIX, PERMISSIONS, PROFILES } from "@/config/access";
 import { can, canSeeField, hiddenFields, redact, visibleColumns } from "./access";

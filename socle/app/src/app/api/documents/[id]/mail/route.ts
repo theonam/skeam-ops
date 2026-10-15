@@ -11,8 +11,21 @@ export const GET = route(async (request: Request, ctx: Ctx) => {
   return json(template);
 });
 
-/** Brouillon Outlook, PDF archivé joint : le navigateur l'enregistre, Outlook l'ouvre prêt à envoyer. */
+/**
+ * Brouillon Outlook, PDF archivé joint : renvoyé comme un fichier .eml que le navigateur enregistre et
+ * qu'Outlook ouvre prêt à envoyer. Le nouvel état du document est dans l'en-tête X-Document-Status.
+ * Origine : egm-app `src/app/api/invoices/[id]/email/route.ts`.
+ */
 export const POST = route(async (request: Request, ctx: Ctx) => {
   const user = await authorize(request, "documents.write");
-  return json(await prepareDocumentEmail(user, (await ctx.params).id, await request.json()));
+  const { download, status } = await prepareDocumentEmail(user, (await ctx.params).id, await request.json());
+  const ascii = download.filename.replace(/[^\x20-\x7e]/g, "_").replace(/"/g, "'");
+  return new Response(download.content, {
+    headers: {
+      "Content-Type": download.contentType,
+      "Content-Disposition": `attachment; filename="${ascii}"; filename*=UTF-8''${encodeURIComponent(download.filename)}`,
+      "Cache-Control": "private, no-store",
+      "X-Document-Status": status,
+    },
+  });
 });

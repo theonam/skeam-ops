@@ -1,4 +1,5 @@
 "use client";
+// Origine : egm-app `src/lib/use-breakpoint.ts`.
 
 import { useSyncExternalStore } from "react";
 

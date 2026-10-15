@@ -1,3 +1,4 @@
+// Origine : egm-app `src/components/data-list/types.ts`.
 import type { ReactNode } from "react";
 import type { QueryColumn } from "./query";
 

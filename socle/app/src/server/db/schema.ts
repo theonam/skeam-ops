@@ -1,3 +1,4 @@
+// Nouveau dans le socle.
 import { sql } from "drizzle-orm";
 import {
   bigint,
@@ -285,6 +286,8 @@ export const attachments = pgTable(
     width: integer(),
     height: integer(),
     sortOrder: integer().notNull().default(0),
+    /** Date de prise de vue d'une photo, quand l'appareil la fournit. */
+    takenAt: timestamp({ withTimezone: true }),
     parentAttachmentId: uuid(),
     isOriginEmail: boolean().notNull().default(false),
     emailMeta: jsonb(),

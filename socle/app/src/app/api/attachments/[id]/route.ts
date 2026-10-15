@@ -1,3 +1,4 @@
+// Nouveau dans le socle.
 import { authorize, HttpError, json, route } from "@/server/api";
 import { AttachmentError, deleteAttachment } from "@/server/attachments/service";
 

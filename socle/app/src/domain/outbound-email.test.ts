@@ -1,3 +1,4 @@
+// Origine : egm-app `src/domain/outbound-email.test.ts`.
 import { describe, expect, it } from "vitest";
 import { documentEmailInput, parseAddressList } from "./outbound-email";
 

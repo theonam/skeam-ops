@@ -1,3 +1,4 @@
+// Origine : egm-app `src/components/ui/no-access.tsx`.
 export function NoAccess() {
   return (
     <div className="p-6 text-slate-700">

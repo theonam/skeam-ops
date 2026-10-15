@@ -1,3 +1,4 @@
+// Origine : egm-app `src/lib/mail-files.test.ts`.
 import { describe, expect, it } from "vitest";
 import { buildEml } from "@/server/mail/eml";
 import { guessMimeType, mailFormatOf, parseMailFile } from "./mail-files";

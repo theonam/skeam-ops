@@ -29,6 +29,7 @@ function downloadName(header: string | null): string {
 /**
  * Préparation du mail d'un document (devis, facture) : destinataires, objet et message (gabarits de
  * l'entreprise), puis téléchargement d'un brouillon Outlook avec le PDF joint. L'envoi se fait depuis Outlook.
+ * Origine : egm-app `src/components/documents/email-dialog.tsx`.
  */
 export function DocumentEmailDialog({
   endpoint,

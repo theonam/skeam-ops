@@ -1,3 +1,4 @@
+// Origine : egm-app `src/server/auth/session-token.test.ts`.
 import { describe, expect, it } from "vitest";
 import { generateSessionToken, sessionIdFromToken, shouldRenew } from "./session-token";
 

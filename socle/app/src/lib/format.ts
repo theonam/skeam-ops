@@ -1,3 +1,4 @@
+// Origine : egm-app `src/lib/format.ts`.
 /** Formats d'affichage français, identiques sur le serveur et dans le navigateur (heure de Paris). */
 const TIME_ZONE = "Europe/Paris";
 

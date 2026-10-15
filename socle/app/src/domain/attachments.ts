@@ -1,3 +1,4 @@
+// Origine : egm-app `src/domain/attachments.ts`.
 /**
  * Règles des pièces jointes : types acceptés, taille maximale, nature du fichier, réduction des photos.
  * Fonctions pures, partagées par le navigateur (contrôle avant envoi) et le serveur (contrôle qui fait foi).
@@ -21,7 +22,7 @@ export const THUMBNAIL_MAX_SIDE = 480;
  */
 export const MAIL_IMAGE_MIN_BYTES = 20 * 1024;
 
-export type AttachmentKind = "photo" | "sketch" | "email" | "pdf" | "document" | "signature";
+export type AttachmentKind = "photo" | "sketch" | "email" | "pdf" | "document";
 
 const EXTENSIONS: Record<string, { mime: string; kind: AttachmentKind }> = {
   jpg: { mime: "image/jpeg", kind: "photo" },

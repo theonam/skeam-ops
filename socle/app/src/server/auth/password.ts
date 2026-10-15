@@ -1,3 +1,4 @@
+// Origine : egm-app `src/server/auth/password.ts`.
 import { hash, verify } from "@node-rs/argon2";
 
 // Paramètres argon2id recommandés par l'OWASP (19 Mio, 2 passes).

@@ -1,3 +1,4 @@
+// Nouveau dans le socle.
 /** Accès direct à la base de test du lancement, pour préparer et vérifier les données des tests. */
 import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";

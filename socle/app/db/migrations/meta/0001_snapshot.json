@@ -1,6 +1,6 @@
 {
-  "id": "e601a21d-1149-4cc1-b423-008a9796ae3d",
-  "prevId": "f023846d-9e57-4340-91da-c29f845bba59",
+  "id": "740a708e-2d7b-483d-b985-add1d486bd56",
+  "prevId": "4d74990e-d632-46a2-9d9f-c1d2f37cbf22",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -187,6 +187,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": 0
+        },
+        "taken_at": {
+          "name": "taken_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
         },
         "parent_attachment_id": {
           "name": "parent_attachment_id",

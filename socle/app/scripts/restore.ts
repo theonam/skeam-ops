@@ -1,3 +1,4 @@
+// Nouveau dans le socle.
 /**
  * Restauration d'une sauvegarde : remplace le contenu de la base cible.
  *   pnpm db:restore backups/db-2026-10-15t02-00-00z.dump --cible <adresse de la base> --oui

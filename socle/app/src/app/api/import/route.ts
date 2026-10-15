@@ -1,3 +1,4 @@
+// Nouveau dans le socle.
 import { IMPORT_SCHEMAS } from "@/config/import";
 import { can } from "@/domain/access";
 import { parisDate } from "@/domain/dates";

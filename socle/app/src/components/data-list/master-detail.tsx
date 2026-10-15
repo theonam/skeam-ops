@@ -1,4 +1,5 @@
 "use client";
+// Origine : egm-app `src/components/data-list/master-detail.tsx`.
 
 import { useSelectedLayoutSegment } from "next/navigation";
 import type { ReactNode } from "react";

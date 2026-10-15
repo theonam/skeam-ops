@@ -1,3 +1,4 @@
+// Origine : egm-app `src/domain/attachments.test.ts`.
 import { describe, expect, it } from "vitest";
 import { checkFile, fitWithin, MAX_ATTACHMENT_BYTES, safeFilename, shouldDownscale } from "./attachments";
 

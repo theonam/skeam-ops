@@ -1,3 +1,4 @@
+// Origine : egm-app `src/server/preferences/actions.ts`.
 "use server";
 
 import { requireUser } from "@/server/auth/session";

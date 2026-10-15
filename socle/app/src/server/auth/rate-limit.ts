@@ -1,3 +1,4 @@
+// Origine : egm-app `src/server/auth/rate-limit.ts`.
 /**
  * Limite les tentatives de connexion par clé (identifiant ou adresse IP) sur une fenêtre glissante.
  * En mémoire : suffisant pour une instance unique (démo, MVP sur un seul serveur).

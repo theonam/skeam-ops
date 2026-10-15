@@ -1,3 +1,4 @@
+// Origine : egm-app `src/server/auth/session-token.ts`.
 import { createHash, randomBytes } from "node:crypto";
 
 /** Jeton aléatoire de 160 bits, placé dans le cookie de session. */

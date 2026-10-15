@@ -1,3 +1,4 @@
+// Origine : egm-app `src/domain/dates.test.ts`.
 import { describe, expect, it } from "vitest";
 import { addDays, parisDate } from "./dates";
 

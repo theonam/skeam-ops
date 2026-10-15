@@ -1,4 +1,5 @@
 "use client";
+// Origine : egm-app `src/components/attachments/lightbox.tsx`.
 
 import { ChevronLeft, ChevronRight, Download, PenLine, Trash2, X } from "lucide-react";
 import { useEffect, useRef } from "react";

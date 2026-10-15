@@ -1,4 +1,5 @@
 "use client";
+// Origine : egm-app `src/components/attachments/use-attachments.ts`.
 
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";

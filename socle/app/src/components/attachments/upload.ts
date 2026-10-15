@@ -1,4 +1,5 @@
 "use client";
+// Origine : egm-app `src/components/attachments/upload.ts`.
 
 import { fitWithin, isDisplayableImage, PHOTO_MAX_SIDE, shouldDownscale } from "@/domain/attachments";
 import type { AttachmentOwner, AttachmentView } from "@/server/attachments/service";

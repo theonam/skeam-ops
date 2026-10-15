@@ -1,3 +1,4 @@
+// Nouveau dans le socle.
 /**
  * Identité et réglages de l'application, lus dans les variables d'environnement (voir `.env.example`).
  * Rien d'un client n'est écrit dans le code : un nouveau client se règle ici et dans `src/config/`.

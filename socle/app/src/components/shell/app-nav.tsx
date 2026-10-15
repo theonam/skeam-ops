@@ -27,8 +27,9 @@ function isActive(pathname: string, href: string): boolean {
 
 function initials(name: string): string {
   return name
+    .replace(/\(.*?\)/g, "")
     .split(/[\s-]+/)
-    .filter(Boolean)
+    .filter((w) => /^\p{L}/u.test(w))
     .slice(0, 2)
     .map((w) => w[0]!.toUpperCase())
     .join("");

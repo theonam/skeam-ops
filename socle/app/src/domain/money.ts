@@ -1,3 +1,4 @@
+// Origine : egm-app `src/domain/money.ts`.
 /**
  * Règles monétaires du projet : montants en centimes entiers, quantités en millièmes,
  * taux en points de base. Aucun calcul en nombre flottant.

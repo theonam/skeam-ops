@@ -1,3 +1,4 @@
+// Origine : egm-app `src/lib/mail-files.ts`.
 import MsgReader from "@kenjiuno/msgreader";
 import PostalMime from "postal-mime";
 

@@ -1,4 +1,5 @@
 "use client";
+// Origine : egm-app `src/components/attachments/use-file-drop.ts`.
 
 import { useEffect, useRef, useState, type RefObject } from "react";
 

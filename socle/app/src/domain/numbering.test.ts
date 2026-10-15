@@ -1,3 +1,4 @@
+// Nouveau dans le socle.
 import { describe, expect, it } from "vitest";
 import type { NumberingRule } from "@/config/numbering";
 import { formatDocumentNumber, numberingPeriod, numberingYear } from "./numbering";

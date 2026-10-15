@@ -1,5 +1,5 @@
 {
-  "id": "f023846d-9e57-4340-91da-c29f845bba59",
+  "id": "4d74990e-d632-46a2-9d9f-c1d2f37cbf22",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -187,6 +187,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": 0
+        },
+        "taken_at": {
+          "name": "taken_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
         },
         "parent_attachment_id": {
           "name": "parent_attachment_id",

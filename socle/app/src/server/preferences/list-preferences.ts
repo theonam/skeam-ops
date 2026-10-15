@@ -1,4 +1,5 @@
 import "server-only";
+// Origine : egm-app `src/server/preferences/list-preferences.ts`.
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/server/db/client";

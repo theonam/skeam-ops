@@ -1,0 +1,106 @@
+# Déploiement Render, région Francfort : une démonstration et une production, chacune avec sa base,
+# plus une sauvegarde quotidienne de la production. Tout tourne dans l'image Docker de l'application :
+# changer d'hébergeur ne demande aucune réécriture.
+# Plans payants : le plan gratuit endort le service, efface son disque et supprime la base au bout
+# de 30 jours, sans sauvegarde (socle/AUDIT.md § 4.1). Vérifier la grille tarifaire avant création.
+# Fichiers : stockage compatible S3 européen, variables S3_* à saisir dans Render, jamais ici.
+# Origine : egm-app `render.yaml`.
+services:
+  - type: web
+    name: __SLUG__-demo
+    runtime: docker
+    region: frankfurt
+    plan: starter
+    branch: main
+    healthCheckPath: /connexion
+    envVars:
+      - key: APP_EDITION
+        value: demo
+      - key: APP_NAME
+        value: "__NOM__"
+      - key: SESSION_COOKIE_NAME
+        value: __SLUG___demo_session
+      # Migrations, comptes et jeu fictif au démarrage, tous idempotents.
+      - key: SEED_DEMO
+        value: "1"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: __SLUG__-demo-db
+          property: connectionString
+      - key: DEMO_PASSWORD
+        sync: false
+      - key: STORAGE_DRIVER
+        value: s3
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_REGION
+        sync: false
+      - key: S3_BUCKET
+        sync: false
+      - key: S3_ACCESS_KEY_ID
+        sync: false
+      - key: S3_SECRET_ACCESS_KEY
+        sync: false
+
+  - type: web
+    name: __SLUG__-prod
+    runtime: docker
+    region: frankfurt
+    plan: standard
+    branch: main
+    healthCheckPath: /connexion
+    envVars:
+      - key: APP_NAME
+        value: "__NOM__"
+      - key: SESSION_COOKIE_NAME
+        value: __SLUG___session
+      - key: DATABASE_URL
+        fromDatabase:
+          name: __SLUG__-prod-db
+          property: connectionString
+      - fromGroup: __SLUG__-stockage
+      # Comptes de démonstration : à ne pas créer en production ; les comptes réels se créent à la main.
+
+  # Sauvegarde quotidienne de la base de production à 2 h UTC, rangée dans le stockage S3, 30 jours gardés.
+  - type: cron
+    name: __SLUG__-sauvegarde
+    runtime: docker
+    region: frankfurt
+    plan: starter
+    branch: main
+    schedule: "0 2 * * *"
+    dockerCommand: pnpm db:backup
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: __SLUG__-prod-db
+          property: connectionString
+      - key: BACKUP_RETENTION_DAYS
+        value: "30"
+      - fromGroup: __SLUG__-stockage
+
+envVarGroups:
+  - name: __SLUG__-stockage
+    envVars:
+      - key: STORAGE_DRIVER
+        value: s3
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_REGION
+        sync: false
+      - key: S3_BUCKET
+        sync: false
+      - key: S3_ACCESS_KEY_ID
+        sync: false
+      - key: S3_SECRET_ACCESS_KEY
+        sync: false
+
+databases:
+  - name: __SLUG__-demo-db
+    region: frankfurt
+    plan: basic-256mb
+    postgresMajorVersion: "16"
+  - name: __SLUG__-prod-db
+    region: frankfurt
+    plan: basic-1gb
+    postgresMajorVersion: "16"
