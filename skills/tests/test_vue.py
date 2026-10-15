@@ -70,9 +70,14 @@ class VueDemo(unittest.TestCase):
 
     def test_avancement_selon_le_contrat(self) -> None:
         # Lot 1 : DEMO-003 et DEMO-004 comptés toutes audiences confondues, DEMO-006 exclu car a_valider.
-        for audience in vue.AUDIENCES:
+        for audience in ("client", "commercial"):
             self.assertIn("**Lot 1** : 0 item fait sur 2, soit 0 %", self.vues[audience])
             self.assertIn("**Lot 0** : 2 items faits sur 2, soit 100 %", self.vues[audience])
+
+    def test_avancement_interne_compte_les_items_a_valider(self) -> None:
+        # Vue interne, libre selon le contrat : DEMO-006 compté et signalé.
+        self.assertIn("**Lot 1** : 0 item fait sur 3, soit 0 %, dont 1 à valider", self.vues["interne"])
+        self.assertIn("**Lot 0** : 2 items faits sur 2, soit 100 %", self.vues["interne"])
 
 
 class VueCopie(unittest.TestCase):

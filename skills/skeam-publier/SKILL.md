@@ -78,9 +78,9 @@ Une question, deux sous-questions :
 
 ### 5. Publier
 
-1. Charger le guide du connecteur Docs Claude avant le premier appel, rubriques index et édition.
+1. Charger le guide du connecteur Docs Claude avant le premier appel, rubriques index et édition. Le connecteur n'importe pas de fichier texte : le contenu passe dans les appels. Découper la vue par titre de niveau 2, et le backlog par lot.
 2. `liens.docs_<audience>` renseigné : mettre à jour ce document en remplaçant tout son contenu par la vue. Jamais de second document pour la même audience.
-3. Sinon : créer un document avec le titre de la section Sorties et la vue pour contenu.
+3. Sinon : créer le document avec le titre de la section Sorties, le bandeau date et auteur, une phrase qui dit d'où vient la vue, et un bloc en attente par section. L'ouvrir pour Théo, puis remplacer chaque bloc en attente par sa section, un appel par section, dans l'ordre de lecture.
 4. Ne jamais partager le document, inviter quelqu'un ni changer sa visibilité.
 
 ### 6. Enregistrer l'URL

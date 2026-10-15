@@ -119,11 +119,14 @@ def items_visibles(items: list[dict], audience: str) -> list[dict]:
     return [i for i in items if not i["a_valider"] and voit(audience, i["audience"])]
 
 
-def avancement(items: list[dict]) -> dict[int, tuple[int, int]]:
-    """Par lot : items faits et items comptés, hors abandonne et hors a_valider, toutes audiences confondues."""
+def avancement(items: list[dict], avec_a_valider: bool = False) -> dict[int, tuple[int, int]]:
+    """Par lot : items faits et items comptés, hors abandonne, toutes audiences confondues.
+
+    Les items a_valider sont exclus, CONTRAT.md section 10, sauf pour la vue interne, libre.
+    """
     comptes: dict[int, list[int]] = defaultdict(lambda: [0, 0])
     for item in items:
-        if item["statut"] == "abandonne" or item["a_valider"]:
+        if item["statut"] == "abandonne" or (item["a_valider"] and not avec_a_valider):
             continue
         comptes[item["lot"]][1] += 1
         if item["statut"] == "fait":
@@ -174,14 +177,19 @@ def section_liens(client: dict, audience: str) -> list[str]:
 
 
 def section_avancement(items: list[dict], audience: str, temps: list[dict]) -> list[str]:
-    comptes = avancement(items)
+    interne = audience == "interne"
+    comptes = avancement(items, avec_a_valider=interne)
     if not comptes:
         return ["## Avancement par lot", "", "Aucun item à ce jour."]
     lignes = ["## Avancement par lot", ""]
     for lot in sorted(comptes):
         faits, total = comptes[lot]
         libelle = "item fait" if faits <= 1 else "items faits"
-        lignes.append(f"- **Lot {lot}** : {faits} {libelle} sur {total}, soit {faits * 100 // total} %")
+        ligne = f"- **Lot {lot}** : {faits} {libelle} sur {total}, soit {faits * 100 // total} %"
+        a_valider = sum(1 for i in items if i["lot"] == lot and i["a_valider"] and i["statut"] != "abandonne")
+        if interne and a_valider:
+            ligne += f", dont {a_valider} à valider"
+        lignes.append(ligne)
     if audience == "interne":
         minutes = defaultdict(int)
         for ligne in temps:
