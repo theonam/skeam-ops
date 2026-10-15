@@ -229,7 +229,8 @@ def onglet_accueil(projet: Path, client: dict, items: list[dict], audience: str,
     visibles = [("demo", "Démo", "client"), ("prod", "Production", "client"), ("docs_client", "Documents client", "client"),
                 ("docs_commercial", "Documents commerciaux", "commercial"),
                 ("depot", "Dépôt", "interne"), ("docs_interne", "Documents internes", "interne")]
-    puces = [f"- **{libelle}** : {liens[cle]}" for cle, libelle, niveau in visibles if voit(audience, niveau) and liens[cle]]
+    puces = [f"- **{libelle}** : {liens[cle]}" for cle, libelle, niveau in visibles
+             if voit(audience, niveau) and liens[cle] and cle != f"docs_{audience}"]
     if puces:
         lignes += ["", "## Liens", "", *puces]
     return lignes
@@ -268,8 +269,15 @@ def onglet_backlog(items: list[dict], audience: str) -> list[str]:
                     details.append(f"Commit {item['commit']}")
                 rangee.append(" ".join(d for d in details if d))
             rangees.append(rangee)
+        entetes, rangees = sans_colonnes_muettes(entetes, rangees)
         lignes += ["", f"## Lot {lot}", "", *tableau(entetes, rangees)]
     return lignes
+
+
+def sans_colonnes_muettes(entetes: list[str], rangees: list[list[str]]) -> tuple[list[str], list[list[str]]]:
+    """Retire les colonnes Module et Audience quand elles ont la même valeur sur tout le lot : elles n'apprennent rien."""
+    garder = [i for i, nom in enumerate(entetes) if nom not in ("Module", "Audience") or len({r[i] for r in rangees}) > 1]
+    return [entetes[i] for i in garder], [[r[i] for i in garder] for r in rangees]
 
 
 def onglet_document(nom: str, chemin: Path) -> list[str]:
