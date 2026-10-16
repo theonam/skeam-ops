@@ -3,5 +3,5 @@ clients:
   - slug: egm
     nom: E G M
     depot: theonam/egm-app
-    statut: cadrage
+    statut: devis_envoye
     actif: true
