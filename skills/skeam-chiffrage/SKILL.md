@@ -88,6 +88,7 @@ Récapitulatif complet de l'appel, puis question `Valider`, `Annuler`.
 ### 6. Enregistrer dans client.yaml
 
 - Nouveau brouillon : ajouter en fin de liste `devis` l'entrée `dougs_id`, `objet`, `montant_ht`, `statut: brouillon`.
+- Périmètre : proposer à Théo `perimetre`, les lots couverts et, quand le devis ne prend qu'une partie d'un lot, les ids des items concernés, CONTRAT.md section 3 ; l'écrire après sa réponse. Il nourrit le bloc Devis et lots du dashboard.
 - Mise à jour : modifier `objet` et `montant_ht` de l'entrée existante.
 - Si `create-quote-draft` a réussi mais `update-quote` a échoué : enregistrer quand même l'entrée avec le `dougs_id`, pour qu'une relance mette à jour ce brouillon au lieu d'en créer un second, et le signaler.
 - Valider le dossier, puis question de commit `projet: skeam-chiffrage du AAAA-MM-JJ`, avec `devis/` et `client.yaml`.
@@ -95,6 +96,8 @@ Récapitulatif complet de l'appel, puis question `Valider`, `Annuler`.
 ### 7. Rafraîchir les statuts, facultatif
 
 Sur demande de Théo, ou si `client.yaml` porte des devis `envoye` : lire leur statut dans Dougs et proposer la correspondance du contrat, `DRAFT` brouillon, `PENDING` envoye, `ACCEPTED` accepte, `REFUSED` refuse. Écrire après `Valider`. Un devis accepté peut justifier de proposer le statut client `signe` et `dates.signature` : proposition seulement.
+
+Factures : `list-invoice-drafts` et `list-invoices` du client, rattachées au devis dont elles reprennent l'objet ou que Théo désigne. Proposer pour chacune l'entrée `factures` du devis, `dougs_id`, `numero`, `montant_ht` égal au HT de la facture, `statut` selon le contrat, brouillon, `waiting` envoyee, `paid` payee, `canceled` annulee, et `echeance`. Écrire après `Valider`.
 
 ### 8. Compte rendu
 

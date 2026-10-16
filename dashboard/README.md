@@ -50,7 +50,8 @@ Date de référence : date du jour à Paris. Semaine : du lundi au dimanche qui 
 | Titre d'un lot | puce `- **Lot N** : titre. But.` de la section Découpage en lots de `cadrage.md` : première phrase pour le titre, le reste pour la description ; null sans puce pour ce lot |
 | Heures estimées d'un lot | somme des `estimation_h` des N items de la vue interne |
 | Heures réelles d'un item ou d'un lot | somme des `minutes` de toutes ses lignes de temps, validées ou non, divisée par 60 ; null si le temps n'est pas journalisé |
-| Temps passé par lot | vue interne seulement, toujours affiché sous chaque lot : « Temps passé x h sur y h estimées », 0 h compris, ou « temps non journalisé » ; la date `temps.depuis` est rappelée, car le temps d'avant cette date n'est pas connu. Seul un dépassement est signalé : un écart négatif vient le plus souvent du temps non noté |
+| Temps passé par lot | vue interne seulement, toujours affiché sous chaque lot : « Temps passé x h », 0 h compris, ou « temps non journalisé », sans les heures estimées, qui restent dans le bloc Heures et budget ; la date `temps.depuis` est rappelée, car le temps d'avant cette date n'est pas connu |
+| Devis et lots | vues interne et commerciale : pour chaque devis, ses lots, entiers ou en partie, avec leur avancement compté comme celui des lots ; l'engagement et le paiement : le statut du devis tant qu'aucune facture non annulée n'existe, puis le statut de chaque facture, en retard si elle est envoyée et son échéance passée. Périmètre et factures viennent de `client.yaml`, CONTRAT.md section 3 ; un item cité par un devis lui appartient, sinon il suit son lot. Les items d'aucun devis sont listés à part |
 | Temps non journalisé | le projet a des items `a_recetter` ou `fait` et aucune ligne de temps : la page affiche « temps non journalisé », jamais 0 h |
 | Devis non saisi | montant signé nul et aucun devis dans `client.yaml` : la page affiche « devis non saisi », jamais 0 € |
 | Heures et budget, vue interne | réel : toutes les lignes de temps du projet ; estimé : `estimation_h` des items hors `abandonne` ; vendu : montant signé, build et options, ou à défaut somme des devis envoyés ou acceptés, divisé par `taux_horaire_cible` de `catalogue/tarifs.yaml` ; consommé : réel sur vendu ; taux réel : vendu sur réel |
@@ -82,7 +83,11 @@ global
   nb_devis_non_saisis             clients sans montant signé ni devis saisi
 projets[]
   slug, nom, type client|interne, statut, apporteur, dates, prochaine_echeance,
-  montants_ht, montant_signe_ht, devis_saisi, devis[] : objet, montant_ht, statut,
+  montants_ht, montant_signe_ht, devis_saisi,
+  devis[] : objet, montant_ht, statut,
+                                  perimetre[] ou null : lot, titre, partiel, nb_items, a_faire, en_cours, developpe, termine ;
+                                  factures[] : numero, montant_ht, statut, echeance, en_retard
+  hors_devis[] ou null            mêmes champs que perimetre[] : items rattachés à aucun devis ; null sans aucun périmètre saisi
   liens                           les six liens de client.yaml
   lots[]                          lot, titre, description, nb_items, a_faire, en_cours, developpe, termine,
                                   pct_developpe, pourcentage, heures_estimees, heures_reelles, ecart_pct, depassement
@@ -118,7 +123,10 @@ global
   alertes[]                       en_cours_ancien seulement, sur les items visibles
 projets[]
   slug, nom, type, statut, apporteur, dates, prochaine_echeance, montants_ht, montant_signe_ht,
-  devis[] : objet, montant_ht, statut
+  devis[] : objet, montant_ht, statut,
+                                  perimetre[] ou null : lot, titre, partiel, nb_items, a_faire, en_cours, developpe, termine ;
+                                  factures[] : numero, montant_ht, statut, echeance, en_retard
+  hors_devis[] ou null            mêmes champs que perimetre[] : items rattachés à aucun devis ; null sans aucun périmètre saisi
   liens                           demo, prod, docs_client, docs_commercial
   lots[]                          lot, titre, description, nb_items, a_faire, en_cours, developpe, termine, pct_developpe,
                                   pourcentage ; lots ayant au moins un item visible
@@ -141,19 +149,20 @@ projets[]
 
 La vue client agrège tous les clients : elle ne se publie jamais telle quelle, mais projet par projet avec `rendre.py --projet`.
 
-## Gabarit figé, version 2
+## Gabarit figé, version 3
 
 Décision de Théo du 2026-10-16 : le gabarit est gravé. `format.json` fixe la version, les clés exactes de chaque objet de la sortie par audience et les blocs de la page ; `template.html` porte la même version dans `<meta name="skeam:gabarit">` et un attribut `data-bloc` par bloc. Les tests de `TestGabaritFige` échouent dès qu'une clé ou un bloc change.
 
 - Version 1, 2026-10-16 : premier gabarit gravé.
 - Version 2, 2026-10-16, demande de Théo : temps passé par lot toujours affiché et libellé, clé `temps.depuis`.
+- Version 3, 2026-10-16, demandes de Théo : bloc Devis et lots, clés `devis[].perimetre`, `devis[].factures`, `hors_devis` ; sous chaque lot, le temps passé seul.
 
 Blocs, dans l'ordre d'affichage :
 
 | Vue | Blocs |
 |---|---|
-| interne | bandeau ; todo, alertes et devis à envoyer ; chiffres clés ; portefeuille ; charge de la semaine ; détail par projet : infos, heures et budget, avancement par lot, listes de pilotage, dernière synthèse, items par lot |
-| commercial | bandeau ; points d'attention ; chiffres clés ; portefeuille ; détail par projet : infos, avancement par lot, items en cours depuis plus de 7 jours, dernière synthèse, items par lot |
+| interne | bandeau ; todo, alertes et devis à envoyer ; chiffres clés ; portefeuille ; charge de la semaine ; détail par projet : infos, heures et budget, devis et lots, avancement par lot, listes de pilotage, dernière synthèse, items par lot |
+| commercial | bandeau ; points d'attention ; chiffres clés ; portefeuille ; détail par projet : infos, devis et lots, avancement par lot, items en cours depuis plus de 7 jours, dernière synthèse, items par lot |
 | client | bandeau ; détail : liens, avancement par lot, items par lot |
 
 Pour faire évoluer le gabarit : accord de Théo, puis dans la même pull request `format.json` et `template.html` à la version suivante, ce README et les tests. Les commandes du chat ne modifient jamais le gabarit : elles le prennent tel quel sur `main`.

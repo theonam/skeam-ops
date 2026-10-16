@@ -33,6 +33,15 @@ devis:
     objet: Application de gestion Démo Bâtiment, lots 0 et 1 et maintenance
     montant_ht: 7500
     statut: accepte
+    perimetre:
+      lots: [0, 1]
+      items: []
+    factures:
+      - dougs_id: 9a1b2c3d-4e5f-4a6b-8c7d-0e1f2a3b4c5d
+        numero: 2026-10-FAC-1
+        montant_ht: 3750
+        statut: payee
+        echeance: 2026-11-13
 liens:
   depot: skeam-exemple/demo-app
   demo: https://demo-app.example/demo

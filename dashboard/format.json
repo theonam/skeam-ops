@@ -1,6 +1,6 @@
 {
-  "version": 2,
-  "description": "Format figé de la sortie d'agreger.py et blocs du gabarit, version 2 du 2026-10-16, temps passé par lot toujours affiché et date de début du journal de temps. Toute évolution passe par Théo, incrémente la version ici et dans template.html, et met à jour dashboard/README.md.",
+  "version": 3,
+  "description": "Format figé de la sortie d'agreger.py et blocs du gabarit, version 3 du 2026-10-16, devis et lots, temps passé seul sous chaque lot. Toute évolution passe par Théo, incrémente la version ici et dans template.html, et met à jour dashboard/README.md.",
   "audiences": {
     "interne": {
       "enveloppe": [
@@ -21,6 +21,7 @@
         "devis",
         "devis_a_envoyer",
         "devis_saisi",
+        "hors_devis",
         "items",
         "items_bloques",
         "items_en_cours_anciens",
@@ -103,6 +104,30 @@
         "nom",
         "slug",
         "type"
+      ],
+      "devis": [
+        "factures",
+        "montant_ht",
+        "objet",
+        "perimetre",
+        "statut"
+      ],
+      "devis_lot": [
+        "a_faire",
+        "developpe",
+        "en_cours",
+        "lot",
+        "nb_items",
+        "partiel",
+        "termine",
+        "titre"
+      ],
+      "facture": [
+        "echeance",
+        "en_retard",
+        "montant_ht",
+        "numero",
+        "statut"
       ]
     },
     "commercial": {
@@ -119,6 +144,7 @@
         "derniere_synthese",
         "devis",
         "devis_saisi",
+        "hors_devis",
         "items",
         "items_en_cours_anciens",
         "liens",
@@ -159,6 +185,30 @@
         "portefeuille",
         "run_annuel_ht",
         "total_signe_ht"
+      ],
+      "devis": [
+        "factures",
+        "montant_ht",
+        "objet",
+        "perimetre",
+        "statut"
+      ],
+      "devis_lot": [
+        "a_faire",
+        "developpe",
+        "en_cours",
+        "lot",
+        "nb_items",
+        "partiel",
+        "termine",
+        "titre"
+      ],
+      "facture": [
+        "echeance",
+        "en_retard",
+        "montant_ht",
+        "numero",
+        "statut"
       ]
     },
     "client": {
@@ -209,6 +259,7 @@
       "detail",
       "infos",
       "budget",
+      "devis-lots",
       "lots",
       "pilotage",
       "synthese",
@@ -221,6 +272,7 @@
       "portefeuille",
       "detail",
       "infos",
+      "devis-lots",
       "lots",
       "pilotage",
       "synthese",

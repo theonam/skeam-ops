@@ -85,7 +85,31 @@
           "dougs_id": { "$ref": "commun.schema.json#/$defs/dougs_id" },
           "objet": { "$ref": "commun.schema.json#/$defs/texte" },
           "montant_ht": { "$ref": "commun.schema.json#/$defs/montant_ht" },
-          "statut": { "type": "string", "enum": ["brouillon", "envoye", "accepte", "refuse"] }
+          "statut": { "type": "string", "enum": ["brouillon", "envoye", "accepte", "refuse"] },
+          "perimetre": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["lots", "items"],
+            "properties": {
+              "lots": { "type": "array", "uniqueItems": true, "items": { "type": "integer", "minimum": 0 } },
+              "items": { "type": "array", "uniqueItems": true, "items": { "$ref": "commun.schema.json#/$defs/id_item" } }
+            }
+          },
+          "factures": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["dougs_id", "numero", "montant_ht", "statut", "echeance"],
+              "properties": {
+                "dougs_id": { "$ref": "commun.schema.json#/$defs/dougs_id" },
+                "numero": { "type": ["string", "null"], "minLength": 1 },
+                "montant_ht": { "$ref": "commun.schema.json#/$defs/montant_ht" },
+                "statut": { "type": "string", "enum": ["brouillon", "envoyee", "payee", "annulee"] },
+                "echeance": { "$ref": "commun.schema.json#/$defs/date_ou_null" }
+              }
+            }
+          }
         }
       }
     },

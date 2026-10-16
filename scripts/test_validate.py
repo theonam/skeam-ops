@@ -156,6 +156,22 @@ class TestBacklog(BaseProjet):
         self.remplacer("backlog/lot1.yaml", "Planning hebdomadaire des équipes", "Planning hebdomadaire (équipes)")
         self.assertErreur("parenthèse interdite")
 
+    def test_perimetre_devis(self) -> None:
+        # Lot et item du périmètre d'un devis : ils existent dans le backlog.
+        self.remplacer("client.yaml", "      lots: [0, 1]\n      items: []", "      lots: [0, 7]\n      items: [DEMO-099]")
+        self.assertErreur("lot 7 absent du backlog")
+        self.assertErreur("item DEMO-099 introuvable")
+
+    def test_perimetre_devis_unique(self) -> None:
+        # Un lot ou un item n'est cité que par un seul devis.
+        self.remplacer("client.yaml", "liens:\n", "  - dougs_id: 4c5d6e7f-1a2b-4c3d-8e9f-0a1b2c3d4e5f\n    objet: Options\n"
+                       "    montant_ht: 900\n    statut: brouillon\n    perimetre:\n      lots: [1]\n      items: []\nliens:\n")
+        self.assertErreur("lot 1 déjà dans le périmètre")
+
+    def test_facture_statut(self) -> None:
+        self.remplacer("client.yaml", "statut: payee", "statut: reglee")
+        self.assertErreur("factures")
+
     def test_item_invalide_sans_cascade(self) -> None:
         self.remplacer("backlog/lot0.yaml", "    taille: S\n    estimation_h: 4", "    taille: S\n    estimation_h: 0")
         rapport = self.valider()

@@ -250,3 +250,21 @@ items:
     commit: 6c6e5e8
     maj: 2026-10-16
     notes: 'Demande de Théo du 2026-10-16, le nombre d''heures passées par lot doit apparaître tout le temps. Vérifié le 2026-10-16 : tests du dashboard au vert, gabarit en version 2, page interne rendue au téléphone et au bureau avec une ligne Temps passé sous chacun des 8 lots et la date de début du journal, vue commerciale sans aucune ligne de temps.'
+  - id: OPS-416
+    titre: Devis et lots, correspondance entre avancement des développements et engagement ou paiement du client
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: fait
+    taille: M
+    estimation_h: 3
+    dependances: []
+    criteres_acceptation:
+      - Les vues interne et commerciale montrent pour chaque devis ses lots et items, l'avancement de chacun, le statut du devis tant qu'aucune facture n'existe, puis celui de ses factures.
+      - Le contrat décrit le périmètre et les factures d'un devis dans client.yaml ; le validateur contrôle que lots et items existent et qu'un item n'est rattaché qu'à un devis.
+      - Sous chaque lot de la vue interne, seul le temps passé s'affiche, sans les heures estimées.
+    audience: interne
+    a_valider: false
+    commit: 508fd8e
+    maj: 2026-10-16
+    notes: 'Demandes de Théo du 2026-10-16 : voir en un coup d''œil quel devis couvre quel lot ; périmètre en lots et items ; statut du devis puis statut de la facture ; temps passé seul sous chaque lot. Vérifié le 2026-10-16 : tests de scripts, dashboard, catalogue et skills au vert, exemples du contrat valides ; pages interne et commerciale rendues à 390 et 1 440 px sur les données d''E G M, trois devis avec leurs lots, lots 3 et 5 dans aucun devis, aucune heure estimée sous les lots, aucun temps dans la vue commerciale.'

@@ -101,11 +101,20 @@ Schéma : `schemas/client.schema.json`.
 | `apporteur` | `theo`, `jonathan`, `autre` |
 | `dates` | `premier_contact`, `cadrage`, `signature`, `mise_en_service` : date ou null |
 | `montants_ht` | `build_signe`, `options_signees`, `run_annuel` : montant, 0 par défaut |
-| `devis` | liste de `dougs_id` UUID du devis Dougs, `objet` texte, `montant_ht`, `statut` parmi `brouillon`, `envoye`, `accepte`, `refuse` |
+| `devis` | liste de `dougs_id` UUID du devis Dougs, `objet` texte, `montant_ht`, `statut` parmi `brouillon`, `envoye`, `accepte`, `refuse` ; facultatifs : `perimetre` et `factures`, voir ci-dessous |
 | `liens` | `depot` dépôt ou null ; `demo`, `prod`, `docs_interne`, `docs_commercial`, `docs_client` : URL `https://` ou null |
 | `todoist` | `projet_id`, `section_id` : chaîne ou null |
 
 Correspondance des statuts de devis avec Dougs : `brouillon` DRAFT, `envoye` PENDING, `accepte` ACCEPTED, `refuse` REFUSED.
+
+Périmètre et factures d'un devis, décision de Théo du 2026-10-16 :
+
+| Clé | Type et valeurs |
+|---|---|
+| `perimetre` | `lots` : liste de numéros de lot ; `items` : liste d'ids d'items. Un item cité dans les `items` d'un devis lui appartient ; tout autre item appartient au devis dont les `lots` contiennent son lot. Lots et items existent dans le backlog ; un item ou un lot n'est cité que par un seul devis |
+| `factures` | liste de `dougs_id` UUID de la facture Dougs, `numero` texte ou null, `montant_ht`, `statut` parmi `brouillon`, `envoyee`, `payee`, `annulee`, `echeance` date ou null |
+
+Correspondance des statuts de facture avec Dougs : `brouillon` brouillon de facture, `envoyee` facture finalisée en attente de paiement, `payee` paid, `annulee` canceled. Une facture `envoyee` dont l'`echeance` est passée est en retard. `/chiffrage` tient `perimetre` à la création du devis et rafraîchit `factures` avec les statuts des devis.
 
 <!-- exemple: client -->
 ```yaml
@@ -139,6 +148,15 @@ devis:
     objet: Application de gestion Démo Bâtiment, lots 0 et 1 et maintenance
     montant_ht: 7500
     statut: accepte
+    perimetre:
+      lots: [0, 1]
+      items: []
+    factures:
+      - dougs_id: 9a1b2c3d-4e5f-4a6b-8c7d-0e1f2a3b4c5d
+        numero: 2026-10-FAC-1
+        montant_ht: 3750
+        statut: payee
+        echeance: 2026-11-13
 liens:
   depot: skeam-exemple/demo-app
   demo: https://demo-app.example/demo
