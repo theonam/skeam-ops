@@ -32,7 +32,11 @@ Nouvel item dans son propre fichier de backlog, avec le plus petit numéro libre
 
 ## Journal de temps
 
-Une ligne par session à la fin de son fichier de temps, heures de Paris relevées avec `TZ=Europe/Paris date`, `source` `claude-code`, `valide` `false`, `minutes` exactement égal à `fin` moins `debut`.
+Le temps des sessions Claude Code est pointé automatiquement : le hook de `.claude/settings.json` appelle `dashboard/scripts/pointage.py` à chaque événement de session et, à chaque `git commit`, écrit le temps écoulé depuis le commit précédent dans le fichier de temps de l'agent, rattaché à l'item cité en tête du message, puis l'ajoute au commit. Ne plus écrire de ligne de temps à la main pour une session Claude Code, ni faire de commit « temps de session ».
+
+Seul le temps passé hors session s'écrit à la main, à la demande de Théo : une ligne `source` `theo`, `agent` `theo`, dans `projet/temps/AAAA-MM-theo.jsonl`, au format de `CONTRAT.md` section 6.
+
+Si le hook ne tourne pas, session ouverte hors de la racine de skeam-ops par exemple, revenir à l'ancienne règle : une ligne par session à la fin de son fichier de temps, heures de Paris relevées avec `TZ=Europe/Paris date`, `source` `claude-code`, `valide` `false`, `minutes` exactement égal à `fin` moins `debut`.
 
 ## Interdits
 

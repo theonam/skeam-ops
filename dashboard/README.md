@@ -9,6 +9,7 @@ Vue de pilotage de tous les projets en parallèle : ce qui bloque, ce qui dérap
 | Chemin | Rôle |
 |---|---|
 | `scripts/agreger.py` | interface CONTRAT.md section 11.5 : registre et clones vers `out/<audience>.json` |
+| `scripts/pointage.py` | hook de pointage automatique du temps des sessions Claude Code, voir Pointage du temps |
 | `scripts/rendre.py` | injecte une vue JSON dans `template.html` : une page HTML autonome |
 | `template.html` | gabarit de la page, sans dépendance hors polices Google Fonts, clair et sombre, lisible sur téléphone |
 | `artefacts.yaml` | URL des artefacts claude.ai publiés, une par vue, pour garder le même lien |
@@ -166,6 +167,18 @@ Blocs, dans l'ordre d'affichage :
 | client | bandeau ; détail : liens, avancement par lot, items par lot |
 
 Pour faire évoluer le gabarit : accord de Théo, puis dans la même pull request `format.json` et `template.html` à la version suivante, ce README et les tests. Les commandes du chat ne modifient jamais le gabarit : elles le prennent tel quel sur `main`.
+
+## Pointage du temps
+
+Décision de Théo du 2026-10-16 : le temps passé se mesure automatiquement, sans déclaration de l'agent. Les lignes produites respectent CONTRAT.md section 6 ; `agreger.py` les lit comme les autres.
+
+- `.claude/settings.json` appelle `scripts/pointage.py` aux événements SessionStart, UserPromptSubmit, PreToolUse, PostToolUse et Stop. Chaque événement est noté avec son heure dans `~/.claude/pointage/<session>.jsonl`, hors du dépôt.
+- Le temps compte tant que Claude travaille, et pendant l'attente de la réponse de Théo jusqu'à `pause_minutes`, 20 par défaut. Une attente plus longue après la fin d'une réponse est une pause et ne compte pas. Un outil long, build ou tests, ne coupe jamais le temps.
+- Juste avant chaque `git commit`, le temps depuis le commit précédent de la session devient une ligne par période d'activité, bornes arrondies à la minute, rattachée au premier id d'item du message de commit, `source` `claude-code`, `valide` `false`, note « Pointage automatique, session <8 premiers caractères> ». Le fichier de temps est ajouté au commit.
+- L'agent est choisi d'après le numéro de l'item, `agents_par_plage` de `.claude/pointage.json`, sinon `agent` par défaut. Un dépôt sans `.claude/pointage.json` n'est pas pointé.
+- Le temps après le dernier commit d'une session n'est pas compté, ni le temps de Théo hors session : réunion, recette, essais sur appareil. Ce dernier s'écrit à la main, `agent` `theo`.
+- Deux agents en parallèle comptent chacun leur temps : la somme est du temps d'agents, pas du temps d'horloge.
+- Le script n'utilise que la bibliothèque standard et ne bloque jamais la session : il se copie tel quel dans un dépôt client, sous `.claude/hooks/pointage.py`, avec son `.claude/pointage.json`.
 
 ## Todoist
 

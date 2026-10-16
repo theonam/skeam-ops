@@ -15,3 +15,10 @@ Format : CONTRAT.md section 14. Décision réservée à Théo.
 - **Proposition** : ajouter à la section 11.4 « Écrit aussi `catalogue/out/calibration.md`, non versionné, d'audience interne, au contenu libre : par module, mesures, écart à la fourchette `heures_min` et `heures_max` et propositions de mise à jour. »
 - **Hypothèse retenue en attendant** : `/calibrer` affiche le fichier s'il existe, sinon s'appuie sur le diff de `catalogue/modules.yaml`.
 - **Impact** : CONTRAT.md section 11.4, chantier catalogue, `calibrer.py`, et `.gitignore` pour `catalogue/out/`.
+
+## 2026-10-16 Pointage automatique du temps dans les dépôts clients
+
+- **Besoin** : décision de Théo du 2026-10-16, le temps passé par tâche et par lot doit être mesuré, pas déclaré par l'agent. skeam-ops est pointé par `dashboard/scripts/pointage.py` ; les dépôts clients ne le sont pas, et la consigne Journal de temps de `templates/dossier-client/CLAUDE-projet.md` demande encore une ligne écrite à la main par session.
+- **Proposition** : ajouter au gabarit `templates/dossier-client/` un `.claude/settings.json`, un `.claude/pointage.json` au préfixe du client et `.claude/hooks/pointage.py`, copie de `dashboard/scripts/pointage.py` ; remplacer la consigne Journal de temps du gabarit par celle de `projet/CLAUDE-projet.md` ; préciser en CONTRAT.md section 6 qu'une session produit une ligne par période d'activité entre deux commits.
+- **Hypothèse retenue en attendant** : seul skeam-ops est pointé ; un dépôt client est équipé à la main sur instruction de Théo.
+- **Impact** : `templates/`, CONTRAT.md section 6, `scripts/nouveau_dossier.py` si la copie doit en dépendre ; aucun format de ligne ne change.

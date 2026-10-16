@@ -1,0 +1,12 @@
+{
+  "prefixe": "OPS",
+  "agent": "ops-init",
+  "pause_minutes": 20,
+  "agents_par_plage": [
+    [1, 99, "ops-init"],
+    [101, 199, "ops-socle"],
+    [201, 299, "ops-catalogue"],
+    [301, 399, "ops-cadrage"],
+    [401, 499, "ops-dashboard"]
+  ]
+}
