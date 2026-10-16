@@ -2,5 +2,5 @@
 # Clés : interne, commercial, client-<slug>. Valeur : URL https de l'artefact, ou null avant la première publication.
 # Écrit par /dashboard, après accord de Théo. Format : dashboard/README.md.
 artefacts:
-  interne: null
+  interne: https://claude.ai/artifact/CBCCm5QuE5CwoUybX2X7BM
   commercial: null
