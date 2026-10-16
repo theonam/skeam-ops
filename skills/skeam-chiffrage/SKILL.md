@@ -29,7 +29,7 @@ Lire d'abord `skills/commun.md` dans le clone de skeam-ops, puis CONTRAT.md sect
 
 1. Étape 0 et identification du client, `skills/commun.md` sections 1 et 2. Un dossier invalide n'est jamais chiffré.
 2. Vérifier la présence de `catalogue/scripts/chiffrer.py` dans skeam-ops. Absent : s'arrêter, le chantier catalogue n'est pas livré. La commande ne lit jamais le catalogue elle-même : le script s'en charge.
-3. Vérifier qu'aucun item n'est `a_valider: true` dans les lots à chiffrer ; sinon le signaler et proposer `/skeam-cadrage` d'abord, ou de continuer en connaissance de cause.
+3. Tous les items hors `abandonne` sont chiffrés ; `a_valider` est sans effet depuis le 2026-10-16.
 
 ### 2. Chiffrer
 

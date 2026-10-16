@@ -47,12 +47,12 @@ class TestChiffrer(BaseTemporaire):
     def test_calcul_du_lot_1(self):
         # devis, confiance moyenne, une observation de 16 h : référence (15 + 16) / 2 = 15,5 h > 12 h au backlog,
         # réparties 8/12 en L et 4/12 en M. facturation-simple, forte : médiane 12 h > 6 h au backlog, en M.
-        # relances, absent du catalogue : 3 h en S.
-        attendu = (15.5 * 8 / 12 * 1.3 + 15.5 * 4 / 12 * 1.2 + 12 * 1.2 + 3 * 1.15) * 70
+        # relances, absent du catalogue : 3 h en S. FICTIF-009, hors catalogue, 3 h en S : a_valider n'exclut plus rien.
+        attendu = (15.5 * 8 / 12 * 1.3 + 15.5 * 4 / 12 * 1.2 + 12 * 1.2 + 3 * 1.15 + 3 * 1.15) * 70
         self.chiffrer()
         donnees, md = self.lire()
         self.assertEqual(donnees["lignes"][1]["prix_unitaire_ht"], methode.arrondi_sup(attendu))
-        self.assertEqual(donnees["lignes"][1]["prix_unitaire_ht"], 2650)
+        self.assertEqual(donnees["lignes"][1]["prix_unitaire_ht"], 2900)
         self.assertIn("**Probable relevé par les mesures** sur `devis` : 15,5 h", md)
         self.assertIn("**Écart backlog et catalogue** sur `facturation-simple`", md)
 
@@ -65,7 +65,8 @@ class TestChiffrer(BaseTemporaire):
         self.assertIn("**Modules de confiance faible**", md)
         self.assertIn("`connexion-droits`, `app-terrain`", md)
         self.assertIn("**Exclu** : FICTIF-008", md)
-        self.assertIn("**Exclu** : FICTIF-009", md)
+        self.assertNotIn("**Exclu** : FICTIF-009", md)
+        self.assertIn("FICTIF-009 Export comptable, 3 h", md)
 
     def test_exclus_et_items_non_client_absents_du_devis(self):
         self.chiffrer()

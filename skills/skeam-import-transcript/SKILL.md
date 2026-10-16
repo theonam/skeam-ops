@@ -27,7 +27,7 @@ Lire d'abord `skills/commun.md` dans le clone de skeam-ops, puis CONTRAT.md sect
 Proposées, puis écrites seulement si Théo les accepte :
 
 - modifications de `projet/cadrage.md`, par section ;
-- nouveaux items de backlog, toujours `a_valider: true` et `audience: interne` ;
+- nouveaux items de backlog, `a_valider: false`, `audience` selon ce que voit le client : `client` pour une fonction de l'application, `interne` pour un travail technique ;
 - entrées de `projet/decisions.md` ;
 - actions de Théo dans `projet/actions.yaml`, avec la synthèse pour `source`.
 
@@ -95,7 +95,7 @@ Lire `cadrage.md`, tous les fichiers `backlog/*.yaml`, `decisions.md` et `action
 | Type | Contenu exact proposé |
 |---|---|
 | Cadrage | section visée, texte actuel, texte proposé. Une règle de gestion nouvelle prend le numéro RG suivant ; une règle n'est jamais renumérotée. Une information qui contredit le cadrage actuel est proposée en `Questions ouvertes`, jamais en remplacement silencieux. |
-| Item | item YAML complet : id suivant, `a_valider: true`, `audience: interne`, `statut: a_faire`, `commit: null`, `maj` du jour ; `estimation_h` et `taille` provisoires, reprises du module du catalogue si un module correspond, et `notes: Estimation provisoire, issue de syntheses/<fichier>.` |
+| Item | item YAML complet : id suivant, `a_valider: false`, `audience` selon ce que voit le client : `client` pour une fonction de l'application, `interne` pour un travail technique, `statut: a_faire`, `commit: null`, `maj` du jour ; `estimation_h` et `taille` provisoires, reprises du module du catalogue si un module correspond, et `notes: Estimation provisoire, issue de syntheses/<fichier>.` |
 | Décision | entrée de quatre puces, CONTRAT.md section 9.4, `Source` égale au chemin de la synthèse. Seulement ce qui a été tranché en réunion, pas ce qui a été évoqué. |
 | Action | action de Théo seulement : `titre`, `contexte` qui dit d'où elle vient et pourquoi, `priorite` et `points` proposés, `echeance` seulement si elle a été dite, `source` égale au chemin de la synthèse. Les actions des autres participants restent dans la synthèse ; celles qui attendent le client peuvent être proposées en `Attendus du client` du cadrage. |
 
@@ -110,7 +110,7 @@ Au-delà de huit propositions d'un même type, typiquement les items d'un premie
 ### 8. Appliquer ce qui est accepté
 
 1. Cadrage : modifier la section visée ; ajouter le chemin de la synthèse en `Sources` s'il n'y figure pas.
-2. Items : ajouter au fichier de backlog dont les items ont le même `lot` ; à défaut, créer `backlog/lot<n>.yaml`. Un item accepté garde `a_valider: true` ; son passage à `false` se fait par `/skeam-cadrage`.
+2. Items : ajouter au fichier de backlog dont les items ont le même `lot` ; à défaut, créer `backlog/lot<n>.yaml`. Un item accepté par Théo est un item ordinaire, `a_valider: false`.
 3. Décisions : ajouter en fin de `decisions.md`, ordre chronologique respecté.
 4. Actions : ajouter en fin de `actions.yaml`, `todoist_id: null`.
 5. Valider : code 0 exigé.

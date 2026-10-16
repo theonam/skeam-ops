@@ -181,14 +181,12 @@ def visible(item: dict, audience: str) -> bool:
     """Section 10 : niveau minimal de l'item et exclusion des items à valider."""
     if audience == "interne":
         return True
-    if item["a_valider"]:
-        return False
     return item["audience"] == "client" or (audience == "commercial" and item["audience"] == "commercial")
 
 
 def compte_avancement(item: dict) -> bool:
-    """Item compté dans l'avancement : hors abandonne et hors a_valider, toutes audiences confondues."""
-    return item["statut"] != "abandonne" and not item["a_valider"]
+    """Item compté dans l'avancement : hors abandonne, toutes audiences confondues."""
+    return item["statut"] != "abandonne"
 
 
 def externes(item: dict) -> list[str]:
@@ -222,8 +220,6 @@ class Calculs:
                 self.minutes_item[ligne["item"]] = self.minutes_item.get(ligne["item"], 0) + ligne["minutes"]
         # Des items développés sans aucune ligne de temps : le temps n'a pas été noté, ce n'est pas zéro.
         self.temps_journalise = bool(self.temps) or not any(i["statut"] in DEVELOPPES for i in self.items)
-        # Champ proposé au contrat, absent tant que le contrat ne l'a pas adopté.
-        self.suivi_ia = any("teste_ia" in i for i in self.items)
 
     @property
     def slug(self) -> str:
@@ -248,14 +244,14 @@ class Calculs:
                 "pourcentage": (faits * 100) // len(comptes) if comptes else None,
             }
             if audience == "interne":
-                # En interne, tout item hors abandonne compte : à valider ne filtre plus rien, décision de Théo du 2026-10-16.
                 engages = [item for item in du_lot if item["statut"] != "abandonne"]
                 estime = sum(item["estimation_h"] for item in engages)
                 reel = heures(sum(self.minutes_item.get(item["id"], 0) for item in du_lot)) if self.temps_journalise else None
                 entree |= {
                     "nb_items": len(engages),
                     "developpe": sum(1 for item in engages if item["statut"] in DEVELOPPES),
-                    "teste_ia": sum(1 for item in engages if item.get("teste_ia") or item["statut"] == "fait") if self.suivi_ia else None,
+                    # fait est posé par l'agent après avoir vérifié chaque critère d'acceptation : c'est le test de l'IA.
+                    "teste_ia": sum(1 for item in engages if item["statut"] == "fait"),
                     "heures_estimees": round(estime, 2),
                     "heures_reelles": reel,
                     "ecart_pct": None if reel is None else ecart(reel, estime),

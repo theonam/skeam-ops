@@ -15,19 +15,20 @@ skeam-ops est piloté comme un projet interne, slug `ops`, préfixe `OPS`. Ces c
 ## Avant de travailler
 
 1. Lire `README.md`, `CONTRAT.md` en entier, `projet/cadrage.md` et tous les fichiers `projet/backlog/*.yaml`.
-2. Ne travailler que sur les items de son fichier de backlog, de statut `a_faire` ou `en_cours`, dont `a_valider` vaut `false`.
+2. Ne travailler que sur les items de son fichier de backlog, de statut `a_faire` ou `en_cours`.
 
 ## Pendant le travail
 
 - Chaque message de commit commence par l'id de l'item : `OPS-203: chiffrage des lignes par lot`.
 - Au début : passer l'item à `en_cours`, `maj` à la date du jour, au plus tard dans le premier commit de la session.
 - À la fin : passer l'item à `a_recetter`, `commit` au hash court du dernier commit de code de l'item, `maj` à la date du jour, dans un commit dont le message commence aussi par l'id.
-- Seul Théo passe un item à `fait` ou `abandonne`.
+- Vérification : passer l'item à `fait`, avec `maj` à la date du jour, quand chaque critère d'acceptation a été vérifié par l'agent lui-même, par un test automatique ou dans l'application ; noter dans `notes` ce qui n'a pas pu être vérifié et laisser alors l'item `a_recetter`.
+- Seul Théo passe un item à `abandonne`.
 - Ne jamais modifier les autres champs d'un item existant sans instruction explicite.
 
 ## Besoin découvert
 
-Nouvel item dans son propre fichier de backlog, avec le plus petit numéro libre de sa plage, `a_valider: true`, `audience: interne`, `statut: a_faire`, au moins un critère d'acceptation. Un besoin qui relève d'un autre chantier s'écrit aussi dans son propre fichier, avec une dépendance ou une note qui le désigne ; ne jamais écrire dans le fichier de backlog d'un autre chantier.
+Nouvel item dans son propre fichier de backlog, avec le plus petit numéro libre de sa plage, `a_valider: false`, `audience: interne`, `statut: a_faire`, au moins un critère d'acceptation. Un besoin qui relève d'un autre chantier s'écrit aussi dans son propre fichier, avec une dépendance ou une note qui le désigne ; ne jamais écrire dans le fichier de backlog d'un autre chantier.
 
 ## Journal de temps
 

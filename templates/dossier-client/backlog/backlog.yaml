@@ -18,7 +18,7 @@ items: []
 #       - Un compagnon saisit ses heures du jour en moins de 30 secondes sur téléphone.
 #       - Les heures saisies respectent RG3.
 #     audience: client              # interne, commercial, client : niveau minimal pour voir l'item
-#     a_valider: false              # true pour tout item créé par un agent sans accord de Théo
+#     a_valider: false              # toujours false : champ sans effet depuis le 2026-10-16
 #     commit: null                  # hash du dernier commit lié
 #     maj: 2026-10-15
 #     notes: null                   # facultatif

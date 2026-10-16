@@ -364,8 +364,6 @@ def chiffrer(projet: Path, sortie: Path, date: str, dossier_catalogue: Path) -> 
     for item in contrat.lire_items(projet):
         if item["statut"] == "abandonne":
             exclus.append((item, "abandonné"))
-        elif item["a_valider"]:
-            exclus.append((item, "à valider par Théo"))
         else:
             retenus.append(item)
     if not retenus:

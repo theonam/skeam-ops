@@ -524,8 +524,8 @@ def valider_projet(chemin_projet: Path, rapport: Rapport, codes_modules: set[str
                 items[ident] = (fichier, item)
                 if prefixe and not ident.startswith(f"{prefixe}-"):
                     rapport.erreur(fichier, f"{ident} : le préfixe doit être {prefixe}, slug en majuscules")
-                if item["a_valider"] and item["audience"] != "interne":
-                    rapport.erreur(fichier, f"{ident} : un item à valider est d'audience interne")
+                if item["a_valider"]:
+                    rapport.avertissement(fichier, f"{ident} : a_valider vaut true, champ sans effet depuis le 2026-10-16, à passer à false")
                 if item["audience"] == "client":
                     for cle, textes in (("titre", [item["titre"]]), ("criteres_acceptation", item["criteres_acceptation"])):
                         for texte in textes:

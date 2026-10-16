@@ -5,7 +5,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_recetter
+    statut: fait
     taille: L
     estimation_h: 8
     dependances: []
@@ -15,13 +15,13 @@ items:
     audience: interne
     a_valider: false
     commit: ad6b9f4
-    maj: 2026-10-15
+    maj: 2026-10-16
   - id: OPS-402
     titre: Rendu du dashboard
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_recetter
+    statut: fait
     taille: M
     estimation_h: 6
     dependances:
@@ -31,13 +31,13 @@ items:
     audience: interne
     a_valider: false
     commit: 57c620c
-    maj: 2026-10-15
+    maj: 2026-10-16
   - id: OPS-403
     titre: Commandes /dashboard et /calibrer
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_recetter
+    statut: fait
     taille: S
     estimation_h: 3
     dependances:
@@ -48,7 +48,7 @@ items:
     audience: interne
     a_valider: false
     commit: b1a7572
-    maj: 2026-10-15
+    maj: 2026-10-16
   - id: OPS-404
     titre: Commande /publier
     module: null
@@ -88,7 +88,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_recetter
+    statut: fait
     taille: M
     estimation_h: 3
     dependances: []
@@ -106,7 +106,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_recetter
+    statut: fait
     taille: M
     estimation_h: 4
     dependances: []
@@ -122,7 +122,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_recetter
+    statut: fait
     taille: S
     estimation_h: 2
     dependances: []
@@ -137,7 +137,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_recetter
+    statut: fait
     taille: S
     estimation_h: 1
     dependances: []
@@ -153,7 +153,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_recetter
+    statut: fait
     taille: XS
     estimation_h: 1
     dependances: []
@@ -168,7 +168,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_recetter
+    statut: fait
     taille: S
     estimation_h: 2
     dependances: []
@@ -180,3 +180,21 @@ items:
     commit: e6257eb
     maj: 2026-10-16
     notes: Décision de Théo du 2026-10-16 ; l'évolution du contrat pour a_valider reste à arbitrer.
+  - id: OPS-412
+    titre: Fin de « à valider », l'agent passe un item à fait après vérification
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: fait
+    taille: M
+    estimation_h: 3
+    dependances: []
+    criteres_acceptation:
+      - a_valider ne filtre plus rien dans le validateur, le chiffrage, les vues publiées ni le tableau de bord ; le validateur avertit s'il vaut true.
+      - CONTRAT.md, le gabarit et les consignes des agents disent que l'agent passe un item à fait après avoir vérifié chaque critère d'acceptation.
+      - Les tests du socle commun, du catalogue, du cadrage, du socle et du tableau de bord passent.
+    audience: interne
+    a_valider: false
+    commit: ca1e759
+    maj: 2026-10-16
+    notes: Décision de Théo du 2026-10-16, appliquée aussi au backlog d'egm-app, commit ca8d9e1 sur projet/skeam-ops.

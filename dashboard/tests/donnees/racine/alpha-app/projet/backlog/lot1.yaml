@@ -61,7 +61,7 @@ items:
     criteres_acceptation:
       - Chaque connexion est tracée avec sa date et son appareil.
     audience: interne
-    a_valider: true
+    a_valider: false
     commit: null
     maj: 2026-10-14
     notes: Besoin découvert par alpha-dev pendant ALPHA-003.

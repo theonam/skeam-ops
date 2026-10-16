@@ -168,7 +168,7 @@ Schéma : `schemas/backlog.schema.json`. Un fichier de backlog a pour seule clé
 | `dependances` | liste sans doublon d'ids du même projet ou de chaînes `"externe: description"` ; entre guillemets en YAML à cause des deux points |
 | `criteres_acceptation` | liste d'au moins un texte ; une règle de gestion se cite `RGn` |
 | `audience` | `interne`, `commercial`, `client` : niveau minimal pour voir l'item, section 10 |
-| `a_valider` | booléen ; `true` pour tout item créé par un agent sans accord de Théo |
+| `a_valider` | booléen, toujours `false` : champ conservé pour compatibilité, sans effet depuis le 2026-10-16, décision de Théo ; un item ajouté par un agent est un item comme les autres |
 | `commit` | hash Git en minuscules, 7 à 40 caractères, du dernier commit de code lié, ou null |
 | `maj` | date de dernière modification de l'item |
 | `notes` | facultatif : texte ou null |
@@ -177,10 +177,10 @@ Règles vérifiées par le validateur :
 
 - ids uniques sur tous les fichiers du backlog, préfixe égal au slug en majuscules ;
 - dépendances existantes, sans boucle ni dépendance à soi-même ;
-- `a_valider: true` implique `audience: interne` ;
+- avertissement si `a_valider` vaut `true` ;
 - avertissement si un item `a_recetter` ou `fait` n'a pas de `commit`, si un module est absent du catalogue, ou si un critère cite une règle absente de `cadrage.md`.
 
-Cycle de vie : `a_faire` puis `en_cours` puis `a_recetter`, positionnés par l'agent ; `fait` et `abandonne`, positionnés par Théo seul.
+Cycle de vie, positionné par l'agent : `a_faire` puis `en_cours`, puis `a_recetter` quand le développement est livré, puis `fait` quand l'agent a vérifié lui-même chaque critère d'acceptation, par un test automatique ou dans l'application. Théo ne recette pas chaque item ; il teste l'application de temps en temps et peut rouvrir un item `fait` en le repassant `en_cours`. `abandonne` est positionné par Théo seul.
 
 <!-- exemple: backlog -->
 ```yaml
@@ -217,7 +217,7 @@ items:
     criteres_acceptation:
       - Les liens expirés depuis plus de 24 heures sont supprimés chaque nuit.
     audience: interne
-    a_valider: true
+    a_valider: false
     commit: null
     maj: 2026-10-15
     notes: Besoin découvert par demo-dev pendant DEMO-003.
@@ -528,7 +528,7 @@ Trois niveaux emboîtés : ce que voit `client`, `commercial` le voit ; ce que v
 | `liens.docs_commercial` | oui | oui | non |
 | `liens.depot`, `liens.docs_interne`, `todoist` | oui | non | non |
 | `fiche.md` | oui | oui | non |
-| Items d'audience `interne`, et tout item `a_valider: true` | oui | non | non |
+| Items d'audience `interne` | oui | non | non |
 | Items d'audience `commercial` | oui | oui | non |
 | Items d'audience `client` | oui | oui | oui |
 | Champs d'item `id`, `titre`, `lot`, `statut`, `priorite`, `criteres_acceptation`, `maj` | oui | oui | oui |
@@ -540,7 +540,7 @@ Trois niveaux emboîtés : ce que voit `client`, `commercial` le voit ; ce que v
 | Catalogue : modules, heures, tarifs | oui | non | non |
 | `interne/` | jamais lu par un script, jamais publié | non | non |
 
-Avancement d'un lot pour les audiences commercial et client : nombre d'items `fait` divisé par le nombre d'items du lot hors `abandonne` et hors `a_valider: true`, toutes audiences confondues, en pourcentage entier arrondi à l'inférieur. Il ne révèle aucune estimation.
+Avancement d'un lot pour les audiences commercial et client : nombre d'items `fait` divisé par le nombre d'items du lot hors `abandonne`, toutes audiences confondues, en pourcentage entier arrondi à l'inférieur. Il ne révèle aucune estimation.
 
 ## 11. Interfaces entre chantiers
 
@@ -685,9 +685,9 @@ Le texte de référence est `templates/dossier-client/CLAUDE-projet.md`, copié 
 
 - lire `projet/cadrage.md` et `projet/backlog/` avant de travailler ;
 - chaque message de commit commence par l'id de l'item : `EGM-012: ...` ;
-- passer l'item `en_cours` au début, `a_recetter` à la fin, avec `commit` et `maj` ; seul Théo passe un item à `fait` ou `abandonne` ;
+- passer l'item `en_cours` au début, `a_recetter` à la fin, avec `commit` et `maj` ; l'agent passe l'item à `fait` après avoir vérifié lui-même chaque critère d'acceptation ; seul Théo passe un item à `abandonne` ;
 - une ligne de temps par session dans `projet/temps/AAAA-MM-<agent>.jsonl` ;
-- tout besoin découvert devient un nouvel item `a_valider: true`, `audience: interne` ;
+- tout besoin découvert devient un nouvel item, `a_valider: false`, `audience` selon ce que voit le client : `client` pour une fonction de l'application, `interne` pour un travail technique ;
 - ne jamais modifier `projet/interne/` ni `decisions.md` sans instruction explicite.
 
 ## 14. Proposer une évolution du contrat

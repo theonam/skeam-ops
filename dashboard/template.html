@@ -471,7 +471,7 @@ details.projet > summary h3 { font-size: 1.1rem; }
   html.push('<section aria-labelledby="t-detail"><h2 id="t-detail">' + (client && D.projets.length === 1 ? "Détail" : "Détail par projet") + "</h2>" +
     (D.projets.length ? D.projets.map(function (p) {
       var alerte = (G.alertes || []).some(function (a) { return a.slug === p.slug && a.gravite === "haute"; });
-      return detail(p, D.projets.length === 1 || alerte);
+      return detail(p, D.projets.length === 1 || alerte || p.type !== "interne");
     }).join("") : '<p class="vide-page">Aucun projet actif.</p>') + "</section>");
 
   app.innerHTML = html.join("");

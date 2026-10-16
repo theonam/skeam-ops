@@ -73,10 +73,10 @@ Déroulé d'une validation :
 - Relire la section du contrat du fichier touché avant d'écrire. Aucune clé hors contrat.
 - YAML : deux espaces d'indentation, dates sans guillemets, chaînes faites de chiffres entre guillemets : siren, code postal, ids Todoist. Toute valeur qui contient deux-points suivis d'une espace, fréquent dans un titre rédigé en français, s'écrit entre guillemets doubles. Modifier au plus près, sans réordonner ni supprimer les commentaires existants.
 - Date du jour : `date +%F` avec `TZ=Europe/Paris`.
-- Nouvel item : `id` égal au plus grand numéro existant dans tout `backlog/` plus un ; `a_valider: true`, `audience: interne`, `statut: a_faire`, `commit: null`, `maj` du jour. Dans skeam-ops, plus petit numéro libre de la plage du chantier.
+- Nouvel item : `id` égal au plus grand numéro existant dans tout `backlog/` plus un ; `a_valider: false`, `audience` selon ce que voit le client : `client` pour une fonction de l'application, `interne` pour un travail technique, `statut: a_faire`, `commit: null`, `maj` du jour. Dans skeam-ops, plus petit numéro libre de la plage du chantier.
 - Nouvelle action : `ACT-<PRÉFIXE>-nnn`, plus grand numéro existant plus un, `todoist_id: null`, `statut: ouverte`.
 - `decisions.md` : ajout en fin de fichier uniquement, et seulement pour une entrée acceptée par Théo, ce qui vaut instruction explicite.
-- Statuts d'item `fait` et `abandonne` : jamais posés par une commande, sauf choix explicite de Théo dans une question.
+- Statuts d'item `fait` et `abandonne` : jamais posés par une commande, sauf choix explicite de Théo dans une question. `fait` est posé par l'agent de développement après vérification de chaque critère d'acceptation.
 - Après écriture : `python3 scripts/validate.py ../<nom>/projet` doit sortir avec le code 0. Sinon corriger ; si la correction n'est pas évidente, annuler la modification avec `git -C ../<nom> checkout -- <fichier>` et le signaler. Jamais de commit d'un dossier invalide.
 
 ## 6. Committer et pousser
