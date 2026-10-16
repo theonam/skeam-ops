@@ -220,7 +220,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: en_cours
+    statut: fait
     taille: M
     estimation_h: 2
     dependances: []
@@ -229,6 +229,6 @@ items:
       - dashboard/format.json fixe la version, les clés de la sortie par audience et les blocs de la page ; des tests échouent dès qu'une clé ou un bloc change.
     audience: interne
     a_valider: false
-    commit: null
+    commit: 7006f90
     maj: 2026-10-16
     notes: Demande de Théo du 2026-10-16 de templater et graver dans la roche le gabarit.
