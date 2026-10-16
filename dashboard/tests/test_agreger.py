@@ -88,16 +88,62 @@ class TestVueInterne(unittest.TestCase):
 
     def test_lots(self):
         lot0, lot1, lot2 = self.alpha["lots"]
-        self.assertEqual(lot0, {"lot": 0, "pourcentage": 100, "nb_items": 2, "nb_faits": 2, "heures_estimees": 7,
-                                "heures_reelles": 8.5, "ecart_pct": 21, "depassement": True})
-        # ALPHA-006 à valider est exclu ; ALPHA-005 interne compte.
-        self.assertEqual((lot1["pourcentage"], lot1["nb_items"], lot1["heures_estimees"], lot1["heures_reelles"]), (25, 4, 13, 4.5))
-        self.assertIsNone(lot2["pourcentage"])
+        self.assertEqual(lot0, {"lot": 0, "pourcentage": 100, "nb_items": 2, "nb_a_valider": 0, "developpe": 2, "teste_ia": None,
+                                "teste_theo": 2, "heures_estimees": 7, "heures_reelles": 8.5, "ecart_pct": 21, "depassement": True})
+        # En interne, ALPHA-006 à valider compte et se signale ; le pourcentage du contrat l'exclut toujours.
+        self.assertEqual((lot1["pourcentage"], lot1["nb_items"], lot1["nb_a_valider"], lot1["developpe"], lot1["teste_theo"]), (25, 5, 1, 2, 1))
+        self.assertEqual((lot1["heures_estimees"], lot1["heures_reelles"]), (14, 4.5))
+        self.assertEqual((lot2["pourcentage"], lot2["nb_items"], lot2["developpe"]), (None, 0, 0))
         self.assertEqual([l["pourcentage"] for l in self.beta["lots"]], [100, 33])
+
+    def test_trois_etapes_items_tous_a_valider(self):
+        """Cas d'E G M : tous les items à valider, une partie développée ; plus jamais n. d. seul en interne."""
+        with tempfile.TemporaryDirectory() as tmp:
+            copie = Path(tmp) / "donnees"
+            shutil.copytree(DONNEES, copie)
+            for fichier in (copie / "racine" / "beta-app" / "projet" / "backlog").glob("*.yaml"):
+                fichier.write_text(fichier.read_text(encoding="utf-8").replace("audience: commercial", "audience: interne")
+                                   .replace("audience: client", "audience: interne").replace("a_valider: false", "a_valider: true"), encoding="utf-8")
+            interne = projet(vue("interne", clients=copie / "clients.yaml", racine=copie / "racine", cwd=copie), "beta")
+            commercial = vue("commercial", clients=copie / "clients.yaml", racine=copie / "racine", cwd=copie)
+        self.assertEqual([(l["developpe"], l["teste_theo"], l["nb_items"], l["nb_a_valider"]) for l in interne["lots"]], [(1, 1, 1, 1), (2, 1, 3, 3)])
+        self.assertEqual([l["pourcentage"] for l in interne["lots"]], [None, None])
+        self.assertEqual(projet(commercial, "beta")["lots"], [])
+
+    def test_temps_non_journalise(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            copie = Path(tmp) / "donnees"
+            shutil.copytree(DONNEES, copie)
+            for fichier in (copie / "racine" / "beta-app" / "projet" / "temps").glob("*.jsonl"):
+                fichier.unlink()
+            donnees = vue("interne", clients=copie / "clients.yaml", racine=copie / "racine", cwd=copie)
+        beta = projet(donnees, "beta")
+        self.assertFalse(beta["temps"]["journalise"])
+        self.assertTrue(all(l["heures_reelles"] is None and l["ecart_pct"] is None for l in beta["lots"]))
+        self.assertTrue(all(i["heures_reelles"] is None for i in beta["items"]))
+        charge = {c["slug"]: c["journalise"] for c in donnees["global"]["charge_semaine"]["par_projet"]}
+        self.assertEqual(charge, {"alpha": True, "beta": False, "ops": True})
+        self.assertTrue(projet(donnees, "alpha")["temps"]["journalise"])
+
+    def test_devis_non_saisi(self):
+        self.assertTrue(self.alpha["devis_saisi"])
+        self.assertEqual(self.vue["global"]["nb_devis_non_saisis"], 0)
+        with tempfile.TemporaryDirectory() as tmp:
+            copie = Path(tmp) / "donnees"
+            shutil.copytree(DONNEES, copie)
+            client = copie / "racine" / "beta-app" / "projet" / "client.yaml"
+            texte = client.read_text(encoding="utf-8")
+            debut, fin = texte.index("montants_ht:"), texte.index("liens:")
+            client.write_text(texte[:debut] + "montants_ht:\n  build_signe: 0\n  options_signees: 0\n  run_annuel: 0\ndevis: []\n" + texte[fin:], encoding="utf-8")
+            for audience in ("interne", "commercial"):
+                donnees = vue(audience, clients=copie / "clients.yaml", racine=copie / "racine", cwd=copie)
+                self.assertFalse(projet(donnees, "beta")["devis_saisi"])
+                self.assertEqual(donnees["global"]["nb_devis_non_saisis"], 1)
 
     def test_temps_et_charge(self):
         self.assertEqual(self.alpha["temps"], {"semaine_h": 4.0, "semaine_theo_h": 1.5, "semaine_agents_h": 2.5,
-                                               "semaine_precedente_h": 6.0, "total_h": 15.5, "hors_item_h": 2.5, "a_relire_h": 2.5})
+                                               "semaine_precedente_h": 6.0, "total_h": 15.5, "hors_item_h": 2.5, "a_relire_h": 2.5,
+                                               "journalise": True})
         charge = self.vue["global"]["charge_semaine"]
         self.assertEqual((charge["total_h"], charge["total_theo_h"], charge["total_agents_h"]), (8.75, 1.5, 7.25))
         self.assertEqual([c["slug"] for c in charge["par_projet"]], ["alpha", "beta", "ops"])
@@ -105,7 +151,6 @@ class TestVueInterne(unittest.TestCase):
     def test_alertes(self):
         alertes = {(a["type"], a["cible"]) for a in self.vue["global"]["alertes"]}
         self.assertEqual(alertes, {
-            ("action_en_retard", "ACT-ALPHA-001"),
             ("depassement_item", "ALPHA-001"),
             ("depassement_lot", "lot 0"),
             ("bloque_externe", "ALPHA-003"),
@@ -113,18 +158,12 @@ class TestVueInterne(unittest.TestCase):
         })
         self.assertEqual(self.vue["global"]["alertes"][0]["gravite"], "haute")
 
-    def test_a_faire(self):
-        a_faire = [(a["type"], a["id"] or a["titre"]) for a in self.vue["global"]["a_faire"]]
-        self.assertEqual(a_faire, [
-            ("action", "ACT-ALPHA-001"),
-            ("action", "ACT-OPS-001"),
-            ("action", "ACT-ALPHA-002"),
-            ("recette", "ALPHA-004"),
-            ("recette", "BETA-003"),
-            ("devis", "Envoyer le devis Option export comptable"),
-            ("validation", "ALPHA-006"),
-        ])
-        self.assertTrue(self.vue["global"]["a_faire"][0]["en_retard"])
+    def test_compteurs(self):
+        self.assertNotIn("a_faire", self.vue["global"])
+        self.assertEqual(self.alpha["compteurs"], {"a_tester": 1, "a_valider": 1, "devis_a_envoyer": 1})
+        self.assertEqual(self.alpha["devis_a_envoyer"], [{"objet": "Option export comptable", "montant_ht": 1200}])
+        self.assertEqual(self.beta["compteurs"], {"a_tester": 1, "a_valider": 0, "devis_a_envoyer": 0})
+        self.assertEqual(self.alpha["todoist"], {"projet_id": "7Kg9WRYyqxw67WR8", "section_id": None})
 
     def test_listes_du_projet(self):
         self.assertEqual([i["id"] for i in self.alpha["items_bloques"]], ["ALPHA-003"])
@@ -277,7 +316,9 @@ class TestRendu(unittest.TestCase):
     SCRIPT = str(SCRIPTS / "rendre.py")
 
     def test_gabarit(self):
-        self.assertEqual(rendre.GABARIT.read_text(encoding="utf-8").count(rendre.MARQUEUR), 1)
+        gabarit = rendre.GABARIT.read_text(encoding="utf-8")
+        self.assertEqual(gabarit.count(rendre.MARQUEUR), 1)
+        self.assertEqual(gabarit.count(rendre.MARQUEUR_TODOIST), 1)
 
     def test_injection_sure(self):
         donnees = {"audience": "client", "genere_le": "x", "projets": [{"nom": "</script><script>alert(1)</script>"}]}
@@ -295,6 +336,46 @@ class TestRendu(unittest.TestCase):
                 resultat = lancer(self.SCRIPT, str(vue_json), "--sortie", str(page))
                 self.assertEqual(resultat.returncode, 0, resultat.stderr)
                 self.assertIn('"audience":"' + audience + '"', page.read_text(encoding="utf-8"))
+
+    INSTANTANE = {
+        "releve_le": "2026-10-15T09:00:00+02:00",
+        "sections": [{"id": "s1", "name": "Client · Alpha Menuiserie"}, {"id": "s2", "name": "SKEAM · Entreprise"}],
+        "taches": [
+            {"id": "t1", "content": "Relancer la grille tarifaire", "priority": "p1", "dueDate": "2026-10-12", "sectionId": "s1", "checked": False, "description": "secret"},
+            {"id": "t2", "content": "Tâche p3 hors liste", "priority": "p3", "sectionId": "s1", "checked": False},
+            {"id": "t3", "content": "Facture fournisseur", "priority": "p1", "sectionId": "s2", "checked": False},
+            {"id": "t4", "content": "Déjà faite", "priority": "p2", "sectionId": "s1", "checked": True},
+        ],
+    }
+
+    def todoist_de(self, page: str):
+        return json.loads(re.search(r'<script id="todoist" type="application/json">(.*?)</script>', page, re.S).group(1))
+
+    def test_todoist_vue_interne(self):
+        gabarit = rendre.GABARIT.read_text(encoding="utf-8")
+        todoist = self.todoist_de(rendre.rendre(vue("interne"), gabarit, self.INSTANTANE))
+        self.assertEqual(todoist["config"]["projet_id"], "6h6qfvrgr83M56Gq")
+        self.assertEqual(todoist["instantane"]["sections"], [{"id": "s1", "name": "Client · Alpha Menuiserie"}])
+        self.assertEqual(todoist["instantane"]["taches"], [{"id": "t1", "content": "Relancer la grille tarifaire", "priority": "p1",
+                                                           "dueDate": "2026-10-12", "sectionId": "s1"}])
+        self.assertIsNone(self.todoist_de(rendre.rendre(vue("interne"), gabarit))["instantane"])
+        for audience in ("commercial", "client"):
+            self.assertIsNone(self.todoist_de(rendre.rendre(vue(audience), gabarit)))
+            with self.assertRaises(ValueError):
+                rendre.rendre(vue(audience), gabarit, self.INSTANTANE)
+
+    def test_todoist_ligne_de_commande(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            instantane = Path(tmp) / "todoist.json"
+            instantane.write_text(json.dumps(self.INSTANTANE), encoding="utf-8")
+            for audience in ("interne", "commercial"):
+                agreger.ecrire(vue(audience), Path(tmp) / f"{audience}.json")
+            page = Path(tmp) / "interne.html"
+            resultat = lancer(self.SCRIPT, str(Path(tmp) / "interne.json"), "--sortie", str(page), "--todoist", str(instantane))
+            self.assertEqual(resultat.returncode, 0, resultat.stderr)
+            self.assertNotIn("secret", page.read_text(encoding="utf-8"))
+            self.assertEqual(lancer(self.SCRIPT, str(Path(tmp) / "commercial.json"), "--sortie", str(page), "--todoist", str(instantane)).returncode, 2)
+            self.assertEqual(lancer(self.SCRIPT, str(Path(tmp) / "interne.json"), "--sortie", str(page), "--todoist", str(Path(tmp) / "absent.json")).returncode, 1)
 
     def test_projet_unique_pour_la_vue_client(self):
         with tempfile.TemporaryDirectory() as tmp:

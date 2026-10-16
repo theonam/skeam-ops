@@ -34,15 +34,17 @@ import validate  # noqa: E402
 AUDIENCES = ("interne", "commercial", "client")
 CHEMIN_OPS = Path("projet")
 SEUIL_DEPASSEMENT = 0.20
+DEVELOPPES = ("a_recetter", "fait")
 JOURS_EN_COURS_MAX = 7
 # Ordre d'affichage du portefeuille : ce qui est en production d'abord.
 ORDRE_STATUTS = ["en_dev", "recette", "signe", "devis_envoye", "cadrage", "prospect", "run", "clos"]
 ORDRE_GRAVITE = {"haute": 0, "moyenne": 1, "basse": 2}
 # Clés qui ne doivent jamais apparaître hors de l'audience interne : contrôle de sûreté final.
 CLES_INTERNES = {
-    "actions", "a_faire", "a_valider", "audience", "charge_semaine", "commit",
+    "actions", "a_valider", "audience", "charge_semaine", "commit", "compteurs", "devis_a_envoyer", "developpe",
     "dependances", "dependances_externes", "depot", "docs_interne", "ecart_pct", "estimation_h",
-    "items_a_recetter", "items_a_valider", "items_bloques", "minutes", "notes", "taille", "temps", "todoist",
+    "items_a_recetter", "items_a_valider", "items_bloques", "minutes", "nb_a_valider", "notes", "taille", "temps", "teste_ia",
+    "teste_theo", "todoist",
 }
 
 
@@ -186,13 +188,17 @@ class Calculs:
         for ligne in self.temps:
             if ligne["item"] is not None:
                 self.minutes_item[ligne["item"]] = self.minutes_item.get(ligne["item"], 0) + ligne["minutes"]
+        # Des items développés sans aucune ligne de temps : le temps n'a pas été noté, ce n'est pas zéro.
+        self.temps_journalise = bool(self.temps) or not any(i["statut"] in DEVELOPPES for i in self.items)
+        # Champ proposé au contrat, absent tant que le contrat ne l'a pas adopté.
+        self.suivi_ia = any("teste_ia" in i for i in self.items)
 
     @property
     def slug(self) -> str:
         return self.client["slug"]
 
-    def heures_item(self, item: dict) -> float:
-        return heures(self.minutes_item.get(item["id"], 0))
+    def heures_item(self, item: dict) -> float | None:
+        return heures(self.minutes_item.get(item["id"], 0)) if self.temps_journalise else None
 
     def lots(self, audience: str) -> list[dict]:
         resultat = []
@@ -207,15 +213,20 @@ class Calculs:
                 "pourcentage": (faits * 100) // len(comptes) if comptes else None,
             }
             if audience == "interne":
-                estime = sum(item["estimation_h"] for item in comptes)
-                reel = heures(sum(self.minutes_item.get(item["id"], 0) for item in du_lot))
+                # En interne, tout item hors abandonne compte, à valider compris.
+                engages = [item for item in du_lot if item["statut"] != "abandonne"]
+                estime = sum(item["estimation_h"] for item in engages)
+                reel = heures(sum(self.minutes_item.get(item["id"], 0) for item in du_lot)) if self.temps_journalise else None
                 entree |= {
-                    "nb_items": len(comptes),
-                    "nb_faits": faits,
+                    "nb_items": len(engages),
+                    "nb_a_valider": sum(1 for item in engages if item["a_valider"]),
+                    "developpe": sum(1 for item in engages if item["statut"] in DEVELOPPES),
+                    "teste_ia": sum(1 for item in engages if item.get("teste_ia") or item["statut"] == "fait") if self.suivi_ia else None,
+                    "teste_theo": sum(1 for item in engages if item["statut"] == "fait"),
                     "heures_estimees": round(estime, 2),
                     "heures_reelles": reel,
-                    "ecart_pct": ecart(reel, estime),
-                    "depassement": depasse(reel, estime),
+                    "ecart_pct": None if reel is None else ecart(reel, estime),
+                    "depassement": reel is not None and depasse(reel, estime),
                 }
             resultat.append(entree)
         return resultat
@@ -282,6 +293,7 @@ class Calculs:
             "total_h": heures(sum(l["minutes"] for l in self.temps)),
             "hors_item_h": heures(sum(l["minutes"] for l in self.temps if l["item"] is None)),
             "a_relire_h": heures(sum(l["minutes"] for l in self.temps if not l["valide"])),
+            "journalise": self.temps_journalise,
         }
 
     def montant_signe(self) -> float:
@@ -339,6 +351,7 @@ def projet_commercial(calculs: Calculs) -> dict:
         "prochaine_echeance": calculs.prochaine_echeance("commercial"),
         "montants_ht": dict(client["montants_ht"]),
         "montant_signe_ht": calculs.montant_signe(),
+        "devis_saisi": bool(client["devis"]),
         "devis": [{k: d[k] for k in ("objet", "montant_ht", "statut")} for d in client["devis"]],
         "liens": {k: liens[k] for k in ("demo", "prod", "docs_client", "docs_commercial")},
         "lots": calculs.lots("commercial"),
@@ -360,9 +373,16 @@ def projet_interne(calculs: Calculs, interne: bool) -> dict:
         "items_bloques": calculs.items_bloques(),
         "items_a_valider": calculs.items_par_statut(lambda i: i["a_valider"] and i["statut"] not in ("fait", "abandonne")),
         "items_a_recetter": calculs.items_par_statut(lambda i: i["statut"] == "a_recetter"),
+        "devis_a_envoyer": [{k: d[k] for k in ("objet", "montant_ht")} for d in client["devis"] if d["statut"] == "brouillon"],
         "actions": calculs.actions_ouvertes(),
         "temps": calculs.temps_resume(),
+        "todoist": dict(client["todoist"]),
         "items": items_vus(calculs, "interne"),
+    }
+    resultat["compteurs"] = {
+        "a_tester": len(resultat["items_a_recetter"]),
+        "a_valider": len(resultat["items_a_valider"]),
+        "devis_a_envoyer": len(resultat["devis_a_envoyer"]),
     }
     return resultat
 
@@ -394,6 +414,7 @@ def totaux(projets: list[dict]) -> dict:
         "total_signe_ht": round(sum(p["montant_signe_ht"] for p in projets), 2),
         "run_annuel_ht": round(sum(p["montants_ht"]["run_annuel"] for p in projets), 2),
         "nb_clients": sum(1 for p in projets if p["type"] == "client"),
+        "nb_devis_non_saisis": sum(1 for p in projets if p["type"] == "client" and not p["devis_saisi"] and not p["montant_signe_ht"]),
     }
 
 
@@ -417,15 +438,12 @@ def alertes_internes(projet: dict, statut_registre: str | None) -> list[dict]:
                 f"Lot {lot['lot']} : {lot['heures_reelles']} h réelles pour {lot['heures_estimees']} h estimées, +{lot['ecart_pct']} %",
             ))
     for item in projet["items"]:
-        if item["statut"] != "abandonne" and depasse(item["heures_reelles"], item["estimation_h"]):
+        if item["statut"] != "abandonne" and item["heures_reelles"] is not None and depasse(item["heures_reelles"], item["estimation_h"]):
             resultat.append(alerte(
                 "haute", "depassement_item", projet, item["id"],
                 f"{item['id']} {item['titre']} : {item['heures_reelles']} h pour {item['estimation_h']} h estimées, "
                 f"+{ecart(item['heures_reelles'], item['estimation_h'])} %",
             ))
-    for action in projet["actions"]:
-        if action["en_retard"]:
-            resultat.append(alerte("haute", "action_en_retard", projet, action["id"], f"{action['id']} {action['titre']} : échéance {action['echeance']} dépassée"))
     for item in projet["items_bloques"]:
         resultat.append(alerte(
             "moyenne", "bloque_externe", projet, item["id"],
@@ -442,30 +460,6 @@ def alertes_internes(projet: dict, statut_registre: str | None) -> list[dict]:
 
 def trier_alertes(alertes: list[dict]) -> list[dict]:
     return sorted(alertes, key=lambda a: (ORDRE_GRAVITE[a["gravite"]], a["type"], a["slug"], a["cible"] or ""))
-
-
-def a_faire(projets: list[dict], clients: dict[str, dict]) -> list[dict]:
-    """Ce que Théo doit faire : actions p1 et p2, recettes, validations, devis en brouillon."""
-    resultat = []
-    for projet in projets:
-        base = {"slug": projet["slug"], "nom": projet["nom"]}
-        for action in projet["actions"]:
-            resultat.append(base | {"type": "action", "id": action["id"], "titre": action["titre"], "priorite": action["priorite"],
-                                     "echeance": action["echeance"], "en_retard": action["en_retard"]})
-        for item in projet["items_a_recetter"]:
-            resultat.append(base | {"type": "recette", "id": item["id"], "titre": f"Recetter {item['titre']}", "priorite": None,
-                                     "echeance": None, "en_retard": False})
-        for item in projet["items_a_valider"]:
-            resultat.append(base | {"type": "validation", "id": item["id"], "titre": f"Valider ou refuser {item['titre']}", "priorite": None,
-                                     "echeance": None, "en_retard": False})
-        for devis in clients[projet["slug"]]["devis"]:
-            if devis["statut"] == "brouillon":
-                resultat.append(base | {"type": "devis", "id": None, "titre": f"Envoyer le devis {devis['objet']}", "priorite": None,
-                                         "echeance": None, "en_retard": False})
-    ordre_types = {"action": 0, "recette": 1, "devis": 2, "validation": 3}
-    return sorted(resultat, key=lambda a: (
-        ordre_types[a["type"]], not a["en_retard"], a["priorite"] or "p9", a["echeance"] or "9999-99-99", a["slug"], a["id"] or "",
-    ))
 
 
 # ---------------------------------------------------------------------------
@@ -504,10 +498,10 @@ def agreger(chemin_clients: Path, racine: Path, audience: str, maintenant: dt.da
         return resultat
 
     projets = sorted((projet_interne(c, c.slug == "ops") for c in calculs), key=cle_tri)
-    clients = {c.slug: c.client for c in calculs}
     charge = sorted(
         ({"slug": p["slug"], "nom": p["nom"], "heures": p["temps"]["semaine_h"], "heures_theo": p["temps"]["semaine_theo_h"],
-          "heures_agents": p["temps"]["semaine_agents_h"], "heures_semaine_precedente": p["temps"]["semaine_precedente_h"]}
+          "heures_agents": p["temps"]["semaine_agents_h"], "heures_semaine_precedente": p["temps"]["semaine_precedente_h"],
+          "journalise": p["temps"]["journalise"]}
          for p in projets),
         key=lambda c: (-c["heures"], c["nom"].lower()),
     )
@@ -522,7 +516,6 @@ def agreger(chemin_clients: Path, racine: Path, audience: str, maintenant: dt.da
                 "par_projet": charge,
             },
             "alertes": trier_alertes([a for p in projets for a in alertes_internes(p, registre.get(p["slug"]))]),
-            "a_faire": a_faire(projets, clients),
         },
         "projets": projets,
     }
