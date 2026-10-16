@@ -1,6 +1,6 @@
 {
-  "version": 3,
-  "description": "Format figé de la sortie d'agreger.py et blocs du gabarit, version 3 du 2026-10-16, devis et lots, temps passé seul sous chaque lot. Toute évolution passe par Théo, incrémente la version ici et dans template.html, et met à jour dashboard/README.md.",
+  "version": 4,
+  "description": "Format figé de la sortie d'agreger.py et blocs du gabarit, version 4 du 2026-10-16, vue commerciale clarifiée : prochaine étape de chaque devis, fonctionnalités à proposer nommées, avancement en une ligne. Toute évolution passe par Théo, incrémente la version ici et dans template.html, et met à jour dashboard/README.md.",
   "audiences": {
     "interne": {
       "enveloppe": [
@@ -116,6 +116,7 @@
         "a_faire",
         "developpe",
         "en_cours",
+        "ids",
         "lot",
         "nb_items",
         "partiel",
@@ -197,6 +198,7 @@
         "a_faire",
         "developpe",
         "en_cours",
+        "ids",
         "lot",
         "nb_items",
         "partiel",
@@ -273,8 +275,6 @@
       "detail",
       "infos",
       "devis-lots",
-      "lots",
-      "pilotage",
       "synthese",
       "items"
     ],
