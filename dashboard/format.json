@@ -1,0 +1,236 @@
+{
+  "version": 1,
+  "description": "Format figé de la sortie d'agreger.py et blocs du gabarit, version 1 du 2026-10-16. Toute évolution passe par Théo, incrémente la version ici et dans template.html, et met à jour dashboard/README.md.",
+  "audiences": {
+    "interne": {
+      "enveloppe": [
+        "audience",
+        "date_ref",
+        "genere_le",
+        "global",
+        "projets",
+        "semaine"
+      ],
+      "projet": [
+        "actions",
+        "apporteur",
+        "budget",
+        "compteurs",
+        "dates",
+        "derniere_synthese",
+        "devis",
+        "devis_a_envoyer",
+        "devis_saisi",
+        "items",
+        "items_bloques",
+        "items_en_cours_anciens",
+        "liens",
+        "lots",
+        "montant_signe_ht",
+        "montants_ht",
+        "nom",
+        "prochaine_echeance",
+        "slug",
+        "statut",
+        "temps",
+        "todoist",
+        "type"
+      ],
+      "lot": [
+        "a_faire",
+        "depassement",
+        "description",
+        "developpe",
+        "ecart_pct",
+        "en_cours",
+        "heures_estimees",
+        "heures_reelles",
+        "lot",
+        "nb_items",
+        "pct_developpe",
+        "pourcentage",
+        "termine",
+        "titre"
+      ],
+      "item": [
+        "audience",
+        "dependances_externes",
+        "estimation_h",
+        "heures_reelles",
+        "id",
+        "lot",
+        "maj",
+        "module",
+        "priorite",
+        "statut",
+        "taille",
+        "titre"
+      ],
+      "global": [
+        "alertes",
+        "charge_semaine",
+        "nb_clients",
+        "nb_devis_non_saisis",
+        "portefeuille",
+        "run_annuel_ht",
+        "total_signe_ht"
+      ],
+      "budget": [
+        "consomme_pct",
+        "heures_estimees",
+        "heures_reelles",
+        "heures_vendues",
+        "montant_vendu_ht",
+        "source_vendu",
+        "taux_horaire_cible",
+        "taux_reel"
+      ],
+      "temps": [
+        "a_relire_h",
+        "hors_item_h",
+        "journalise",
+        "semaine_agents_h",
+        "semaine_h",
+        "semaine_precedente_h",
+        "semaine_theo_h",
+        "total_h"
+      ],
+      "alerte": [
+        "cible",
+        "gravite",
+        "message",
+        "nom",
+        "slug",
+        "type"
+      ]
+    },
+    "commercial": {
+      "enveloppe": [
+        "audience",
+        "date_ref",
+        "genere_le",
+        "global",
+        "projets"
+      ],
+      "projet": [
+        "apporteur",
+        "dates",
+        "derniere_synthese",
+        "devis",
+        "devis_saisi",
+        "items",
+        "items_en_cours_anciens",
+        "liens",
+        "lots",
+        "montant_signe_ht",
+        "montants_ht",
+        "nom",
+        "prochaine_echeance",
+        "slug",
+        "statut",
+        "type"
+      ],
+      "lot": [
+        "a_faire",
+        "description",
+        "developpe",
+        "en_cours",
+        "lot",
+        "nb_items",
+        "pct_developpe",
+        "pourcentage",
+        "termine",
+        "titre"
+      ],
+      "item": [
+        "id",
+        "lot",
+        "maj",
+        "module",
+        "priorite",
+        "statut",
+        "titre"
+      ],
+      "global": [
+        "alertes",
+        "nb_clients",
+        "nb_devis_non_saisis",
+        "portefeuille",
+        "run_annuel_ht",
+        "total_signe_ht"
+      ]
+    },
+    "client": {
+      "enveloppe": [
+        "audience",
+        "genere_le",
+        "projets"
+      ],
+      "projet": [
+        "items",
+        "liens",
+        "lots",
+        "nom",
+        "slug",
+        "statut"
+      ],
+      "lot": [
+        "a_faire",
+        "description",
+        "developpe",
+        "en_cours",
+        "lot",
+        "nb_items",
+        "pct_developpe",
+        "pourcentage",
+        "termine",
+        "titre"
+      ],
+      "item": [
+        "id",
+        "lot",
+        "maj",
+        "priorite",
+        "statut",
+        "titre"
+      ]
+    }
+  },
+  "blocs": {
+    "interne": [
+      "bandeau",
+      "todo",
+      "alertes",
+      "devis-a-envoyer",
+      "chiffres",
+      "portefeuille",
+      "charge",
+      "detail",
+      "infos",
+      "budget",
+      "lots",
+      "pilotage",
+      "synthese",
+      "items"
+    ],
+    "commercial": [
+      "bandeau",
+      "alertes",
+      "chiffres",
+      "portefeuille",
+      "detail",
+      "infos",
+      "lots",
+      "pilotage",
+      "synthese",
+      "items"
+    ],
+    "client": [
+      "bandeau",
+      "detail",
+      "infos",
+      "lots",
+      "items"
+    ]
+  }
+}
