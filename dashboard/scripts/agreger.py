@@ -21,6 +21,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any, Iterable
@@ -43,8 +44,7 @@ ORDRE_GRAVITE = {"haute": 0, "moyenne": 1, "basse": 2}
 CLES_INTERNES = {
     "actions", "a_valider", "audience", "charge_semaine", "commit", "compteurs", "devis_a_envoyer", "developpe",
     "dependances", "dependances_externes", "depot", "docs_interne", "ecart_pct", "estimation_h",
-    "items_a_recetter", "items_a_valider", "items_bloques", "minutes", "nb_a_valider", "notes", "taille", "temps", "teste_ia",
-    "teste_theo", "todoist",
+    "items_bloques", "minutes", "notes", "taille", "temps", "teste_ia", "todoist",
 }
 
 
@@ -124,8 +124,39 @@ def derniere_synthese(dossier: Path) -> dict | None:
     }
 
 
+RE_LOT = re.compile(r"^- \*\*Lot ([0-9]+)\*\* : (.+)$")
+
+
+def lots_du_cadrage(dossier: Path) -> dict[int, dict]:
+    """Titre et but de chaque lot, lus dans la section Découpage en lots de cadrage.md.
+
+    Une puce « - **Lot N** : titre. But et précisions. » donne le titre, première phrase,
+    et la description, le reste ; les commentaires HTML sont ignorés.
+    """
+    chemin = dossier / "cadrage.md"
+    if not chemin.is_file():
+        return {}
+    texte = chemin.read_text(encoding="utf-8")
+    liste = contrat.titres(texte)
+    debut = next((numero for niveau, titre, numero in liste if niveau == 2 and titre == "Découpage en lots"), None)
+    if debut is None:
+        return {}
+    fin = next((numero for niveau, _, numero in liste if numero > debut and niveau <= 2), None)
+    resultat: dict[int, dict] = {}
+    for numero, ligne, dans_code in contrat.lignes_utiles(texte):
+        if dans_code or numero <= debut or (fin is not None and numero >= fin):
+            continue
+        correspondance = RE_LOT.match(ligne.strip())
+        if correspondance:
+            titre, _, reste = correspondance.group(2).strip().partition(". ")
+            titre = titre.strip().rstrip(".")
+            resultat[int(correspondance.group(1))] = {"titre": titre[:1].upper() + titre[1:], "description": reste.strip()}
+    return resultat
+
+
 def lire_projet(dossier: Path) -> dict:
     return {
+        "lots_cadrage": lots_du_cadrage(dossier),
         "client": contrat.lire_client(dossier),
         "items": contrat.lire_items(dossier),
         "actions": contrat.lire_actions(dossier),
@@ -182,6 +213,7 @@ class Calculs:
         self.actions = projet["actions"]
         self.temps = projet["temps"]
         self.synthese = projet["synthese"]
+        self.lots_cadrage = projet.get("lots_cadrage") or {}
         self.aujourd_hui = aujourd_hui
         self.lundi = aujourd_hui - dt.timedelta(days=aujourd_hui.weekday())
         self.minutes_item: dict[str, int] = {}
@@ -208,21 +240,22 @@ class Calculs:
                 continue
             comptes = [item for item in du_lot if compte_avancement(item)]
             faits = sum(1 for item in comptes if item["statut"] == "fait")
+            cadrage = self.lots_cadrage.get(lot, {})
             entree: dict[str, Any] = {
                 "lot": lot,
+                "titre": cadrage.get("titre"),
+                "description": cadrage.get("description"),
                 "pourcentage": (faits * 100) // len(comptes) if comptes else None,
             }
             if audience == "interne":
-                # En interne, tout item hors abandonne compte, à valider compris.
+                # En interne, tout item hors abandonne compte : à valider ne filtre plus rien, décision de Théo du 2026-10-16.
                 engages = [item for item in du_lot if item["statut"] != "abandonne"]
                 estime = sum(item["estimation_h"] for item in engages)
                 reel = heures(sum(self.minutes_item.get(item["id"], 0) for item in du_lot)) if self.temps_journalise else None
                 entree |= {
                     "nb_items": len(engages),
-                    "nb_a_valider": sum(1 for item in engages if item["a_valider"]),
                     "developpe": sum(1 for item in engages if item["statut"] in DEVELOPPES),
                     "teste_ia": sum(1 for item in engages if item.get("teste_ia") or item["statut"] == "fait") if self.suivi_ia else None,
-                    "teste_theo": sum(1 for item in engages if item["statut"] == "fait"),
                     "heures_estimees": round(estime, 2),
                     "heures_reelles": reel,
                     "ecart_pct": None if reel is None else ecart(reel, estime),
@@ -246,9 +279,6 @@ class Calculs:
             for i in self.items
             if i["statut"] in ("a_faire", "en_cours") and externes(i)
         ]
-
-    def items_par_statut(self, predicat) -> list[dict]:
-        return [{"id": i["id"], "titre": i["titre"], "lot": i["lot"], "statut": i["statut"]} for i in self.items if predicat(i)]
 
     def actions_ouvertes(self, priorites: Iterable[str] = ("p1", "p2")) -> list[dict]:
         resultat = []
@@ -319,7 +349,6 @@ def items_vus(calculs: Calculs, audience: str) -> list[dict]:
                 "estimation_h": item["estimation_h"],
                 "heures_reelles": calculs.heures_item(item),
                 "audience": item["audience"],
-                "a_valider": item["a_valider"],
                 "dependances_externes": externes(item),
             }
         resultat.append(entree)
@@ -371,19 +400,13 @@ def projet_interne(calculs: Calculs, interne: bool) -> dict:
         "lots": calculs.lots("interne"),
         "items_en_cours_anciens": calculs.items_en_cours_anciens("interne"),
         "items_bloques": calculs.items_bloques(),
-        "items_a_valider": calculs.items_par_statut(lambda i: i["a_valider"] and i["statut"] not in ("fait", "abandonne")),
-        "items_a_recetter": calculs.items_par_statut(lambda i: i["statut"] == "a_recetter"),
         "devis_a_envoyer": [{k: d[k] for k in ("objet", "montant_ht")} for d in client["devis"] if d["statut"] == "brouillon"],
         "actions": calculs.actions_ouvertes(),
         "temps": calculs.temps_resume(),
         "todoist": dict(client["todoist"]),
         "items": items_vus(calculs, "interne"),
     }
-    resultat["compteurs"] = {
-        "a_tester": len(resultat["items_a_recetter"]),
-        "a_valider": len(resultat["items_a_valider"]),
-        "devis_a_envoyer": len(resultat["devis_a_envoyer"]),
-    }
+    resultat["compteurs"] = {"devis_a_envoyer": len(resultat["devis_a_envoyer"])}
     return resultat
 
 
