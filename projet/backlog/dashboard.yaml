@@ -285,3 +285,20 @@ items:
     commit: aef8ad9
     maj: 2026-10-16
     notes: "Demandes de Théo du 2026-10-16 au soir : vue commerciale sans un mot inutile pour un commercial, couleurs des statuts. Gabarit en version 4. Vérifié le 2026-10-16 : tests au vert, vue commerciale rendue à 390 et 1 100 px sur les données d'E G M, sans défilement horizontal ni erreur, sans temps, identifiant ni étape interne ; vue interne inchangée hors couleurs et prochaine étape."
+  - id: OPS-418
+    titre: Fonctionnalités supplémentaires facturables avec leur prix de vente dans la vue commerciale
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: en_cours
+    taille: S
+    estimation_h: 1
+    dependances: []
+    criteres_acceptation:
+      - La vue commerciale liste sous un seul titre les fonctionnalités qui ne sont dans aucun devis envoyé ou signé, chacune avec son prix de vente, sans statut ni avancement, et n'affiche plus les devis en brouillon.
+      - Le prix de vente d'un item se tient dans le backlog, champ prix_vente_ht du contrat, invisible du client.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-16
+    notes: "Demande de Théo du 2026-10-16 au soir ; la date de cadrage s'affiche onboarding. Gabarit en version 5."
