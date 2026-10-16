@@ -1,0 +1,136 @@
+@import "tailwindcss";
+
+/*
+ * Points de rupture du projet (cf. CLAUDE.md § 7). Les points par défaut de Tailwind
+ * sont retirés pour qu'il n'existe qu'une façon d'écrire un écran :
+ *   (défaut) téléphone < 600 px · tablet: 600 px · desktop: 1 280 px · wide: 2 200 px
+ */
+@theme {
+  --breakpoint-*: initial;
+  --breakpoint-tablet: 600px;
+  --breakpoint-desktop: 1280px;
+  --breakpoint-wide: 2200px;
+
+  /* Piste C « Banque » retenue par Théo le 15/10 : bleu marine sérieux, gris bleutés, formes arrondies. */
+  --font-sans: "Plus Jakarta Sans Variable", system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+
+  --color-brand-50: #eef2f8;
+  --color-brand-100: #dce5f2;
+  --color-brand-600: #1a4a8c;
+  --color-brand-700: #163f78;
+  --color-brand-900: #13325e;
+  /* Pointe de turquoise : pastilles de compteur et détails, jamais pour un texte sur fond blanc. */
+  --color-accent-400: #2bb3c0;
+  --color-canvas: #f3f5f9;
+  --color-ink: #15233b;
+  --color-urgent-50: #fdf0ef;
+  --color-urgent-600: #d64035;
+  --color-urgent-700: #9b2c25;
+
+  /* Gris de Tailwind remplacés par des gris bleutés : tous les écrans en héritent. */
+  --color-slate-50: #f7f9fc;
+  --color-slate-100: #eef2f8;
+  --color-slate-200: #e3e9f1;
+  --color-slate-300: #d0d9e6;
+  --color-slate-400: #8a97ad;
+  --color-slate-500: #586680;
+  --color-slate-600: #4a5870;
+  --color-slate-700: #34425a;
+  --color-slate-800: #24324a;
+  --color-slate-900: #15233b;
+
+  /* Arrondis plus généreux qu'à l'ordinaire. */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.5rem;
+
+  /* Ombres douces teintées de bleu, à la place des contours gris. */
+  --shadow-card: 0 1px 3px rgb(19 50 94 / 0.07);
+  --shadow-pop: 0 12px 32px rgb(19 50 94 / 0.16);
+
+  /* Mouvement : court et doux, jamais rebondissant. */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --animate-pop-in: pop-in 160ms var(--ease-out-soft);
+  --animate-sheet-up: sheet-up 220ms var(--ease-out-soft);
+  --animate-fade-in: fade-in 160ms ease-out;
+
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: translateY(-4px) scale(0.98);
+    }
+  }
+  @keyframes sheet-up {
+    from {
+      transform: translateY(24px);
+      opacity: 0;
+    }
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+}
+
+:root {
+  color-scheme: light;
+  /* Hauteur de la barre d'onglets du téléphone, réservée en bas du contenu. */
+  --tabbar-h: 64px;
+}
+
+/* Page affichée dans un cadre de la fenêtre scindée : seule la fiche, sans la navigation. */
+html[data-embedded] {
+  --tabbar-h: 0px;
+}
+html[data-embedded] [data-app-nav] {
+  display: none;
+}
+
+html {
+  font-family: var(--font-sans);
+  font-feature-settings: "tnum" 0;
+}
+
+html,
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  /* Aucun défilement horizontal de page, sur aucun format. */
+  overflow-x: clip;
+}
+
+/* Cibles tactiles confortables sur téléphone et tablette. */
+@media (pointer: coarse) {
+  button,
+  [role="button"],
+  a,
+  input,
+  select,
+  textarea {
+    min-height: 44px;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brand-600);
+  outline-offset: 2px;
+}
+
+/* Montants et numéros : chiffres de même largeur pour qu'ils s'alignent en colonne. */
+td,
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Qui a demandé moins d'animations dans son système n'en a pas. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
+}
