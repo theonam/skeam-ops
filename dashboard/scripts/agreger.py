@@ -265,8 +265,11 @@ class Calculs:
             resultat.append(entree)
         return resultat
 
-    def avancement(self, lot: int, items: list[dict], partiel: bool) -> dict:
-        """Avancement d'une partie de lot, en nombre d'items hors abandonne, comme pour les lots."""
+    def avancement(self, lot: int, items: list[dict], partiel: bool, audience: str) -> dict:
+        """Avancement d'une partie de lot, en nombre d'items hors abandonne, comme pour les lots.
+
+        ids : les items de la partie que l'audience a le droit de voir, pour les nommer sur la page.
+        """
         nombre = {statut: sum(1 for item in items if item["statut"] == statut) for statut in ("a_faire", "en_cours", "a_recetter", "fait")}
         return {
             "lot": lot,
@@ -277,9 +280,10 @@ class Calculs:
             "en_cours": nombre["en_cours"],
             "developpe": nombre["a_recetter"] + nombre["fait"],
             "termine": nombre["fait"],
+            "ids": [item["id"] for item in items if visible(item, audience)],
         }
 
-    def devis(self) -> tuple[list[dict], list[dict] | None]:
+    def devis(self, audience: str) -> tuple[list[dict], list[dict] | None]:
         """Chaque devis avec son périmètre et ses factures, et ce qui n'est dans aucun devis.
 
         Un item cité dans les items d'un devis lui appartient ; sinon il appartient au devis qui cite son lot.
@@ -297,7 +301,7 @@ class Calculs:
             for lot in sorted(lots_complets):
                 siens = [item for item in lots_complets[lot] if proprietaire[item["id"]] == numero]
                 if siens:
-                    resultat.append(self.avancement(lot, siens, len(siens) < len(lots_complets[lot])))
+                    resultat.append(self.avancement(lot, siens, len(siens) < len(lots_complets[lot]), audience))
             return resultat
 
         sortie = []
@@ -459,8 +463,8 @@ def projet_commercial(calculs: Calculs) -> dict:
         "montants_ht": dict(client["montants_ht"]),
         "montant_signe_ht": calculs.montant_signe(),
         "devis_saisi": bool(client["devis"]),
-        "devis": calculs.devis()[0],
-        "hors_devis": calculs.devis()[1],
+        "devis": calculs.devis("commercial")[0],
+        "hors_devis": calculs.devis("commercial")[1],
         "liens": {k: liens[k] for k in ("demo", "prod", "docs_client", "docs_commercial")},
         "lots": calculs.lots("commercial"),
         "items_en_cours_anciens": calculs.items_en_cours_anciens("commercial"),
@@ -484,6 +488,8 @@ def projet_interne(calculs: Calculs, interne: bool) -> dict:
         "temps": calculs.temps_resume(),
         "budget": calculs.budget(taux_horaire_cible()),
         "todoist": dict(client["todoist"]),
+        "devis": calculs.devis("interne")[0],
+        "hors_devis": calculs.devis("interne")[1],
         "items": items_vus(calculs, "interne"),
     }
     resultat["compteurs"] = {"devis_a_envoyer": len(resultat["devis_a_envoyer"])}

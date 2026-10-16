@@ -215,6 +215,15 @@ class TestDevisEtLots(unittest.TestCase):
         self.assertEqual([(l["lot"], l["partiel"], l["nb_items"], l["termine"]) for l in option["perimetre"]], [(1, True, 1, 1)])
         self.assertEqual(self.alpha("interne")["hors_devis"], [])
 
+    def test_ids_visibles_seulement(self):
+        # Les fonctionnalités nommées dans une partie de lot sont celles que l'audience a le droit de voir.
+        audiences = {i["id"]: i["audience"] for i in self.alpha("interne")["items"]}
+        for d in self.alpha("commercial")["devis"]:
+            for partie in d["perimetre"] or []:
+                self.assertTrue(all(audiences[i] in ("client", "commercial") for i in partie["ids"]), partie["ids"])
+        interne = [i for d in self.alpha("interne")["devis"] for partie in d["perimetre"] or [] for i in partie["ids"]]
+        self.assertTrue(any(audiences[i] == "interne" for i in interne) or not any(a == "interne" for a in audiences.values()))
+
     def test_factures_et_retard(self):
         factures = self.alpha("commercial")["devis"][0]["factures"]
         self.assertEqual([(f["statut"], f["en_retard"]) for f in factures], [("payee", False), ("envoyee", True)])
