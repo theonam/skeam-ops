@@ -168,7 +168,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: en_cours
+    statut: a_recetter
     taille: S
     estimation_h: 2
     dependances: []
@@ -177,6 +177,6 @@ items:
       - Chaque lot porte le titre et le but écrits dans la section Découpage en lots de cadrage.md, dans le tableau des items comme dans l'avancement.
     audience: interne
     a_valider: false
-    commit: null
+    commit: e6257eb
     maj: 2026-10-16
     notes: Décision de Théo du 2026-10-16 ; l'évolution du contrat pour a_valider reste à arbitrer.
