@@ -46,7 +46,7 @@ python dashboard/scripts/bilan_temps.py --historique <session.jsonl> --depot <d�
 
 - Activité : horodatages des messages de Théo et de l'agent ; une pause de plus de 20 minutes, `--pause`, arrête la période.
 - Répartition : le temps avant un commit `<ID>: …` revient à cet item, la fin d'une période au dernier commit, une période sans commit au commit suivant ; le reste est signalé dans `avertissements`.
-- Sortie : JSON des lignes proposées par fichier de temps ; une ligne qui recouvre une ligne déjà journalisée du même agent est écartée dans `deja`. `--ecrire` n'ajoute que les `nouvelles`, en fin de fichier.
+- Sortie : JSON des lignes proposées par fichier de temps ; le temps déjà journalisé dans l'un de ces fichiers, quel qu'en soit l'agent, est retiré des lignes proposées et signalé dans `deja`. `--ecrire` n'ajoute que les `nouvelles`, en fin de fichier.
 
 ## Périmètre lu
 

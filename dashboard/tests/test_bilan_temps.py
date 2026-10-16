@@ -184,6 +184,23 @@ class TestBilan(unittest.TestCase):
         self.assertEqual(resultat["ecrites"], 0, "relancer n'ajoute rien")
         self.assertEqual(len(fichier.read_text(encoding="utf-8").splitlines()), 2)
 
+    def test_seul_le_temps_non_journalise_est_propose_quel_que_soit_l_agent(self):
+        session, chemin = self.preparer()
+        temps = chemin / "projet" / "temps"
+        temps.mkdir(parents=True)
+        # 20:05-20:10 déjà noté sur EGM-040, 20:30-20:35 noté par l'autre agent de la session.
+        (temps / "2026-10-egm-dev.jsonl").write_text(json.dumps({"date": "2026-10-15", "debut": "20:05", "fin": "20:10", "minutes": 5, "item": "EGM-040", "agent": "egm-dev"}) + "\n", encoding="utf-8")
+        (temps / "2026-10-ops-dashboard.jsonl").write_text(json.dumps({"date": "2026-10-15", "debut": "20:30", "fin": "20:35", "minutes": 5, "item": "OPS-419", "agent": "ops-dashboard"}) + "\n", encoding="utf-8")
+        code, resultat, _ = self.lancer("--historique", str(session), "--depot", str(chemin), "--agent", "EGM=egm-dev", "--agent", "OPS=ops-dashboard")
+        self.assertEqual(code, 0)
+        egm = resultat["fichiers"][str(temps / "2026-10-egm-dev.jsonl")]
+        ops = resultat["fichiers"][str(temps / "2026-10-ops-dashboard.jsonl")]
+        self.assertEqual([(l["debut"], l["fin"], l["minutes"]) for l in egm["nouvelles"]], [("20:00", "20:05", 5), ("20:10", "20:20", 10), ("21:30", "21:45", 15)])
+        self.assertEqual([(l["debut"], l["fin"], l["minutes"]) for l in ops["nouvelles"]], [("20:20", "20:30", 10), ("20:35", "20:40", 5)])
+        self.assertEqual(len(egm["deja"]), 1)
+        for ligne in egm["nouvelles"] + ops["nouvelles"]:
+            self.assertEqual(ligne["minutes"], bilan_temps.minutes_entre(ligne["debut"], ligne["fin"]))
+
     def test_liste_d_horodatages_et_bornes_de_periode(self):
         _, chemin = self.preparer()
         liste = self.dossier / "horodatages.json"

@@ -6,7 +6,7 @@ dès qu'une pause dépasse le seuil, puis répartit chaque période entre les it
 faits pendant la session : le temps qui précède un commit `EGM-040: …` revient à EGM-040.
 
 Sortie : les lignes de temps proposées, au format de CONTRAT.md section 6, par fichier de temps,
-et celles qui recouvrent une ligne déjà journalisée, écartées pour ne jamais compter deux fois.
+amputées du temps déjà journalisé dans ces fichiers, pour ne jamais compter deux fois.
 
     python dashboard/scripts/bilan_temps.py --historique <session.jsonl> --depot <chemin> \\
         --agent EGM=egm-dev --agent OPS=ops-dashboard [--depuis …] [--jusqua …] [--pause 20] \\
@@ -221,16 +221,25 @@ def deja_journalisees(fichier: Path) -> list[dict]:
     return lignes
 
 
-def recouvre(ligne: dict, existantes: list[dict]) -> dict | None:
-    """Première ligne existante du même agent qui recouvre celle-ci, ou None."""
-    d1, f1 = intervalle(ligne)
+def intervalles_libres(ligne: dict, existantes: list[dict]) -> tuple[list[tuple[dt.datetime, dt.datetime]], list[dict]]:
+    """Parties de la ligne que ne couvre aucune ligne existante, et les lignes existantes qui la recouvrent."""
+    libres = [intervalle(ligne)]
+    recouvrantes = []
     for autre in existantes:
-        if autre.get("agent") != ligne["agent"] or not all(k in autre for k in ("date", "debut", "minutes")):
+        if not all(k in autre for k in ("date", "debut", "minutes")):
             continue
         d2, f2 = intervalle(autre)
-        if d1 < f2 and d2 < f1:
-            return autre
-    return None
+        if not any(d < f2 and d2 < f for d, f in libres):
+            continue
+        recouvrantes.append(autre)
+        reste = []
+        for d, f in libres:
+            if d < d2:
+                reste.append((d, min(f, d2)))
+            if f > f2:
+                reste.append((max(d, f2), f))
+        libres = [(d, f) for d, f in reste if f > d]
+    return libres, recouvrantes
 
 
 def bilan(historiques: list[Path], depots: list[Path], agents: dict[str, str], depuis: dt.datetime | None,
@@ -246,17 +255,22 @@ def bilan(historiques: list[Path], depots: list[Path], agents: dict[str, str], d
     marge = dt.timedelta(minutes=1)
     commits = sorted((c for depot in depots for c in lire_commits(depot, horodatages[0] - marge, horodatages[-1] + marge, marque)), key=lambda c: c.quand)
     session = historiques[0].stem[:8]
-    segments = repartir(periodes, commits)
-    lignes, avertissements = lignes_de_temps(segments, agents, session)
-    par_fichier: dict[str, dict] = {}
+    lignes, avertissements = lignes_de_temps(repartir(periodes, commits), agents, session)
+    # Une session ne travaille qu'à une chose à la fois : le temps déjà journalisé dans l'un des
+    # fichiers de temps visés, quel qu'en soit l'item ou l'agent, n'est jamais repris.
+    cibles = sorted({fichier_de_temps(depot, ligne) for ligne, depot in lignes})
+    existantes = [l for fichier in cibles for l in deja_journalisees(fichier)]
+    par_fichier: dict[str, dict] = {str(f): {"nouvelles": [], "deja": []} for f in cibles}
     for ligne, depot in lignes:
-        fichier = fichier_de_temps(depot, ligne)
-        entree = par_fichier.setdefault(str(fichier), {"nouvelles": [], "deja": []})
-        existante = recouvre(ligne, deja_journalisees(fichier))
-        if existante:
-            entree["deja"].append({"proposee": ligne, "existante": existante})
-        else:
-            entree["nouvelles"].append(ligne)
+        entree = par_fichier[str(fichier_de_temps(depot, ligne))]
+        libres, recouvrantes = intervalles_libres(ligne, existantes)
+        if recouvrantes:
+            entree["deja"].append({"proposee": ligne, "existantes": recouvrantes})
+        for debut, fin in libres:
+            hd, hf = debut.strftime("%H:%M"), fin.strftime("%H:%M")
+            minutes = minutes_entre(hd, hf)
+            if minutes >= 1:
+                entree["nouvelles"].append({**ligne, "date": debut.strftime("%Y-%m-%d"), "debut": hd, "fin": hf, "minutes": minutes})
     return {
         "periode": {"debut": horodatages[0].astimezone(PARIS).isoformat(timespec="minutes"), "fin": horodatages[-1].astimezone(PARIS).isoformat(timespec="minutes")},
         "actif_minutes": sum(round((f - d).total_seconds() / 60) for d, f in periodes),

@@ -18,7 +18,7 @@ Commande du chantier dashboard, CONTRAT.md section 11.7. Elle relit une session 
 ## Règles absolues
 
 - **Temps mesuré, jamais inventé** : seules les lignes produites par `bilan_temps.py` s'écrivent. Sans historique lisible, demander à Théo ses heures de début et de fin plutôt que de les estimer.
-- **Jamais compté deux fois** : une ligne proposée qui recouvre une ligne déjà journalisée du même agent est écartée, et le dire.
+- **Jamais compté deux fois** : le temps déjà journalisé dans les fichiers de temps visés, quel qu'en soit l'agent, est retiré des lignes proposées ; le dire, et signaler une ligne existante qui paraît trop courte au regard de la mesure.
 - **`fait` seulement sur preuve** : chaque critère d'acceptation vérifié dans la session, par un test automatique au vert ou dans l'application ; sinon `a_recetter`, avec dans `notes` ce qui n'a pas pu être vérifié. Jamais `abandonne`, réservé à Théo.
 - Ne modifier d'un item existant que `statut`, `commit`, `maj` et `notes` ; un besoin découvert devient un nouvel item, jamais l'extension d'un item existant.
 - `decisions.md`, `actions.yaml`, `cadrage.md`, `client.yaml` et `projet/interne/` : rien sans instruction explicite de Théo. Ne jamais lire `projet/interne/`.
@@ -66,7 +66,7 @@ python dashboard/scripts/bilan_temps.py --historique <historique> \
 - `--pause`, 20 minutes par défaut : au-delà, l'attente ne compte pas.
 - Code 1 : historique ou dépôt illisible, le dire et s'arrêter. Code 2 : usage, corriger et relancer.
 
-Le JSON donne le temps actif, les commits retenus et, par fichier de temps, les lignes `nouvelles` et celles `deja` journalisées. Le temps avant un commit revient à son item ; la fin d'une période, vérifications et mise en ligne, revient au dernier commit ; une période sans commit revient au commit suivant. Les `avertissements` signalent le temps sans item : à attribuer avec Théo, ou à laisser de côté.
+Le JSON donne le temps actif, les commits retenus et, par fichier de temps, les lignes `nouvelles`, amputées du temps déjà journalisé, et dans `deja` les lignes existantes qui en recouvraient une partie. Le temps avant un commit revient à son item ; la fin d'une période, vérifications et mise en ligne, revient au dernier commit ; une période sans commit revient au commit suivant. Les `avertissements` signalent le temps sans item : à attribuer avec Théo, ou à laisser de côté.
 
 ### 4. Relire la session et préparer les propositions
 
