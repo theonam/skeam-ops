@@ -23,8 +23,8 @@ Système de pilotage des projets clients de SKEAM, SASU de chef de projet IT fre
 | `projet/` | pilotage de skeam-ops, slug `ops` | Théo ; chaque chantier y tient son backlog et son temps |
 | `socle/` | application socle et `scripts/init_app.sh` | chantier socle |
 | `catalogue/` | modules, tarifs, `chiffrer.py`, `calibrer.py` | chantier catalogue |
-| `skills/` | commandes /nouveau-client, /import-transcript, /cadrage, /chiffrage, /sync-todoist | chantier cadrage |
-| `dashboard/` | `agreger.py`, rendu, commandes /dashboard, /publier, /calibrer | chantier dashboard |
+| `skills/` | commandes /skeam-nouveau-client, /skeam-import-transcript, /skeam-cadrage, /skeam-chiffrage, /skeam-sync-todoist | chantier cadrage |
+| `dashboard/` | `agreger.py`, rendu, commandes /skeam-dashboard, /skeam-publier, /skeam-calibrer | chantier dashboard |
 | `CLAUDE.md`, `README.md`, `requirements.txt`, `.gitignore` | consignes et configuration communes | Théo |
 
 ## Démarrage

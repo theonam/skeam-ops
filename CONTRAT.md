@@ -114,7 +114,7 @@ Périmètre et factures d'un devis, décision de Théo du 2026-10-16 :
 | `perimetre` | `lots` : liste de numéros de lot ; `items` : liste d'ids d'items. Un item cité dans les `items` d'un devis lui appartient ; tout autre item appartient au devis dont les `lots` contiennent son lot. Lots et items existent dans le backlog ; un item ou un lot n'est cité que par un seul devis |
 | `factures` | liste de `dougs_id` UUID de la facture Dougs, `numero` texte ou null, `montant_ht`, `statut` parmi `brouillon`, `envoyee`, `payee`, `annulee`, `echeance` date ou null |
 
-Correspondance des statuts de facture avec Dougs : `brouillon` brouillon de facture, `envoyee` facture finalisée en attente de paiement, `payee` paid, `annulee` canceled. Une facture `envoyee` dont l'`echeance` est passée est en retard. `/chiffrage` tient `perimetre` à la création du devis et rafraîchit `factures` avec les statuts des devis.
+Correspondance des statuts de facture avec Dougs : `brouillon` brouillon de facture, `envoyee` facture finalisée en attente de paiement, `payee` paid, `annulee` canceled. Une facture `envoyee` dont l'`echeance` est passée est en retard. `/skeam-chiffrage` tient `perimetre` à la création du devis et rafraîchit `factures` avec les statuts des devis.
 
 <!-- exemple: client -->
 ```yaml
@@ -279,7 +279,7 @@ Schéma : `schemas/actions.schema.json`. `actions.yaml` contient les actions per
 | `points` | `1pt`, `2pt`, `3pt`, `5pt`, `8pt` : étiquette d'effort Todoist |
 | `echeance` | date ou null |
 | `statut` | `ouverte`, `faite`, `annulee` |
-| `todoist_id` | chaîne ou null ; écrit par `/sync-todoist` |
+| `todoist_id` | chaîne ou null ; écrit par `/skeam-sync-todoist` |
 | `source` | `manuel`, un id d'item existant, ou un fichier existant relatif à `projet/` : `transcripts/...md`, `syntheses/...md`, `cadrage.md`, `decisions.md` |
 
 <!-- exemple: actions -->
@@ -664,18 +664,19 @@ Initialise une application client à partir du socle dans `<dossier_cible>`, qui
 
 ### 11.7 Commandes du chat
 
-Chaque commande est une skill : un dossier `<nom>/SKILL.md` portant le nom de la commande sans barre oblique. Une commande ne fait qu'orchestrer les scripts ci-dessus et les connecteurs ; elle demande confirmation à Théo avant toute écriture hors du dépôt, et ne commite jamais sur un dépôt client sans son accord.
+Chaque commande est une skill : un dossier `<nom>/SKILL.md` portant le nom de la commande sans barre oblique. Toutes les commandes commencent par `/skeam-`, pour se retrouver parmi les autres skills. Une commande ne fait qu'orchestrer les scripts ci-dessus et les connecteurs ; elle demande confirmation à Théo avant toute écriture hors du dépôt, et ne commite jamais sur un dépôt client sans son accord.
 
 | Commande | Chantier et emplacement | Rôle et scripts appelés |
 |---|---|---|
-| `/nouveau-client` | cadrage, `skills/nouveau-client/` | `nouveau_dossier.py`, entrée dans `clients.yaml`, projet et section Todoist |
-| `/import-transcript` | cadrage, `skills/import-transcript/` | transcript Plaud vers `transcripts/`, synthèse vers `syntheses/`, actions de Théo vers `actions.yaml`, puis `validate.py` |
-| `/cadrage` | cadrage, `skills/cadrage/` | mise à jour de `cadrage.md` et des items du backlog depuis les synthèses |
-| `/chiffrage` | cadrage, `skills/chiffrage/` | `chiffrer.py`, puis brouillon de devis Dougs et entrée `devis` de statut `brouillon` dans `client.yaml` ; jamais de finalisation ni d'envoi |
-| `/sync-todoist` | cadrage, `skills/sync-todoist/` | synchronise `actions.yaml` avec Todoist via `todoist.projet_id` et `todoist.section_id` ; écrit `todoist_id` et `statut` |
-| `/dashboard` | dashboard, `dashboard/skills/dashboard/` | `agreger.py` pour les trois audiences, puis rendu |
-| `/publier` | dashboard, `dashboard/skills/publier/` | met à jour les documents pointés par `liens.docs_<audience>` à partir des vues filtrées ; ne notifie personne |
-| `/calibrer` | dashboard, `dashboard/skills/calibrer/` | `calibrer.py` |
+| `/skeam-nouveau-client` | cadrage, `skills/skeam-nouveau-client/` | `nouveau_dossier.py`, entrée dans `clients.yaml`, projet et section Todoist |
+| `/skeam-import-transcript` | cadrage, `skills/skeam-import-transcript/` | transcript Plaud vers `transcripts/`, synthèse vers `syntheses/`, actions de Théo vers `actions.yaml`, puis `validate.py` |
+| `/skeam-cadrage` | cadrage, `skills/skeam-cadrage/` | mise à jour de `cadrage.md` et des items du backlog depuis les synthèses |
+| `/skeam-chiffrage` | cadrage, `skills/skeam-chiffrage/` | `chiffrer.py`, puis brouillon de devis Dougs et entrée `devis` de statut `brouillon` dans `client.yaml` ; jamais de finalisation ni d'envoi |
+| `/skeam-sync-todoist` | cadrage, `skills/skeam-sync-todoist/` | synchronise `actions.yaml` avec Todoist via `todoist.projet_id` et `todoist.section_id` ; écrit `todoist_id` et `statut` |
+| `/skeam-publier` | cadrage, `skills/skeam-publier/` | met à jour les documents pointés par `liens.docs_<audience>` à partir des vues filtrées ; ne notifie personne |
+| `/skeam-dashboard` | dashboard, `dashboard/skills/skeam-dashboard/` | `agreger.py` pour les trois audiences, puis rendu |
+| `/skeam-calibrer` | dashboard, `dashboard/skills/skeam-calibrer/` | `calibrer.py` |
+| `/skeam-bilan` | dashboard, `dashboard/skills/skeam-bilan/` | `bilan_temps.py` sur l'historique d'une session, puis statuts d'items, besoins découverts et lignes de temps proposés à Théo |
 
 ## 12. Registre clients.yaml
 
