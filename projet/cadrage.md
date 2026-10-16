@@ -21,7 +21,7 @@ Cadrage du système de pilotage des projets clients de SKEAM, porté par le dép
 
 ## Processus cible
 
-Premier contact, puis /nouveau-client. Réunions enregistrées sur Plaud, puis /import-transcript. Cadrage et backlog par /cadrage. Devis par /chiffrage, envoyé par Théo depuis Dougs. Développement par les agents, recette par Théo. Suivi par /dashboard, /sync-todoist et /publier. Calibrage du catalogue par /calibrer en fin de lot.
+Premier contact, puis /skeam-nouveau-client. Réunions enregistrées sur Plaud, puis /skeam-import-transcript. Cadrage et backlog par /skeam-cadrage. Devis par /skeam-chiffrage, envoyé par Théo depuis Dougs. Développement par les agents, recette par Théo. Suivi par /skeam-dashboard, /skeam-sync-todoist et /skeam-publier. Calibrage du catalogue par /skeam-calibrer en fin de lot.
 
 ## Objets métier
 

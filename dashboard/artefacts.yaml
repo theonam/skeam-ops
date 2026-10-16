@@ -1,6 +1,6 @@
 # URL des artefacts claude.ai du dashboard, une par vue, pour republier toujours au même lien.
 # Clés : interne, commercial, client-<slug>. Valeur : URL https de l'artefact, ou null avant la première publication.
-# Écrit par /dashboard, après accord de Théo. Format : dashboard/README.md.
+# Écrit par /skeam-dashboard, après accord de Théo. Format : dashboard/README.md.
 artefacts:
   interne: https://claude.ai/artifact/CBCCm5QuE5CwoUybX2X7BM
   commercial: null

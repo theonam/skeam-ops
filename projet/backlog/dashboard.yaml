@@ -302,3 +302,21 @@ items:
     commit: 0844e55
     maj: 2026-10-16
     notes: "Demande de Théo du 2026-10-16 au soir ; la date de cadrage s'affiche onboarding. Gabarit en version 5. Vérifié le 2026-10-16 : tests au vert ; vue commerciale rendue sur les données d'E G M, douze fonctionnalités facturables chiffrées, total 27 500 € HT, devis en brouillon masqué, pas de défilement horizontal au téléphone ; vue client sans prix."
+  - id: OPS-419
+    titre: Commande /skeam-bilan, bilan d'une session depuis son historique, et préfixe /skeam- pour toutes les commandes
+    module: null
+    lot: 1
+    priorite: souhaitable
+    statut: fait
+    taille: M
+    estimation_h: 3
+    dependances: []
+    criteres_acceptation:
+      - python dashboard/scripts/bilan_temps.py mesure le temps actif d'une session sur son historique, le répartit par item d'après les commits et propose des lignes au format de CONTRAT.md section 6, sans jamais recouvrir une ligne déjà journalisée.
+      - dashboard/skills/skeam-bilan/SKILL.md propose statuts d'items, besoins découverts et lignes de temps, les fait valider par Théo en une fois, puis écrit, valide et pousse.
+      - Toutes les commandes du chat commencent par /skeam-, dont /skeam-dashboard et /skeam-calibrer, dans les skills, CONTRAT.md section 11.7 et les README.
+    audience: interne
+    a_valider: false
+    commit: 0ff1be6
+    maj: 2026-10-16
+    notes: "Demandes de Théo du 2026-10-16 au soir : une skill qui reprend l'historique d'une conversation pour mettre à jour l'avancement et le temps passé ; toutes les skills commencent par /skeam. Vérifié le 2026-10-16 : 14 tests de bilan_temps.py au vert, essai sur l'historique de cette session, 220 minutes actives, 40 commits, seul le temps non journalisé proposé ; la skill n'est pas encore installée dans les réglages de claude.ai."

@@ -1,9 +1,9 @@
 ---
-name: dashboard
-description: Produit et publie le tableau de bord SKEAM de tous les projets clients actifs, pour l'audience demandée, interne par défaut, commercial pour l'associé commercial, ou client pour un client donné. Clone skeam-ops et les dépôts actifs, lance dashboard/scripts/agreger.py, injecte la vue dans le gabarit et republie l'artefact au même lien. Invoquer avec /dashboard [interne|commercial|client <slug>|toutes], ou dès que Théo demande où en sont ses clients, ce qui bloque, ce qui dérape, ce qu'il doit faire, ou de mettre à jour le dashboard.
+name: skeam-dashboard
+description: Produit et publie le tableau de bord SKEAM de tous les projets clients actifs, pour l'audience demandée, interne par défaut, commercial pour l'associé commercial, ou client pour un client donné. Clone skeam-ops et les dépôts actifs, lance dashboard/scripts/agreger.py, injecte la vue dans le gabarit et republie l'artefact au même lien. Invoquer avec /skeam-dashboard [interne|commercial|client <slug>|toutes], ou dès que Théo demande où en sont ses clients, ce qui bloque, ce qui dérape, ce qu'il doit faire, ou de mettre à jour le dashboard.
 ---
 
-# /dashboard
+# /skeam-dashboard
 
 Commande du chantier dashboard, CONTRAT.md section 11.7. Elle orchestre les scripts du dépôt sans rien calculer elle-même : les chiffres viennent de `agreger.py`, la page de `rendre.py`. Format des vues : `dashboard/README.md` de skeam-ops.
 
@@ -20,7 +20,7 @@ La vue client sans slug est refusée : elle mélangerait les clients.
 
 ## Règles absolues
 
-- **Vue commercial** : destinée à l'associé commercial. Jamais de temps, d'heures, d'estimation, de tarif, de taux, de marge, d'action personnelle ni de dépendance. Ne jamais y ajouter quoi que ce soit à la main, ne jamais republier une page interne à l'URL commerciale.
+- **Vue commercial** : destinée à l'associé commercial. Jamais de temps, d'heures, d'estimation, de tarif, de taux, de marge, d'action personnelle ni de dépendance ; seule exception, décidée par Théo le 2026-10-16 : le prix de vente des fonctionnalités supplémentaires facturables, champ `prix_vente_ht`. Ne jamais y ajouter quoi que ce soit à la main, ne jamais republier une page interne à l'URL commerciale.
 - **Vue client** : un seul client par page, toujours avec `--projet <slug>`.
 - Ne jamais lire ni citer `projet/interne/` d'un dépôt.
 - Ne jamais écrire dans un dépôt client, ne jamais commiter sur un dépôt client.

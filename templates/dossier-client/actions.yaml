@@ -9,5 +9,5 @@ items: []
 #     points: 1pt               # 1pt, 2pt, 3pt, 5pt, 8pt
 #     echeance: 2026-10-20      # ou null
 #     statut: ouverte           # ouverte, faite, annulee
-#     todoist_id: null          # écrit par /sync-todoist, entre guillemets
+#     todoist_id: null          # écrit par /skeam-sync-todoist, entre guillemets
 #     source: syntheses/2026-10-08-lancement.md   # manuel, id d'item ou chemin relatif à projet/

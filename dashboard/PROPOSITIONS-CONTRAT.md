@@ -11,7 +11,7 @@ Format : CONTRAT.md section 14. Décision réservée à Théo.
 
 ## 2026-10-15 Rapport de calibrage
 
-- **Besoin** : `/calibrer` présente `catalogue/out/calibration.md`, que la section 11.4 ne mentionne pas ; la commande ne sait donc pas si ce fichier existera ni ce qu'il contient.
+- **Besoin** : `/skeam-calibrer` présente `catalogue/out/calibration.md`, que la section 11.4 ne mentionne pas ; la commande ne sait donc pas si ce fichier existera ni ce qu'il contient.
 - **Proposition** : ajouter à la section 11.4 « Écrit aussi `catalogue/out/calibration.md`, non versionné, d'audience interne, au contenu libre : par module, mesures, écart à la fourchette `heures_min` et `heures_max` et propositions de mise à jour. »
-- **Hypothèse retenue en attendant** : `/calibrer` affiche le fichier s'il existe, sinon s'appuie sur le diff de `catalogue/modules.yaml`.
+- **Hypothèse retenue en attendant** : `/skeam-calibrer` affiche le fichier s'il existe, sinon s'appuie sur le diff de `catalogue/modules.yaml`.
 - **Impact** : CONTRAT.md section 11.4, chantier catalogue, `calibrer.py`, et `.gitignore` pour `catalogue/out/`.

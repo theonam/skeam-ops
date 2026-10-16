@@ -13,8 +13,10 @@ Vue de pilotage de tous les projets en parallèle : ce qui bloque, ce qui dérap
 | `template.html` | gabarit de la page, sans dépendance hors polices Google Fonts, clair et sombre, lisible sur téléphone |
 | `artefacts.yaml` | URL des artefacts claude.ai publiés, une par vue, pour garder le même lien |
 | `todoist.json` | configuration de la todo Todoist de la vue interne |
-| `skills/dashboard/SKILL.md` | commande `/dashboard` |
-| `skills/calibrer/SKILL.md` | commande `/calibrer` |
+| `skills/skeam-dashboard/SKILL.md` | commande `/skeam-dashboard` |
+| `skills/skeam-calibrer/SKILL.md` | commande `/skeam-calibrer` |
+| `skills/skeam-bilan/SKILL.md` | commande `/skeam-bilan` |
+| `scripts/bilan_temps.py` | temps d'une session mesuré sur son historique, réparti par item d'après les commits |
 | `tests/` | tests et données fictives : clients `alpha` et `beta`, client inactif `gamma`, projet `ops` |
 | `PROPOSITIONS-CONTRAT.md` | évolutions du contrat proposées à Théo |
 | `out/` | sorties générées, non versionnées |
@@ -33,6 +35,18 @@ python -m unittest discover -s dashboard/tests -p "test_*.py"
 `agreger.py` valide le registre et chaque dossier projet avec `scripts/validate.py` avant toute lecture, liste toutes les erreurs sur la sortie d'erreur et s'arrête alors avec le code 1 sans rien écrire ; les avertissements du validateur sont ignorés. Il ne lit jamais `projet/interne/`. Avant d'écrire une vue `commercial` ou `client`, il vérifie qu'aucune clé interne n'y figure et refuse d'écrire sinon.
 
 `rendre.py --projet` ne garde qu'un projet de la vue client, pour qu'un client ne voie jamais les autres. Il est refusé, code 2, sur les autres vues, dont les totaux portent sur tout le portefeuille.
+
+## Bilan de session
+
+`/skeam-bilan` relit l'historique d'une session et met à jour le pilotage : statuts d'items, besoins découverts, lignes de temps, après validation de Théo. Le temps vient de `bilan_temps.py`, jamais d'une estimation :
+
+```sh
+python dashboard/scripts/bilan_temps.py --historique <session.jsonl> --depot <dépôt> --agent EGM=egm-dev --agent OPS=ops-dashboard [--marque-commit <session>] [--ecrire]
+```
+
+- Activité : horodatages des messages de Théo et de l'agent ; une pause de plus de 20 minutes, `--pause`, arrête la période.
+- Répartition : le temps avant un commit `<ID>: …` revient à cet item, la fin d'une période au dernier commit, une période sans commit au commit suivant ; le reste est signalé dans `avertissements`.
+- Sortie : JSON des lignes proposées par fichier de temps ; le temps déjà journalisé dans l'un de ces fichiers, quel qu'en soit l'agent, est retiré des lignes proposées et signalé dans `deja`. `--ecrire` n'ajoute que les `nouvelles`, en fin de fichier.
 
 ## Périmètre lu
 
@@ -179,8 +193,8 @@ La vue interne affiche « Ma todo » : les tâches ouvertes p1 et p2 des section
 - **En direct** : publiée en artefact avec la capacité `mcp` sur le connecteur Todoist, outils `find-sections`, `find-tasks` et `complete-tasks`, la page relit Todoist toutes les minutes et Théo coche une tâche depuis la page. Les erreurs du connecteur s'affichent selon leur cause : reconnexion, accord à donner, Todoist indisponible.
 - **Repli** : sans lecture directe, la page affiche l'instantané pris à la génération, passé à `rendre.py --todoist`, avec un lien vers chaque tâche ; Théo coche dans Todoist.
 
-Format de l'instantané, écrit par `/dashboard` depuis le connecteur : `releve_le` date et heure ISO 8601, `partiel` vrai si `find-tasks` a répondu `hasMore`, `sections` la liste renvoyée par `find-sections`, `taches` la liste renvoyée par `find-tasks`. `rendre.py` n'en garde que les tâches ouvertes p1 et p2 des sections client, réduites à `id`, `content`, `priority`, `dueDate`, `sectionId`. Todoist n'entre jamais dans les vues commercial et client.
+Format de l'instantané, écrit par `/skeam-dashboard` depuis le connecteur : `releve_le` date et heure ISO 8601, `partiel` vrai si `find-tasks` a répondu `hasMore`, `sections` la liste renvoyée par `find-sections`, `taches` la liste renvoyée par `find-tasks`. `rendre.py` n'en garde que les tâches ouvertes p1 et p2 des sections client, réduites à `id`, `content`, `priority`, `dueDate`, `sectionId`. Todoist n'entre jamais dans les vues commercial et client.
 
 ## artefacts.yaml
 
-Clé racine `artefacts`, dictionnaire d'une clé par vue publiée vers son URL claude.ai ou null : `interne`, `commercial`, et `client-<slug>` pour la vue d'un client. Écrit par `/dashboard` après accord de Théo. Le dashboard se publie toujours en artefact, republié au même lien, aperçu compris ; jamais en simple fichier HTML.
+Clé racine `artefacts`, dictionnaire d'une clé par vue publiée vers son URL claude.ai ou null : `interne`, `commercial`, et `client-<slug>` pour la vue d'un client. Écrit par `/skeam-dashboard` après accord de Théo. Le dashboard se publie toujours en artefact, republié au même lien, aperçu compris ; jamais en simple fichier HTML.

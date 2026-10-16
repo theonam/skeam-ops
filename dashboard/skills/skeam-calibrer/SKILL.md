@@ -1,9 +1,9 @@
 ---
-name: calibrer
-description: Recalibre le catalogue de modules SKEAM à partir du temps réellement passé sur les items faits de tous les clients actifs. Clone skeam-ops et les dépôts actifs, lance catalogue/scripts/calibrer.py selon CONTRAT.md section 11.4, présente catalogue/out/calibration.md et propose les mises à jour du catalogue à valider une par une. Invoquer avec /calibrer, ou dès que Théo demande de recalibrer le catalogue, de comparer estimations et temps réels, ou de mettre à jour les fourchettes d'heures ou les prix conseillés.
+name: skeam-calibrer
+description: Recalibre le catalogue de modules SKEAM à partir du temps réellement passé sur les items faits de tous les clients actifs. Clone skeam-ops et les dépôts actifs, lance catalogue/scripts/calibrer.py selon CONTRAT.md section 11.4, présente catalogue/out/calibration.md et propose les mises à jour du catalogue à valider une par une. Invoquer avec /skeam-calibrer, ou dès que Théo demande de recalibrer le catalogue, de comparer estimations et temps réels, ou de mettre à jour les fourchettes d'heures ou les prix conseillés.
 ---
 
-# /calibrer
+# /skeam-calibrer
 
 Commande du chantier dashboard, CONTRAT.md section 11.7. Elle orchestre `calibrer.py`, propriété du chantier catalogue, sans rien calculer elle-même. Tout ce qu'elle manipule est d'audience interne : rien n'en sort de la conversation avec Théo.
 
