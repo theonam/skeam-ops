@@ -307,7 +307,7 @@ items:
     module: null
     lot: 1
     priorite: souhaitable
-    statut: en_cours
+    statut: fait
     taille: M
     estimation_h: 3
     dependances: []
@@ -317,6 +317,6 @@ items:
       - Toutes les commandes du chat commencent par /skeam-, dont /skeam-dashboard et /skeam-calibrer, dans les skills, CONTRAT.md section 11.7 et les README.
     audience: interne
     a_valider: false
-    commit: null
+    commit: 0ff1be6
     maj: 2026-10-16
-    notes: "Demandes de Théo du 2026-10-16 au soir : une skill qui reprend l'historique d'une conversation pour mettre à jour l'avancement et le temps passé ; toutes les skills commencent par /skeam."
+    notes: "Demandes de Théo du 2026-10-16 au soir : une skill qui reprend l'historique d'une conversation pour mettre à jour l'avancement et le temps passé ; toutes les skills commencent par /skeam. Vérifié le 2026-10-16 : 14 tests de bilan_temps.py au vert, essai sur l'historique de cette session, 220 minutes actives, 40 commits, seul le temps non journalisé proposé ; la skill n'est pas encore installée dans les réglages de claude.ai."
