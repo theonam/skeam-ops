@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/theonam/skeam-ops/schemas/synthese.schema.json",
+  "title": "Projection d'une synthèse, projet/syntheses/AAAA-MM-JJ-sujet.md",
+  "description": "Le validateur extrait de la synthèse : l'en-tête YAML, le titre de niveau 1 et la liste ordonnée des titres de niveau 2. C'est cette projection que le schéma valide.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["entete", "titre", "sections"],
+  "properties": {
+    "entete": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["date", "participants", "source", "plaud_id", "transcript"],
+      "properties": {
+        "date": { "$ref": "commun.schema.json#/$defs/date" },
+        "participants": { "$ref": "commun.schema.json#/$defs/participants" },
+        "source": { "$ref": "commun.schema.json#/$defs/source_transcript" },
+        "plaud_id": { "$ref": "commun.schema.json#/$defs/texte_ou_null" },
+        "transcript": {
+          "description": "Chemin du transcript relatif à projet/, ou null si la synthèse ne vient pas d'un transcript.",
+          "anyOf": [{ "type": "null" }, { "$ref": "commun.schema.json#/$defs/chemin_transcript" }]
+        }
+      },
+      "if": { "properties": { "source": { "const": "plaud" } } },
+      "then": { "properties": { "plaud_id": { "type": "string" } } },
+      "else": { "properties": { "plaud_id": { "type": "null" } } }
+    },
+    "titre": { "$ref": "commun.schema.json#/$defs/texte" },
+    "sections": {
+      "const": ["Résumé exécutif", "Faits établis", "Actions", "Détail par sujet", "Zones d'incertitude"]
+    }
+  }
+}

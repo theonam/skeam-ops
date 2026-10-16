@@ -1,0 +1,9 @@
+# Tarifs d'exemple, audience interne. Valeurs fictives.
+taux_horaire_cible: 90
+marge_securite:
+  XS: 0.1
+  S: 0.15
+  M: 0.2
+  L: 0.25
+  XL: 0.3
+plancher_ht: 1500

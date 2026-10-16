@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/theonam/skeam-ops/schemas/catalogue-tarifs.schema.json",
+  "title": "Tarifs, catalogue/tarifs.yaml",
+  "description": "Audience interne uniquement.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["taux_horaire_cible", "marge_securite", "plancher_ht"],
+  "properties": {
+    "taux_horaire_cible": { "description": "Euros HT par heure.", "type": "number", "exclusiveMinimum": 0 },
+    "marge_securite": {
+      "description": "Fraction ajoutée à l'estimation selon la taille : 0.2 signifie plus 20 %.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["XS", "S", "M", "L", "XL"],
+      "properties": {
+        "XS": { "$ref": "#/$defs/fraction" },
+        "S": { "$ref": "#/$defs/fraction" },
+        "M": { "$ref": "#/$defs/fraction" },
+        "L": { "$ref": "#/$defs/fraction" },
+        "XL": { "$ref": "#/$defs/fraction" }
+      }
+    },
+    "plancher_ht": { "description": "Montant HT minimal d'un chiffrage complet.", "$ref": "commun.schema.json#/$defs/montant_ht" }
+  },
+  "$defs": {
+    "fraction": { "type": "number", "minimum": 0, "maximum": 1 }
+  }
+}

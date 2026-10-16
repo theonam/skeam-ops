@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/theonam/skeam-ops/schemas/cadrage.schema.json",
+  "title": "Projection du document de cadrage, projet/cadrage.md",
+  "description": "Le validateur extrait : le titre de niveau 1, la liste ordonnée des titres de niveau 2 et la liste des règles de gestion trouvées dans la section Règles de gestion, sous la forme - **RGn** : énoncé.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["titre", "sections", "regles"],
+  "properties": {
+    "titre": { "$ref": "commun.schema.json#/$defs/texte" },
+    "sections": {
+      "const": [
+        "Objet et statut",
+        "Objectifs",
+        "Profils et droits",
+        "Processus cible",
+        "Objets métier",
+        "Règles de gestion",
+        "Exigences",
+        "Données et reprise",
+        "Intégrations",
+        "Découpage en lots",
+        "Décisions",
+        "Questions ouvertes",
+        "Attendus du client",
+        "Sources"
+      ]
+    },
+    "regles": {
+      "description": "Numérotées RG1, RG2, ... sans trou ni doublon, dans l'ordre.",
+      "type": "array",
+      "items": { "type": "string", "pattern": "^RG[1-9][0-9]*$" }
+    }
+  }
+}

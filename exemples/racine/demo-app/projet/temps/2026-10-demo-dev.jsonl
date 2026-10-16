@@ -1,0 +1,4 @@
+{"date":"2026-10-10","debut":"20:00","fin":"21:30","minutes":90,"item":"DEMO-001","source":"claude-code","agent":"demo-dev","note":"","valide":true}
+{"date":"2026-10-11","debut":"19:45","fin":"21:15","minutes":90,"item":"DEMO-001","source":"claude-code","agent":"demo-dev","note":"Envoi des SMS","valide":true}
+{"date":"2026-10-12","debut":"20:30","fin":"22:45","minutes":135,"item":"DEMO-002","source":"claude-code","agent":"demo-dev","note":"","valide":true}
+{"date":"2026-10-15","debut":"23:20","fin":"00:35","minutes":75,"item":"DEMO-003","source":"claude-code","agent":"demo-dev","note":"Session passée minuit","valide":false}

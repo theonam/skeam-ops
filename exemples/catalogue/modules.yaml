@@ -1,0 +1,53 @@
+# Catalogue d'exemple. Le vrai catalogue est catalogue/modules.yaml, propriété du chantier catalogue.
+modules:
+  - code: authentification
+    nom: Authentification et comptes
+    description: Connexion sans mot de passe par lien SMS ou courriel, gestion des comptes et des profils.
+    taille_type: S
+    heures_min: 3
+    heures_max: 6
+    confiance: moyenne
+    mesures:
+      - client: demo
+        item: DEMO-001
+        heures: 3
+    prix_conseille_ht: 450
+  - code: chantiers
+    nom: Chantiers
+    description: Liste, fiche et affectation des chantiers.
+    taille_type: S
+    heures_min: 2
+    heures_max: 5
+    confiance: faible
+    mesures:
+      - client: demo
+        item: DEMO-002
+        heures: 2.25
+    prix_conseille_ht: 350
+  - code: pointage
+    nom: Pointage des heures
+    description: Saisie quotidienne des heures par compagnon et par chantier, contrôle hebdomadaire.
+    taille_type: M
+    heures_min: 5
+    heures_max: 10
+    confiance: faible
+    mesures: []
+    prix_conseille_ht: null
+  - code: export-paie
+    nom: Export paie
+    description: Export mensuel des heures au format du cabinet de paie.
+    taille_type: M
+    heures_min: 4
+    heures_max: 8
+    confiance: faible
+    mesures: []
+    prix_conseille_ht: null
+  - code: planning
+    nom: Planning des équipes
+    description: Affectation des compagnons aux chantiers par demi-journée.
+    taille_type: L
+    heures_min: 10
+    heures_max: 20
+    confiance: faible
+    mesures: []
+    prix_conseille_ht: null

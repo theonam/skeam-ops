@@ -1,0 +1,71 @@
+items:
+  - id: DEMO-003
+    titre: Saisie du pointage journalier par compagnon
+    module: pointage
+    lot: 1
+    priorite: indispensable
+    statut: en_cours
+    taille: M
+    estimation_h: 6
+    dependances:
+      - DEMO-001
+      - DEMO-002
+      - "externe: liste des compagnons fournie par le client"
+    criteres_acceptation:
+      - Un compagnon saisit ses heures du jour en moins de 30 secondes sur téléphone.
+      - Une journée au-delà de 10 heures est refusée, conformément à RG2.
+      - Le pointage d'un jour passé n'est plus modifiable par le compagnon, conformément à RG3.
+    audience: client
+    a_valider: false
+    commit: null
+    maj: 2026-10-15
+  - id: DEMO-004
+    titre: Export mensuel des heures pour la paie
+    module: export-paie
+    lot: 1
+    priorite: souhaitable
+    statut: a_faire
+    taille: M
+    estimation_h: 5
+    dependances:
+      - DEMO-003
+    criteres_acceptation:
+      - Le conducteur de travaux télécharge un fichier CSV par mois, une ligne par compagnon et par jour.
+    audience: commercial
+    a_valider: false
+    commit: null
+    maj: 2026-10-08
+    notes: Format du cabinet de paie à confirmer.
+  - id: DEMO-005
+    titre: Planning hebdomadaire des équipes
+    module: planning
+    lot: 2
+    priorite: optionnel
+    statut: a_faire
+    taille: L
+    estimation_h: 12
+    dependances:
+      - DEMO-002
+    criteres_acceptation:
+      - Le conducteur de travaux affecte chaque compagnon à un chantier par demi-journée.
+    audience: client
+    a_valider: false
+    commit: null
+    maj: 2026-10-08
+  - id: DEMO-006
+    titre: Purge des liens de connexion expirés
+    module: null
+    lot: 1
+    priorite: souhaitable
+    statut: a_faire
+    taille: XS
+    estimation_h: 1
+    dependances:
+      - DEMO-001
+    criteres_acceptation:
+      - Les liens expirés depuis plus de 24 heures sont supprimés chaque nuit.
+    audience: interne
+    a_valider: true
+    commit: null
+    maj: 2026-10-15
+    notes: Besoin découvert par demo-dev pendant DEMO-003.

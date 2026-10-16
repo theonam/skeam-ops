@@ -1,0 +1,33 @@
+# Projet interne : skeam-ops est piloté avec le même dossier projet qu'un client.
+slug: ops
+nom: SKEAM ops
+raison_sociale: SKEAM
+siren: null
+adresse: null
+contacts:
+  - nom: Théo Namor
+    role: Président de SKEAM, chef de projet
+    email: null
+    tel: null
+statut: en_dev
+apporteur: theo
+dates:
+  premier_contact: 2026-10-15
+  cadrage: 2026-10-15
+  signature: null
+  mise_en_service: null
+montants_ht:
+  build_signe: 0
+  options_signees: 0
+  run_annuel: 0
+devis: []
+liens:
+  depot: theonam/skeam-ops
+  demo: null
+  prod: null
+  docs_interne: null
+  docs_commercial: null
+  docs_client: null
+todoist:
+  projet_id: null
+  section_id: null

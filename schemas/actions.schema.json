@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/theonam/skeam-ops/schemas/actions.schema.json",
+  "title": "Actions personnelles de Théo, projet/actions.yaml",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["items"],
+  "properties": {
+    "items": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/action" }
+    }
+  },
+  "$defs": {
+    "action": {
+      "title": "Action",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "titre", "contexte", "priorite", "points", "echeance", "statut", "todoist_id", "source"],
+      "properties": {
+        "id": { "$ref": "commun.schema.json#/$defs/id_action" },
+        "titre": { "$ref": "commun.schema.json#/$defs/texte" },
+        "contexte": {
+          "description": "D'où vient l'action et pourquoi elle remonte.",
+          "$ref": "commun.schema.json#/$defs/texte"
+        },
+        "priorite": { "description": "p1 la plus urgente, comme dans l'application Todoist.", "type": "string", "enum": ["p1", "p2", "p3", "p4"] },
+        "points": { "description": "Étiquette d'effort Todoist.", "type": "string", "enum": ["1pt", "2pt", "3pt", "5pt", "8pt"] },
+        "echeance": { "$ref": "commun.schema.json#/$defs/date_ou_null" },
+        "statut": { "type": "string", "enum": ["ouverte", "faite", "annulee"] },
+        "todoist_id": { "$ref": "commun.schema.json#/$defs/todoist_id_ou_null" },
+        "source": {
+          "description": "manuel, un id d'item du backlog, ou un chemin relatif à projet/ : transcripts/<fichier>.md, syntheses/<fichier>.md, cadrage.md, decisions.md.",
+          "type": "string",
+          "pattern": "^(manuel|[A-Z][A-Z0-9]{1,11}-[0-9]{3}|(transcripts|syntheses)/[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9]+(-[a-z0-9]+)*\\.md|cadrage\\.md|decisions\\.md)$"
+        }
+      }
+    }
+  }
+}

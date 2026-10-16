@@ -1,0 +1,33 @@
+items:
+  - id: DEMO-001
+    titre: Connexion des compagnons par lien reçu par SMS
+    module: authentification
+    lot: 0
+    priorite: indispensable
+    statut: fait
+    taille: S
+    estimation_h: 4
+    dependances: []
+    criteres_acceptation:
+      - Un compagnon reçoit un lien par SMS et se connecte sans mot de passe.
+      - Le lien expire au bout de 15 minutes, conformément à RG1.
+    audience: client
+    a_valider: false
+    commit: a1b2c3d
+    maj: 2026-10-12
+  - id: DEMO-002
+    titre: Liste des chantiers en cours
+    module: chantiers
+    lot: 0
+    priorite: indispensable
+    statut: fait
+    taille: S
+    estimation_h: 3
+    dependances:
+      - DEMO-001
+    criteres_acceptation:
+      - Le compagnon voit uniquement les chantiers auxquels il est affecté.
+    audience: client
+    a_valider: false
+    commit: b2c3d4e
+    maj: 2026-10-12

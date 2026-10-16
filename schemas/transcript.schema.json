@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/theonam/skeam-ops/schemas/transcript.schema.json",
+  "title": "En-tête YAML d'un transcript, projet/transcripts/AAAA-MM-JJ-sujet.md",
+  "description": "Valide l'en-tête placé entre deux lignes --- en tête de fichier. Le corps est le transcript brut, libre.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["date", "participants", "source", "plaud_id"],
+  "properties": {
+    "date": { "$ref": "commun.schema.json#/$defs/date" },
+    "participants": { "$ref": "commun.schema.json#/$defs/participants" },
+    "source": { "$ref": "commun.schema.json#/$defs/source_transcript" },
+    "plaud_id": { "description": "Obligatoire si source vaut plaud, null sinon.", "$ref": "commun.schema.json#/$defs/texte_ou_null" }
+  },
+  "if": { "properties": { "source": { "const": "plaud" } } },
+  "then": { "properties": { "plaud_id": { "type": "string" } } },
+  "else": { "properties": { "plaud_id": { "type": "null" } } }
+}

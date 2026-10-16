@@ -1,0 +1,24 @@
+# Backlog. Format : CONTRAT.md, section Item de backlog.
+# Un ou plusieurs fichiers backlog/<nom>.yaml ; le découpage en fichiers est libre, le champ lot fait foi.
+# Ids uniques sur tout le dossier : <SLUG EN MAJUSCULES>-<numéro sur 3 chiffres>.
+items: []
+# items:
+#   - id: EGM-012
+#     titre: Saisie du pointage journalier par compagnon
+#     module: pointage              # code du catalogue, ou null hors catalogue
+#     lot: 1                        # 0 pour la démo
+#     priorite: indispensable       # indispensable, souhaitable, optionnel
+#     statut: a_faire               # a_faire, en_cours, a_recetter, fait, abandonne
+#     taille: M                     # XS, S, M, L, XL
+#     estimation_h: 6
+#     dependances:
+#       - EGM-004
+#       - "externe: liste des chantiers fournie par le client"
+#     criteres_acceptation:
+#       - Un compagnon saisit ses heures du jour en moins de 30 secondes sur téléphone.
+#       - Les heures saisies respectent RG3.
+#     audience: client              # interne, commercial, client : niveau minimal pour voir l'item
+#     a_valider: false              # true pour tout item créé par un agent sans accord de Théo
+#     commit: null                  # hash du dernier commit lié
+#     maj: 2026-10-15
+#     notes: null                   # facultatif
