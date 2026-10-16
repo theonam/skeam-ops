@@ -5,7 +5,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_faire
+    statut: a_recetter
     taille: M
     estimation_h: 4
     dependances: []
@@ -14,14 +14,14 @@ items:
       - python scripts/validate.py --catalogue catalogue/ sort sans erreur.
     audience: interne
     a_valider: false
-    commit: null
+    commit: d022c8e
     maj: 2026-10-15
   - id: OPS-202
     titre: Grille tarifaire interne
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_faire
+    statut: a_recetter
     taille: XS
     estimation_h: 1
     dependances: []
@@ -30,14 +30,14 @@ items:
       - Les valeurs sont proposées dans la pull request ; Théo les arrête.
     audience: interne
     a_valider: false
-    commit: null
+    commit: 6a31523
     maj: 2026-10-15
   - id: OPS-203
     titre: Script de chiffrage chiffrer.py
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_faire
+    statut: a_recetter
     taille: L
     estimation_h: 8
     dependances:
@@ -49,14 +49,14 @@ items:
       - Le chiffrage du client fictif de exemples/ est reproductible.
     audience: interne
     a_valider: false
-    commit: null
+    commit: 6bbbb46
     maj: 2026-10-15
   - id: OPS-204
     titre: Script de calibrage calibrer.py
     module: null
     lot: 1
     priorite: souhaitable
-    statut: a_faire
+    statut: a_recetter
     taille: M
     estimation_h: 5
     dependances:
@@ -66,14 +66,14 @@ items:
       - Deux passages de suite produisent un fichier identique.
     audience: interne
     a_valider: false
-    commit: null
+    commit: b33acb0
     maj: 2026-10-15
   - id: OPS-205
     titre: Méthode de calcul du prix conseillé et de la confiance
     module: null
     lot: 2
     priorite: souhaitable
-    statut: a_faire
+    statut: a_recetter
     taille: S
     estimation_h: 3
     dependances:
@@ -82,5 +82,95 @@ items:
       - catalogue/README.md explique comment prix_conseille_ht et confiance découlent des mesures et des tarifs.
     audience: interne
     a_valider: false
-    commit: null
+    commit: 90d4d5a
     maj: 2026-10-15
+  - id: OPS-206
+    titre: Saisie et relecture du temps, temps.py
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_recetter
+    taille: M
+    estimation_h: 4
+    dependances: []
+    criteres_acceptation:
+      - python catalogue/scripts/temps.py start, stop et log écrivent une ligne conforme à CONTRAT.md section 6 dans le bon fichier AAAA-MM-<agent>.jsonl.
+      - python catalogue/scripts/temps.py week produit la synthèse de la semaine et passe valide à true seulement après confirmation de Théo.
+    audience: interne
+    a_valider: false
+    commit: 7bfbcd3
+    maj: 2026-10-15
+    notes: Demandé par Théo le 2026-10-15 dans la consigne du chantier catalogue.
+  - id: OPS-207
+    titre: Rapport de calibration, écarts estimation contre réel
+    module: null
+    lot: 1
+    priorite: souhaitable
+    statut: a_recetter
+    taille: S
+    estimation_h: 3
+    dependances:
+      - OPS-204
+    criteres_acceptation:
+      - calibrer.py écrit catalogue/out/calibration.md avec les écarts entre estimation et réel, par module et par client.
+    audience: interne
+    a_valider: false
+    commit: b33acb0
+    maj: 2026-10-15
+    notes: Demandé par Théo le 2026-10-15 dans la consigne du chantier catalogue.
+  - id: OPS-208
+    titre: Projet fictif et tests du chantier catalogue
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_recetter
+    taille: M
+    estimation_h: 4
+    dependances:
+      - OPS-203
+      - OPS-204
+      - OPS-206
+    criteres_acceptation:
+      - catalogue/tests/ contient un projet fictif valide et des tests de chiffrer.py, calibrer.py et temps.py.
+      - python -m unittest discover -s catalogue/tests -p "test_*.py" passe sans erreur.
+    audience: interne
+    a_valider: false
+    commit: 5b0366e
+    maj: 2026-10-15
+    notes: Demandé par Théo le 2026-10-15 dans la consigne du chantier catalogue.
+  - id: OPS-209
+    titre: Fonctionnalités du devis listées par importance pour le client
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_recetter
+    taille: S
+    estimation_h: 1
+    dependances:
+      - OPS-203
+    criteres_acceptation:
+      - Chaque ligne du devis liste ses fonctionnalités une par ligne, de la plus importante pour le client à la moins importante.
+      - L'ordre suit la priorité de l'item puis l'ordre du backlog, en attendant un champ dédié proposé dans catalogue/PROPOSITIONS-CONTRAT.md.
+    audience: interne
+    a_valider: false
+    commit: 627d86f
+    maj: 2026-10-15
+    notes: Règle de rédaction des devis donnée par Théo le 2026-10-15. L'ordre d'importance tiré du transcript relève de /cadrage, chantier cadrage.
+  - id: OPS-210
+    titre: Une ligne de devis par option
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_recetter
+    taille: XS
+    estimation_h: 1
+    dependances:
+      - OPS-203
+    criteres_acceptation:
+      - Chaque item optionnel devient sa propre ligne de devis, Option n suivi de son titre, que le client choisit une à une.
+      - Les options sont numérotées par lot puis dans l'ordre du backlog ; le taux horaire reste celui de tarifs.yaml.
+    audience: interne
+    a_valider: false
+    commit: 9065dc7
+    maj: 2026-10-15
+    notes: Demandé par Théo le 2026-10-15, sur le modèle du devis d'options E G M.

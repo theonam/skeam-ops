@@ -1,0 +1,70 @@
+# Catalogue du jeu d'essai. Valeurs figées pour les tests, indépendantes de catalogue/modules.yaml.
+# Les mesures des clients ancien, aaa, bbb et ccc, absents du registre d'essai, disparaissent au calibrage.
+modules:
+  - code: connexion-droits
+    nom: Connexion et droits
+    description: Connexion, comptes, profils et droits.
+    taille_type: S
+    heures_min: 3
+    heures_max: 8
+    confiance: faible
+    mesures: []
+    prix_conseille_ht: null
+  # Un commentaire au milieu du fichier doit survivre au calibrage.
+  - code: devis
+    nom: Devis
+    description: Devis à lignes, PDF et envoi.
+    taille_type: L
+    heures_min: 10
+    heures_max: 20
+    confiance: moyenne
+    mesures:
+      - client: ancien
+        item: ANCIEN-004
+        heures: 16
+    prix_conseille_ht: 1400
+  - code: facturation-simple
+    nom: Facturation simple
+    description: Factures et avoirs.
+    taille_type: M
+    heures_min: 8
+    heures_max: 14
+    confiance: forte
+    mesures:
+      - client: aaa
+        item: AAA-010
+        heures: 10
+      - client: bbb
+        item: BBB-003
+        heures: 12
+      - client: ccc
+        item: CCC-007
+        heures: 13
+    prix_conseille_ht: 1050
+  - code: app-terrain
+    nom: App terrain
+    description: Écrans mobiles, photos, croquis et signature.
+    taille_type: L
+    heures_min: 10
+    heures_max: 20
+    confiance: faible
+    mesures: []
+    prix_conseille_ht: null
+  - code: tableau-de-bord
+    nom: Tableau de bord
+    description: Indicateurs de pilotage.
+    taille_type: M
+    heures_min: 5
+    heures_max: 10
+    confiance: faible
+    mesures: []
+    prix_conseille_ht: null
+  - code: planning-equipes
+    nom: Planning des équipes
+    description: Planning des équipes.
+    taille_type: L
+    heures_min: 12
+    heures_max: 24
+    confiance: faible
+    mesures: []
+    prix_conseille_ht: null

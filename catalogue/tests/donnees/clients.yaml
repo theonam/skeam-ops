@@ -1,0 +1,17 @@
+# Registre du jeu d'essai du chantier catalogue : clones dans catalogue/tests/donnees/racine.
+clients:
+  - slug: fictif
+    nom: Bâtiment Fictif
+    depot: skeam-exemple/fictif-app
+    statut: en_dev
+    actif: true
+  - slug: essai
+    nom: Essai Rénovation
+    depot: skeam-exemple/essai-app
+    statut: en_dev
+    actif: true
+  - slug: ancien
+    nom: Ancien Client
+    depot: skeam-exemple/ancien-app
+    statut: clos
+    actif: false

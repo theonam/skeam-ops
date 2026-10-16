@@ -1,0 +1,142 @@
+# Backlog du client fictif du jeu d'essai du chantier catalogue.
+items:
+  - id: FICTIF-001
+    titre: Connexion des utilisateurs
+    module: connexion-droits
+    lot: 0
+    priorite: indispensable
+    statut: fait
+    taille: S
+    estimation_h: 4
+    dependances: []
+    criteres_acceptation:
+      - Un utilisateur se connecte avec son adresse courriel.
+    audience: client
+    a_valider: false
+    commit: a1b2c3d
+    maj: 2026-10-14
+  - id: FICTIF-002
+    titre: Paramétrage de la démo
+    module: null
+    lot: 0
+    priorite: indispensable
+    statut: fait
+    taille: XS
+    estimation_h: 2
+    dependances: []
+    criteres_acceptation:
+      - La démo est accessible au client.
+    audience: interne
+    a_valider: false
+    commit: b2c3d4e
+    maj: 2026-10-14
+  - id: FICTIF-003
+    titre: Création et envoi des devis
+    module: devis
+    lot: 1
+    priorite: indispensable
+    statut: en_cours
+    taille: L
+    estimation_h: 8
+    dependances:
+      - FICTIF-001
+    criteres_acceptation:
+      - Un devis est créé, chiffré et envoyé au client en PDF.
+    audience: client
+    a_valider: false
+    commit: null
+    maj: 2026-10-14
+  - id: FICTIF-004
+    titre: Transformation du devis en facture
+    module: devis
+    lot: 1
+    priorite: souhaitable
+    statut: a_faire
+    taille: M
+    estimation_h: 4
+    dependances:
+      - FICTIF-003
+    criteres_acceptation:
+      - Un devis accepté devient une facture en un clic.
+    audience: client
+    a_valider: false
+    commit: null
+    maj: 2026-10-14
+  - id: FICTIF-005
+    titre: Factures et avoirs
+    module: facturation-simple
+    lot: 1
+    priorite: indispensable
+    statut: a_faire
+    taille: M
+    estimation_h: 6
+    dependances:
+      - FICTIF-004
+    criteres_acceptation:
+      - Une facture validée reçoit un numéro définitif.
+    audience: commercial
+    a_valider: false
+    commit: null
+    maj: 2026-10-14
+  - id: FICTIF-006
+    titre: Relance des impayés
+    module: relances
+    lot: 1
+    priorite: souhaitable
+    statut: a_faire
+    taille: S
+    estimation_h: 3
+    dependances:
+      - FICTIF-005
+    criteres_acceptation:
+      - Une facture échue déclenche une relance par courriel.
+    audience: client
+    a_valider: false
+    commit: null
+    maj: 2026-10-14
+  - id: FICTIF-007
+    titre: Application terrain avec photos et signature
+    module: app-terrain
+    lot: 2
+    priorite: optionnel
+    statut: a_faire
+    taille: L
+    estimation_h: 14
+    dependances: []
+    criteres_acceptation:
+      - Le technicien fait signer le client sur sa tablette.
+    audience: client
+    a_valider: false
+    commit: null
+    maj: 2026-10-14
+  - id: FICTIF-008
+    titre: Tableau de bord du gérant
+    module: tableau-de-bord
+    lot: 2
+    priorite: optionnel
+    statut: abandonne
+    taille: M
+    estimation_h: 6
+    dependances: []
+    criteres_acceptation:
+      - Le gérant voit son chiffre d'affaires du mois.
+    audience: client
+    a_valider: false
+    commit: null
+    maj: 2026-10-14
+  - id: FICTIF-009
+    titre: Export comptable
+    module: null
+    lot: 1
+    priorite: souhaitable
+    statut: a_faire
+    taille: S
+    estimation_h: 3
+    dependances: []
+    criteres_acceptation:
+      - Les factures du mois sont exportées pour le comptable.
+    audience: interne
+    a_valider: true
+    commit: null
+    maj: 2026-10-14
+    notes: Besoin découvert par fictif-dev pendant FICTIF-003.

@@ -1,0 +1,9 @@
+# Tarifs du jeu d'essai. Valeurs figées pour les tests, indépendantes de catalogue/tarifs.yaml.
+taux_horaire_cible: 70
+marge_securite:
+  XS: 0.1
+  S: 0.15
+  M: 0.2
+  L: 0.3
+  XL: 0.4
+plancher_ht: 1500
