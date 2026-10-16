@@ -202,6 +202,34 @@ class TestVueInterne(unittest.TestCase):
         self.assertIn(("basse", "registre_desynchronise", "beta"), {(a["gravite"], a["type"], a["slug"]) for a in alertes})
 
 
+class TestDevisEtLots(unittest.TestCase):
+    """Chaque devis avec ses lots et items, leur avancement, et ses factures : vues interne et commerciale."""
+
+    def alpha(self, audience):
+        return next(p for p in vue(audience)["projets"] if p["slug"] == "alpha")
+
+    def test_perimetre_par_lot_et_par_item(self):
+        complet, option = self.alpha("interne")["devis"]
+        self.assertEqual([(l["lot"], l["partiel"], l["nb_items"]) for l in complet["perimetre"]], [(0, False, 2), (1, True, 4)])
+        # L'item cité par l'option lui appartient, même si son lot est dans le périmètre du premier devis.
+        self.assertEqual([(l["lot"], l["partiel"], l["nb_items"], l["termine"]) for l in option["perimetre"]], [(1, True, 1, 1)])
+        self.assertEqual(self.alpha("interne")["hors_devis"], [])
+
+    def test_factures_et_retard(self):
+        factures = self.alpha("commercial")["devis"][0]["factures"]
+        self.assertEqual([(f["statut"], f["en_retard"]) for f in factures], [("payee", False), ("envoyee", True)])
+
+    def test_sans_perimetre(self):
+        beta = next(p for p in vue("interne")["projets"] if p["slug"] == "beta")
+        self.assertTrue(all(d["perimetre"] is None for d in beta["devis"]))
+        self.assertIsNone(beta["hors_devis"])
+
+    def test_absent_de_la_vue_client(self):
+        projet = vue("client")["projets"][0]
+        self.assertNotIn("devis", projet)
+        self.assertNotIn("hors_devis", projet)
+
+
 class TestFiltrage(unittest.TestCase):
     """Section 10 : rien de ce que l'audience ne peut pas voir, sur les données de test et sur exemples/."""
 
@@ -244,8 +272,9 @@ class TestFiltrage(unittest.TestCase):
         self.assertEqual([a["type"] for a in donnees["global"]["alertes"]], ["en_cours_ancien"])
         self.assertIn("ALPHA-004", json.dumps(donnees))
         self.assertIsNone(projet(donnees, "alpha")["prochaine_echeance"])
-        self.assertEqual(projet(donnees, "alpha")["devis"][0], {"objet": "Application Alpha Menuiserie, lots 0 et 1, options et maintenance",
-                                                                 "montant_ht": 10440, "statut": "accepte"})
+        devis = projet(donnees, "alpha")["devis"][0]
+        self.assertEqual({k: devis[k] for k in ("objet", "montant_ht", "statut")},
+                         {"objet": "Application Alpha Menuiserie, lots 0 et 1, options et maintenance", "montant_ht": 10440, "statut": "accepte"})
 
     def test_client(self):
         for jeu in self.JEUX:
@@ -424,6 +453,12 @@ class TestGabaritFige(unittest.TestCase):
                         for cle in ("budget", "temps"):
                             if cle in attendu:
                                 self.assertEqual(sorted(p[cle]), attendu[cle])
+                        for devis in p.get("devis", []):
+                            self.assertEqual(sorted(devis), attendu["devis"])
+                            for partie in devis["perimetre"] or []:
+                                self.assertEqual(sorted(partie), attendu["devis_lot"])
+                            for facture in devis["factures"]:
+                                self.assertEqual(sorted(facture), attendu["facture"])
 
     def test_gabarit_versionne_et_complet(self):
         gabarit = rendre.GABARIT.read_text(encoding="utf-8")

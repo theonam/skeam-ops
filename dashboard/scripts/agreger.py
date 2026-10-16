@@ -265,6 +265,58 @@ class Calculs:
             resultat.append(entree)
         return resultat
 
+    def avancement(self, lot: int, items: list[dict], partiel: bool) -> dict:
+        """Avancement d'une partie de lot, en nombre d'items hors abandonne, comme pour les lots."""
+        nombre = {statut: sum(1 for item in items if item["statut"] == statut) for statut in ("a_faire", "en_cours", "a_recetter", "fait")}
+        return {
+            "lot": lot,
+            "titre": self.lots_cadrage.get(lot, {}).get("titre"),
+            "partiel": partiel,
+            "nb_items": len(items),
+            "a_faire": nombre["a_faire"],
+            "en_cours": nombre["en_cours"],
+            "developpe": nombre["a_recetter"] + nombre["fait"],
+            "termine": nombre["fait"],
+        }
+
+    def devis(self) -> tuple[list[dict], list[dict] | None]:
+        """Chaque devis avec son périmètre et ses factures, et ce qui n'est dans aucun devis.
+
+        Un item cité dans les items d'un devis lui appartient ; sinon il appartient au devis qui cite son lot.
+        Sans aucun périmètre renseigné, le hors devis vaut None : la correspondance n'est pas connue.
+        """
+        liste = self.client["devis"]
+        par_item = {ident: n for n, d in enumerate(liste) if d.get("perimetre") for ident in d["perimetre"]["items"]}
+        par_lot = {lot: n for n, d in enumerate(liste) if d.get("perimetre") for lot in d["perimetre"]["lots"]}
+        comptes = [item for item in self.items if compte_avancement(item)]
+        proprietaire = {item["id"]: par_item.get(item["id"], par_lot.get(item["lot"])) for item in comptes}
+        lots_complets = {lot: [item for item in comptes if item["lot"] == lot] for lot in {item["lot"] for item in comptes}}
+
+        def parties(numero: int | None) -> list[dict]:
+            resultat = []
+            for lot in sorted(lots_complets):
+                siens = [item for item in lots_complets[lot] if proprietaire[item["id"]] == numero]
+                if siens:
+                    resultat.append(self.avancement(lot, siens, len(siens) < len(lots_complets[lot])))
+            return resultat
+
+        sortie = []
+        for numero, d in enumerate(liste):
+            factures = [
+                {k: f[k] for k in ("numero", "montant_ht", "statut", "echeance")}
+                | {"en_retard": f["statut"] == "envoyee" and f["echeance"] is not None and date(f["echeance"]) < self.aujourd_hui}
+                for f in d.get("factures", [])
+            ]
+            sortie.append({
+                "objet": d["objet"],
+                "montant_ht": d["montant_ht"],
+                "statut": d["statut"],
+                "perimetre": parties(numero) if d.get("perimetre") else None,
+                "factures": factures,
+            })
+        hors_devis = parties(None) if (par_item or par_lot) else None
+        return sortie, hors_devis
+
     def items_en_cours_anciens(self, audience: str) -> list[dict]:
         resultat = []
         for item in self.items:
@@ -407,7 +459,8 @@ def projet_commercial(calculs: Calculs) -> dict:
         "montants_ht": dict(client["montants_ht"]),
         "montant_signe_ht": calculs.montant_signe(),
         "devis_saisi": bool(client["devis"]),
-        "devis": [{k: d[k] for k in ("objet", "montant_ht", "statut")} for d in client["devis"]],
+        "devis": calculs.devis()[0],
+        "hors_devis": calculs.devis()[1],
         "liens": {k: liens[k] for k in ("demo", "prod", "docs_client", "docs_commercial")},
         "lots": calculs.lots("commercial"),
         "items_en_cours_anciens": calculs.items_en_cours_anciens("commercial"),

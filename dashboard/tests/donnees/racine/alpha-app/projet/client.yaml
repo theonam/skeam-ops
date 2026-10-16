@@ -29,10 +29,27 @@ devis:
     objet: Application Alpha Menuiserie, lots 0 et 1, options et maintenance
     montant_ht: 10440
     statut: accepte
+    perimetre:
+      lots: [0, 1]
+      items: []
+    factures:
+      - dougs_id: 2c3d4e5f-6a7b-4c8d-9e0f-1a2b3c4d5e6f
+        numero: 2026-09-FAC-1
+        montant_ht: 5220
+        statut: payee
+        echeance: 2026-09-30
+      - dougs_id: 3d4e5f6a-7b8c-4d9e-8f0a-1b2c3d4e5f6a
+        numero: 2026-10-FAC-2
+        montant_ht: 2610
+        statut: envoyee
+        echeance: 2026-10-10
   - dougs_id: 1b2c3d4e-5f6a-4b7c-9d8e-0f1a2b3c4d5e
     objet: Option export comptable
     montant_ht: 1200
     statut: brouillon
+    perimetre:
+      lots: []
+      items: [ALPHA-008]
 liens:
   depot: theonam/alpha-app
   demo: https://alpha-app.example/demo

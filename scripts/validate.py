@@ -552,6 +552,29 @@ def valider_projet(chemin_projet: Path, rapport: Rapport, codes_modules: set[str
             rapport.erreur(dossier_backlog, f"dépendances circulaires : {' -> '.join(cycle)}")
     resultat["items"] = {k: v[1] for k, v in items.items()}
 
+    # Périmètre des devis : lots et items du backlog, chacun cité par un seul devis.
+    if resultat["client"] is not None and dossier_backlog.is_dir():
+        lots_backlog = {item["lot"] for _, item in items.values()}
+        cites_items: dict[str, str] = {}
+        cites_lots: dict[int, str] = {}
+        for devis in resultat["client"]["devis"]:
+            perimetre = devis.get("perimetre")
+            if perimetre is None:
+                continue
+            nom = devis["objet"]
+            for lot in perimetre["lots"]:
+                if lot not in lots_backlog:
+                    rapport.erreur(chemin_client, f"devis « {nom} » : lot {lot} absent du backlog")
+                if lot in cites_lots:
+                    rapport.erreur(chemin_client, f"devis « {nom} » : lot {lot} déjà dans le périmètre de « {cites_lots[lot]} »")
+                cites_lots.setdefault(lot, nom)
+            for ident in perimetre["items"]:
+                if ident not in items and ident not in ids_invalides:
+                    rapport.erreur(chemin_client, f"devis « {nom} » : item {ident} introuvable dans le backlog")
+                if ident in cites_items:
+                    rapport.erreur(chemin_client, f"devis « {nom} » : item {ident} déjà dans le périmètre de « {cites_items[ident]} »")
+                cites_items.setdefault(ident, nom)
+
     # actions.yaml
     chemin_actions = projet / "actions.yaml"
     if chemin_actions.is_file():
