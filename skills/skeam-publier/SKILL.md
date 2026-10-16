@@ -44,9 +44,9 @@ Construits : items `a_recetter` ou `fait`. Recettés : items `fait`, seul chiffr
 | Lien documents commerciaux | non | oui | oui |
 | Dépôt, documents internes, ids Todoist | non | non | oui |
 | Avancement par lot, en nombre d'items | oui | oui | oui, plus estimations et temps passé |
-| Items `client` hors `a_valider` : id, titre, statut, priorité, critères, date de mise à jour | oui | oui | oui |
-| Items `commercial` hors `a_valider`, champ module | non | oui | oui |
-| Items `interne` et `a_valider`, taille, estimation, dépendances, commit, notes, audience | non | non | oui |
+| Items `client` : id, titre, statut, priorité, critères, date de mise à jour | oui | oui | oui |
+| Items `commercial`, champ module | non | oui | oui |
+| Items `interne`, taille, estimation, dépendances, commit, notes, audience | non | non | oui |
 | Cadrage et synthèses, sans commentaires HTML | oui | oui | oui |
 | Fiche client | non | oui | oui |
 | Actions, décisions, temps, liste des transcripts et chiffrages | non | non | oui |

@@ -146,9 +146,11 @@ class TestBacklog(BaseProjet):
         self.remplacer("backlog/lot0.yaml", "    dependances: []\n", "    dependances:\n      - DEMO-002\n")
         self.assertErreur("dépendances circulaires")
 
-    def test_item_a_valider_non_interne(self) -> None:
-        self.remplacer("backlog/lot1.yaml", "    audience: interne\n    a_valider: true", "    audience: client\n    a_valider: true")
-        self.assertErreur("un item à valider est d'audience interne")
+    def test_item_a_valider_sans_effet(self) -> None:
+        # Depuis le 2026-10-16, a_valider ne filtre plus rien : true n'est qu'un avertissement, quelle que soit l'audience.
+        self.remplacer("backlog/lot1.yaml", "    audience: interne\n    a_valider: false", "    audience: client\n    a_valider: true")
+        self.assertAvertissement("a_valider vaut true, champ sans effet")
+        self.assertEqual([m for niveau, _, m in self.valider().messages if niveau == "ERREUR"], [])
 
     def test_parenthese_item_client(self) -> None:
         self.remplacer("backlog/lot1.yaml", "Planning hebdomadaire des équipes", "Planning hebdomadaire (équipes)")

@@ -89,18 +89,18 @@ class TestVueInterne(unittest.TestCase):
     def test_lots(self):
         lot0, lot1, lot2 = self.alpha["lots"]
         self.assertEqual(lot0, {"lot": 0, "titre": "Démo", "description": "Connexion et catalogue des menuiseries.", "pourcentage": 100,
-                                "nb_items": 2, "developpe": 2, "teste_ia": None, "heures_estimees": 7, "heures_reelles": 8.5,
+                                "nb_items": 2, "developpe": 2, "teste_ia": 2, "heures_estimees": 7, "heures_reelles": 8.5,
                                 "ecart_pct": 21, "depassement": True})
         # En interne, ALPHA-006 à valider compte et se signale ; le pourcentage du contrat l'exclut toujours.
-        self.assertEqual((lot1["pourcentage"], lot1["nb_items"], lot1["developpe"]), (25, 5, 2))
+        self.assertEqual((lot1["pourcentage"], lot1["nb_items"], lot1["developpe"], lot1["teste_ia"]), (20, 5, 2, 1))
         self.assertEqual((lot1["titre"], lot1["description"]), ("Devis de pose et commandes fournisseurs", ""))
         self.assertEqual((lot2["titre"], lot2["description"]), (None, None))
         self.assertEqual((lot1["heures_estimees"], lot1["heures_reelles"]), (14, 4.5))
         self.assertEqual((lot2["pourcentage"], lot2["nb_items"], lot2["developpe"]), (None, 0, 0))
         self.assertEqual([l["pourcentage"] for l in self.beta["lots"]], [100, 33])
 
-    def test_trois_etapes_items_tous_a_valider(self):
-        """Cas d'E G M : tous les items à valider, une partie développée ; plus jamais n. d. seul en interne."""
+    def test_a_valider_sans_effet(self):
+        """Depuis le 2026-10-16, a_valider ne filtre plus rien : seule l'audience décide de ce qui est visible."""
         with tempfile.TemporaryDirectory() as tmp:
             copie = Path(tmp) / "donnees"
             shutil.copytree(DONNEES, copie)
@@ -110,7 +110,7 @@ class TestVueInterne(unittest.TestCase):
             interne = projet(vue("interne", clients=copie / "clients.yaml", racine=copie / "racine", cwd=copie), "beta")
             commercial = vue("commercial", clients=copie / "clients.yaml", racine=copie / "racine", cwd=copie)
         self.assertEqual([(l["developpe"], l["nb_items"]) for l in interne["lots"]], [(1, 1), (2, 3)])
-        self.assertEqual([l["pourcentage"] for l in interne["lots"]], [None, None])
+        self.assertEqual([l["pourcentage"] for l in interne["lots"]], [100, 33])
         self.assertEqual(projet(commercial, "beta")["lots"], [])
 
     def test_temps_non_journalise(self):
@@ -255,7 +255,7 @@ class TestFiltrage(unittest.TestCase):
                     self.assertEqual(set(p["liens"]), {"demo", "prod", "docs_client"})
         # Avancement toutes audiences confondues, sans révéler les items cachés.
         self.assertEqual([(l["lot"], l["pourcentage"], l["titre"]) for l in projet(vue("client"), "alpha")["lots"]],
-                         [(0, 100, "Démo"), (1, 25, "Devis de pose et commandes fournisseurs"), (2, None, None)])
+                         [(0, 100, "Démo"), (1, 20, "Devis de pose et commandes fournisseurs"), (2, None, None)])
 
     def test_controle_de_surete(self):
         fuite = {"audience": "commercial", "genere_le": "x", "projets": [{"slug": "a", "items": [{"estimation_h": 3}]}]}

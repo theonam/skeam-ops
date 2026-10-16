@@ -52,7 +52,7 @@ python -m unittest discover -s catalogue/tests -p "test_*.py"
 
 ### Chiffrage d'un projet
 
-Items retenus : tous sauf `abandonne` et `a_valider: true`, listés comme exclus. Les items `fait` sont inclus et signalés.
+Items retenus : tous sauf `abandonne`, listés comme exclus ; `a_valider` est sans effet depuis le 2026-10-16. Les items `fait` sont inclus et signalés.
 
 Pour chaque module du catalogue utilisé par le projet :
 

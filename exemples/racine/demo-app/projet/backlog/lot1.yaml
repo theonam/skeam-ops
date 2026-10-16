@@ -65,7 +65,7 @@ items:
     criteres_acceptation:
       - Les liens expirés depuis plus de 24 heures sont supprimés chaque nuit.
     audience: interne
-    a_valider: true
+    a_valider: false
     commit: null
     maj: 2026-10-15
     notes: Besoin découvert par demo-dev pendant DEMO-003.

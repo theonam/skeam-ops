@@ -35,7 +35,7 @@ Un backlog repris d'un document sans heures : `estimation_h` provisoire déduite
 
 - `cadrage.md` réécrit dans ses quatorze sections, CONTRAT.md section 9.3, pour les seules sections acceptées.
 - Items du backlog ajoutés ou modifiés, après acceptation.
-- Items `a_valider: true` validés, laissés en attente ou abandonnés, selon le choix de Théo.
+- Anciens items `a_valider: true` passés à `false`, le champ étant sans effet depuis le 2026-10-16.
 - Rapport des contradictions entre sources, dans le chat et en `Questions ouvertes`.
 - Proposition éventuelle de mise à jour de `client.yaml` : `statut` de `prospect` à `cadrage`, `dates.cadrage`.
 
@@ -95,20 +95,16 @@ Comparer le cadrage accepté au backlog :
 
 | Constat | Proposition |
 |---|---|
-| Besoin du cadrage sans item | nouvel item, `a_valider: true`, `audience: interne`, `statut: a_faire`, estimation provisoire signalée en `notes` |
+| Besoin du cadrage sans item | nouvel item, `a_valider: false`, `audience` selon ce que voit le client : `client` pour une fonction de l'application, `interne` pour un travail technique, `statut: a_faire`, estimation provisoire signalée en `notes` |
 | Item dont un critère cite une RG abrogée ou absente | modification du critère |
 | Item dont le lot contredit le Découpage en lots | modification du lot, ou question ouverte si la source est ambiguë |
 | Deux items qui se recouvrent | signalement seulement ; jamais de fusion ni de suppression proposée sans source |
 
 Les champs `statut`, `commit` et `maj` d'un item existant ne sont jamais modifiés par cette commande, sauf `maj` qui suit toute modification acceptée.
 
-### 8. Valider les items en attente
+### 8. Reprendre les anciens items à valider
 
-Lister les items `a_valider: true`, y compris ceux ajoutés à l'étape 7, avec titre, lot, critères et source. Pour chacun :
-
-1. `Valider`, `Laisser en attente`, `Abandonner`.
-2. `Valider` : demander l'audience, `client`, `commercial` ou `interne`, puis écrire `a_valider: false` et l'audience. Si l'audience est `client`, vérifier titre et critères : ni tiret cadratin ni parenthèse.
-3. `Abandonner` : `statut: abandonne`, sur choix explicite de Théo uniquement.
+Théo ne valide plus les items un par un, décision du 2026-10-16. S'il reste des items `a_valider: true`, les passer à `false` en une seule proposition, avec l'audience de chacun : `client` pour une fonction de l'application, `interne` pour un travail technique. Si l'audience est `client`, vérifier titre et critères : ni tiret cadratin ni parenthèse ; sinon proposer `commercial` ou une reformulation. `Abandonner` reste possible, sur choix explicite de Théo uniquement.
 
 ### 9. Appliquer et valider
 

@@ -119,7 +119,7 @@ items:
       - Le tableau des audiences de CONTRAT.md section 10 est appliqué par un seul code, partagé par /skeam-publier et /dashboard.
       - Les tests de skills/tests/test_vue.py passent sans modification de leurs attentes.
     audience: interne
-    a_valider: true
+    a_valider: false
     commit: null
     maj: 2026-10-16
     notes: Besoin découvert pendant OPS-306, voir skills/PROPOSITIONS-CONTRAT.md, entrée Script de vue par audience.

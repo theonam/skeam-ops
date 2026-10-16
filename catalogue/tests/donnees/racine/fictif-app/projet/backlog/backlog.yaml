@@ -136,7 +136,7 @@ items:
     criteres_acceptation:
       - Les factures du mois sont exportées pour le comptable.
     audience: interne
-    a_valider: true
+    a_valider: false
     commit: null
     maj: 2026-10-14
     notes: Besoin découvert par fictif-dev pendant FICTIF-003.

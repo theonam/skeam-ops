@@ -8,7 +8,7 @@ Skills utilisées dans le chat claude.ai, pas dans Claude Code. Chacune orchestr
 |---|---|---|---|
 | `/skeam-nouveau-client` | nouveau prospect | `projet/` créé, `client.yaml`, `fiche.md`, `CLAUDE.md` ; entrée `clients.yaml` de skeam-ops | dépôt GitHub si l'outil existe, section Todoist |
 | `/skeam-import-transcript` | après une réunion enregistrée | `transcripts/`, `syntheses/` ; propositions arbitrées une par une pour `cadrage.md`, backlog, `decisions.md`, `actions.yaml` | rien |
-| `/skeam-cadrage` | après une ou plusieurs synthèses | `cadrage.md`, backlog, validation des items `a_valider` | rien |
+| `/skeam-cadrage` | après une ou plusieurs synthèses | `cadrage.md`, backlog | rien |
 | `/skeam-chiffrage` | backlog stable | `devis/`, entrée `devis` de `client.yaml` | brouillon de devis Dougs, jamais finalisé ni envoyé |
 | `/skeam-sync-todoist` | après ajout d'actions, ou régulièrement | `actions.yaml` : `todoist_id`, `statut`, actions importées | tâches Todoist |
 | `/skeam-publier` | pour relire ou faire relire un état du projet | URL dans `client.yaml` `liens` | doc Claude privé, jamais partagé par la commande |

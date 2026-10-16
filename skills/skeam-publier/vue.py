@@ -152,24 +152,23 @@ def section_cadrage(projet: Path, nom: str) -> list[str]:
 def items_visibles(items: list[dict], audience: str) -> list[dict]:
     if audience == "interne":
         return list(items)
-    return [i for i in items if not i["a_valider"] and voit(audience, i["audience"])]
+    return [i for i in items if voit(audience, i["audience"])]
 
 
-def avancement(items: list[dict], avec_a_valider: bool = False) -> dict[int, dict[str, int]]:
-    """Par lot : items comptés, construits et recettés, hors abandonne, toutes audiences confondues.
+def avancement(items: list[dict]) -> dict[int, dict[str, int]]:
+    """Par lot : items comptés, construits et terminés, hors abandonne, toutes audiences confondues.
 
-    Recettés = fait, seul compté par CONTRAT.md section 10. Construits = a_recetter ou fait.
-    Les items a_valider sont exclus, sauf pour la vue interne, libre.
+    Terminés = fait, seul compté par CONTRAT.md section 10 : l'agent pose fait après avoir vérifié
+    lui-même chaque critère d'acceptation. Construits = a_recetter ou fait.
     """
-    comptes: dict[int, dict[str, int]] = defaultdict(lambda: {"total": 0, "construits": 0, "recettes": 0, "a_valider": 0})
+    comptes: dict[int, dict[str, int]] = defaultdict(lambda: {"total": 0, "construits": 0, "recettes": 0})
     for item in items:
-        if item["statut"] == "abandonne" or (item["a_valider"] and not avec_a_valider):
+        if item["statut"] == "abandonne":
             continue
         lot = comptes[item["lot"]]
         lot["total"] += 1
         lot["construits"] += item["statut"] in CONSTRUITS
         lot["recettes"] += item["statut"] == "fait"
-        lot["a_valider"] += bool(item["a_valider"])
     return comptes
 
 
@@ -178,16 +177,16 @@ def onglet_accueil(projet: Path, client: dict, items: list[dict], audience: str,
     lignes = [onglet("Accueil"), "", f"Projet **{client['nom']}**, statut **{STATUTS_PROJET[client['statut']]}**.", ""]
 
     lignes += ["## Livrables", ""]
-    comptes = avancement(items, avec_a_valider=interne)
+    comptes = avancement(items)
     contenus = {}
     for puce in section_cadrage(projet, "Découpage en lots"):
         correspondance = RE_LOT_CADRAGE.match(puce)
         if correspondance:
             contenus[int(correspondance.group(1))] = correspondance.group(2).split(". ")[0].rstrip(".")
     if comptes:
-        entetes = ["Lot", "Contenu", "Construits", "Recettés"]
+        entetes = ["Lot", "Contenu", "Construits", "Terminés"]
         if interne:
-            entetes += ["À valider", "Estimé", "Passé"]
+            entetes += ["Estimé", "Passé"]
             minutes = defaultdict(int)
             for ligne in temps:
                 minutes[ligne["item"]] += ligne["minutes"]
@@ -198,11 +197,11 @@ def onglet_accueil(projet: Path, client: dict, items: list[dict], audience: str,
                       f"{c['recettes']} sur {c['total']}, soit {c['recettes'] * 100 // c['total']} %"]
             if interne:
                 du_lot = [i for i in items if i["lot"] == lot and i["statut"] != "abandonne"]
-                rangee += [str(c["a_valider"]), heures(sum(i["estimation_h"] for i in du_lot)),
+                rangee += [heures(sum(i["estimation_h"] for i in du_lot)),
                            heures(sum(minutes[i["id"]] for i in du_lot) / 60)]
             rangees.append(rangee)
         lignes += tableau(entetes, rangees)
-        lignes += ["", "Construits : items livrés par le développement, à recetter ou faits. Recettés : items validés, statut fait."]
+        lignes += ["", "Construits : items livrés par le développement, à recetter ou faits. Terminés : items dont chaque critère d'acceptation a été vérifié, statut fait."]
     else:
         lignes.append("Aucun item à ce jour.")
 
@@ -253,8 +252,6 @@ def onglet_backlog(items: list[dict], audience: str) -> list[str]:
         rangees = []
         for item in (i for i in visibles if i["lot"] == lot):
             statut = STATUTS_ITEM[item["statut"]]
-            if audience == "interne" and item["a_valider"]:
-                statut += ", à valider"
             rangee = [item["id"], item["titre"], statut, item["priorite"]]
             if voit(audience, "commercial"):
                 rangee.append(item["module"] or "")

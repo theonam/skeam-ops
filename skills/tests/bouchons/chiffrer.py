@@ -8,7 +8,7 @@ de skeam-ops, jamais à committer à la place du vrai script :
     python catalogue/scripts/chiffrer.py <chemin_projet> --sortie <chemin_projet>/devis/
 
 Une ligne par lot, au forfait : somme des estimation_h des items du lot, hors
-abandonne et hors a_valider, multipliée par TAUX_FICTIF. Écrit
+abandonne, multipliée par TAUX_FICTIF. Écrit
 chiffrage-AAAA-MM-JJ.md et .json, date du jour à Paris, en remplaçant ceux du
 jour. Code de sortie : 0 succès, 1 dossier invalide ou rien à chiffrer, 2 usage.
 """
@@ -59,7 +59,7 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     client = contrat.lire_client(args.projet)
-    items = [i for i in contrat.lire_items(args.projet) if i["statut"] != "abandonne" and not i["a_valider"]]
+    items = [i for i in contrat.lire_items(args.projet) if i["statut"] != "abandonne"]
     if not items:
         print("chiffrer.py: erreur : aucun item à chiffrer", file=sys.stderr)
         return 1

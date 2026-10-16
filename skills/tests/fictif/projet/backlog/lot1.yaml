@@ -61,7 +61,7 @@ items:
     criteres_acceptation:
       - Une copie des données est conservée chaque nuit pendant 30 jours.
     audience: interne
-    a_valider: true
+    a_valider: false
     commit: null
     maj: 2026-10-20
     notes: Estimation provisoire, besoin non exprimé par le client.

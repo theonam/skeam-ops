@@ -52,7 +52,7 @@ Les clones des dépôts clients se placent tous dans un même dossier racine : l
 2. **CONTRAT.md et schemas/ ne sont modifiés que par Théo**, de même que `scripts/`, `templates/`, `exemples/`, `clients.yaml`, ce README et `CLAUDE.md`. Une conversation qui a besoin d'un changement l'écrit dans `<son dossier>/PROPOSITIONS-CONTRAT.md`, au format de CONTRAT.md section 14, et continue avec l'hypothèse la plus simple compatible avec le contrat actuel.
 3. **Livraison par pull request vers main**, après `python scripts/validate.py projet` et les tests sans erreur.
 4. **Ids sans collision** : chaque chantier crée ses items dans sa plage, OPS-101 à 199 socle, 201 à 299 catalogue, 301 à 399 cadrage, 401 à 499 dashboard ; OPS-001 à 099 sont réservés au socle commun.
-5. **Items** : un chantier passe ses items `en_cours` puis `a_recetter` ; seul Théo les passe à `fait`. Tout besoin découvert devient un item `a_valider: true`, `audience: interne`, dans son propre fichier de backlog.
+5. **Items** : un chantier passe ses items `en_cours`, `a_recetter`, puis `fait` quand il a vérifié lui-même chaque critère d'acceptation ; seul Théo les passe à `abandonne`. Tout besoin découvert devient un item `a_valider: false`, `audience: interne`, dans son propre fichier de backlog.
 6. **Temps** : une ligne par session, agent `ops-<chantier>`, heures de Paris.
 7. **Clients** : aucune conversation de skeam-ops ne modifie un dépôt client, en particulier `theonam/egm-app`, sans instruction explicite.
 8. **Données d'essai** : tester sur `exemples/`, jamais sur des données client réelles copiées dans skeam-ops.
