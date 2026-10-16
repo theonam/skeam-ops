@@ -2,6 +2,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="claude:viewport-fit-sides" content="cover">
 <title>Pilotage SKEAM</title>
+<meta name="skeam:gabarit" content="1">
 <!--
 Gabarit du dashboard SKEAM, chantier dashboard. Page autonome : dashboard/scripts/rendre.py remplace
 le contenu null de script#donnees par la vue JSON d'agreger.py et, en vue interne, celui de script#todoist
@@ -184,6 +185,7 @@ td.droite, th.droite { text-align: right; }
 .barre-charge .theo { background: var(--accent); }
 .barre-charge .agents { background: var(--agents); }
 .legende { display: flex; gap: 16px; flex-wrap: wrap; font-size: .78rem; color: var(--discret); }
+.note-budget { font-size: .8rem; color: var(--discret); }
 .legende i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
 
 /* Détail */
@@ -303,12 +305,12 @@ details.projet > summary h3 { font-size: 1.1rem; }
   document.title = titre;
   var meta = ["Généré le " + date(D.genere_le) + " à " + esc(D.genere_le.slice(11, 16))];
   if (D.semaine) meta.push("Semaine du " + date(D.semaine.debut) + " au " + date(D.semaine.fin));
-  html.push('<header class="bandeau"><h1>' + esc(titre) + (client ? "" : '<span class="audience">' + esc(D.audience) + "</span>") + '</h1><div class="meta"><span>' + meta.join("</span><span>") + "</span></div></header>");
+  html.push('<header class="bandeau" data-bloc="bandeau"><h1>' + esc(titre) + (client ? "" : '<span class="audience">' + esc(D.audience) + "</span>") + '</h1><div class="meta"><span>' + meta.join("</span><span>") + "</span></div></header>");
 
   /* Todo, alertes et compteurs en haut */
   if (!client) {
     var alertes = G.alertes || [];
-    var blocAlertes = '<section aria-labelledby="t-alertes"><div class="entete-section"><h2 id="t-alertes">' + (interne ? "Ce qui bloque ou dérape" : "Points d'attention") + '</h2><span class="discret num">' + alertes.length + '</span></div><ul class="liste">';
+    var blocAlertes = '<section aria-labelledby="t-alertes" data-bloc="alertes"><div class="entete-section"><h2 id="t-alertes">' + (interne ? "Ce qui bloque ou dérape" : "Points d'attention") + '</h2><span class="discret num">' + alertes.length + '</span></div><ul class="liste">';
     if (!alertes.length) blocAlertes += '<li class="vide">Rien à signaler.</li>';
     alertes.forEach(function (a) {
       blocAlertes += '<li class="' + esc(a.gravite) + '"><div class="ligne1">' + pastille(TYPES_ALERTE[a.type] || a.type, a.gravite === "haute" ? "p-critique" : a.gravite === "moyenne" ? "p-attention" : "") +
@@ -316,9 +318,9 @@ details.projet > summary h3 { font-size: 1.1rem; }
     });
     blocAlertes += "</ul></section>";
     if (interne) {
-      var blocTodo = '<section aria-labelledby="t-todo"><div class="entete-section"><h2 id="t-todo">Ma todo</h2><span class="etat-source" id="todo-etat"></span></div><ul class="liste todo" id="todo-liste"><li class="vide">Lecture de Todoist.</li></ul></section>';
+      var blocTodo = '<section aria-labelledby="t-todo" data-bloc="todo"><div class="entete-section"><h2 id="t-todo">Ma todo</h2><span class="etat-source" id="todo-etat"></span></div><ul class="liste todo" id="todo-liste"><li class="vide">Lecture de Todoist.</li></ul></section>';
       var compteurs = D.projets.filter(function (p) { var c = p.compteurs; return c && c.devis_a_envoyer; });
-      var blocCompteurs = !compteurs.length ? "" : '<section aria-labelledby="t-compteurs"><div class="entete-section"><h2 id="t-compteurs">Devis à envoyer</h2></div><div class="compteurs">' +
+      var blocCompteurs = !compteurs.length ? "" : '<section aria-labelledby="t-compteurs" data-bloc="devis-a-envoyer"><div class="entete-section"><h2 id="t-compteurs">Devis à envoyer</h2></div><div class="compteurs">' +
         (compteurs.map(function (p) {
           var c = p.compteurs, r = [];
           function deplier(n, libelle, classe, lignes) {
@@ -344,7 +346,7 @@ details.projet > summary h3 { font-size: 1.1rem; }
       var nonJ = G.charge_semaine.par_projet.filter(function (c) { return !c.journalise; });
       chiffres.push(["Charge de la semaine", h(G.charge_semaine.total_h), nonJ.length ? '<span class="manquant">hors ' + esc(nonJ.map(function (c) { return c.nom; }).join(", ")) + ", temps non journalisé</span>" : ""]);
     }
-    html.push('<div class="chiffres">' + chiffres.map(function (c) { return '<div class="chiffre"><span class="etiquette">' + c[0] + '</span><span class="valeur">' + c[1] + "</span>" + (c[2] ? '<span class="note">' + c[2] + "</span>" : "") + "</div>"; }).join("") + "</div>");
+    html.push('<div class="chiffres" data-bloc="chiffres">' + chiffres.map(function (c) { return '<div class="chiffre"><span class="etiquette">' + c[0] + '</span><span class="valeur">' + c[1] + "</span>" + (c[2] ? '<span class="note">' + c[2] + "</span>" : "") + "</div>"; }).join("") + "</div>");
   }
 
   /* Portefeuille */
@@ -363,7 +365,7 @@ details.projet > summary h3 { font-size: 1.1rem; }
         (interne ? '<td class="droite">' + (p.temps.journalise ? h(p.temps.semaine_h) : NON_JOURNALISE) + "</td>" : "") +
         "<td>" + (nbAlertes.length ? pastille(nbAlertes.length + (nbAlertes.length > 1 ? " alertes" : " alerte"), hautes ? "p-critique" : "p-attention") : pastille("RAS", "p-ok")) + "</td></tr>";
     }).join("");
-    html.push('<section aria-labelledby="t-portefeuille"><div class="entete-section"><h2 id="t-portefeuille">Portefeuille</h2><span class="discret">' +
+    html.push('<section aria-labelledby="t-portefeuille" data-bloc="portefeuille"><div class="entete-section"><h2 id="t-portefeuille">Portefeuille</h2><span class="discret">' +
       (G.portefeuille || []).map(function (s) { return esc(STATUTS[s.statut] || s.statut) + " " + s.nb_clients; }).join(" · ") + '</span></div><div class="defilant"><table class="portefeuille"><thead><tr><th>Projet</th><th>Statut</th><th>Prochaine échéance</th><th class="droite">Signé HT</th><th>Avancement</th>' +
       (interne ? '<th class="droite">Semaine</th>' : "") + "<th>État</th></tr></thead><tbody>" + lignes + "</tbody></table></div>" +
       '<div class="legende"><span><i style="background:var(--etape-ia)"></i>' + esc(LIBELLE_TERMINE) + '</span><span><i style="background:var(--etape-dev)"></i>Développé</span><span><i class="cours"></i>En cours</span><span>Sur les items du lot, hors abandonnés</span></div>' + "</section>");
@@ -373,7 +375,7 @@ details.projet > summary h3 { font-size: 1.1rem; }
   if (interne && G.charge_semaine) {
     var cs = G.charge_semaine;
     var max = Math.max.apply(null, cs.par_projet.map(function (c) { return Math.max(c.heures, c.heures_semaine_precedente); }).concat([1]));
-    html.push('<section aria-labelledby="t-charge"><div class="entete-section"><h2 id="t-charge">Charge de la semaine</h2><span class="discret">Théo ' + esc(fmtNombre.format(cs.total_theo_h)) + " h · agents " + esc(fmtNombre.format(cs.total_agents_h)) + ' h</span></div><div class="charge">' +
+    html.push('<section aria-labelledby="t-charge" data-bloc="charge"><div class="entete-section"><h2 id="t-charge">Charge de la semaine</h2><span class="discret">Théo ' + esc(fmtNombre.format(cs.total_theo_h)) + " h · agents " + esc(fmtNombre.format(cs.total_agents_h)) + ' h</span></div><div class="charge">' +
       cs.par_projet.map(function (c) {
         if (!c.journalise) return '<div class="barre-charge"><span class="nom">' + esc(c.nom) + '</span><div class="pile"></div><span class="droite">' + NON_JOURNALISE + "</span></div>";
         return '<div class="barre-charge"><span class="nom">' + esc(c.nom) + '</span><div class="pile" title="Semaine précédente : ' + esc(fmtNombre.format(c.heures_semaine_precedente)) + ' h"><span class="theo" style="width:' + (c.heures_theo / max * 100) + '%"></span><span class="agents" style="width:' + (c.heures_agents / max * 100) + '%"></span></div><span class="droite">' + h(c.heures) + "</span></div>";
@@ -398,6 +400,26 @@ details.projet > summary h3 { font-size: 1.1rem; }
     }
     return r + "</div></div>";
   }
+  function blocBudget(p) {
+    var b = p.budget;
+    if (!b) return "";
+    var lignes = [
+      ["Réel", b.heures_reelles, b.heures_reelles == null ? NON_JOURNALISE : h(b.heures_reelles)],
+      ["Estimé", b.heures_estimees, h(b.heures_estimees) + ' <span class="discret">backlog, tous lots</span>'],
+      ["Vendu", b.heures_vendues, b.heures_vendues == null ? '<span class="manquant">rien de vendu</span>' : h(b.heures_vendues)],
+    ];
+    var max = Math.max.apply(null, lignes.map(function (l) { return l[1] || 0; }).concat([1]));
+    var note = [];
+    if (b.montant_vendu_ht) note.push("Vendu : " + euro(b.montant_vendu_ht) + (b.source_vendu === "signe" ? " signés" : " de devis envoyés, non signés") +
+      (b.taux_horaire_cible ? ", au taux cible de " + euro(b.taux_horaire_cible) + " de l'heure" : ""));
+    if (b.consomme_pct != null) note.push("consommé " + pastille(b.consomme_pct + " %", b.consomme_pct > 100 ? "p-critique" : b.consomme_pct > 80 ? "p-attention" : "p-ok"));
+    // Le taux réel n'a de sens qu'une fois une part notable du vendu consommée.
+    if (b.taux_reel != null && b.consomme_pct >= 25) note.push("taux réel " + euro(b.taux_reel) + " de l'heure");
+    return '<div class="bloc" data-bloc="budget"><span class="etiquette">Heures et budget</span><div class="charge">' +
+      lignes.map(function (l) {
+        return '<div class="barre-charge"><span class="nom">' + l[0] + '</span><div class="pile"><span class="' + (l[0] === "Réel" ? "theo" : "agents") + '" style="width:' + ((l[1] || 0) / max * 100) + '%"></span></div><span class="droite">' + l[2] + "</span></div>";
+      }).join("") + (note.length ? '<div class="note-budget">' + note.join(" · ") + "</div>" : "") + "</div></div>";
+  }
   function detail(p, ouvert) {
     var r = [];
     var resume = [statutProjet(p.statut)];
@@ -414,16 +436,17 @@ details.projet > summary h3 { font-size: 1.1rem; }
       if (interne) infos.push(["Temps", p.temps.journalise ? h(p.temps.semaine_h) + ' cette semaine<br><span class="discret">' + esc(fmtNombre.format(p.temps.total_h)) + " h au total, " + esc(fmtNombre.format(p.temps.a_relire_h)) + " h à relire</span>" : NON_JOURNALISE + '<br><span class="discret">items développés sans aucune ligne de temps</span>']);
       var l = liens(p.liens);
       if (l) infos.push(["Liens", l]);
-      r.push('<div class="grille-infos">' + infos.map(function (i) { return '<div><span class="etiquette">' + i[0] + "</span><span>" + i[1] + "</span></div>"; }).join("") + "</div>");
+      r.push('<div class="grille-infos" data-bloc="infos">' + infos.map(function (i) { return '<div><span class="etiquette">' + i[0] + "</span><span>" + i[1] + "</span></div>"; }).join("") + "</div>");
     } else if (liens(p.liens)) {
-      r.push('<div class="grille-infos"><div><span class="etiquette">Liens</span><span>' + liens(p.liens) + "</span></div></div>");
+      r.push('<div class="grille-infos" data-bloc="infos"><div><span class="etiquette">Liens</span><span>' + liens(p.liens) + "</span></div></div>");
     }
 
     /* Lots */
     if (interne) {
-      r.push('<div class="bloc"><span class="etiquette">Avancement par lot · heures réelles contre estimées</span><div>' + p.lots.map(function (lot) { return lotInterne(lot, p.temps.journalise); }).join("") + "</div></div>");
+      r.push(blocBudget(p));
+      r.push('<div class="bloc" data-bloc="lots"><span class="etiquette">Avancement par lot · heures réelles contre estimées</span><div>' + p.lots.map(function (lot) { return lotInterne(lot, p.temps.journalise); }).join("") + "</div></div>");
     } else {
-      r.push('<div class="bloc"><span class="etiquette">Avancement par lot</span><div>' + p.lots.map(function (lot) {
+      r.push('<div class="bloc" data-bloc="lots"><span class="etiquette">Avancement par lot</span><div>' + p.lots.map(function (lot) {
         return '<div class="lot-etapes"><span class="num">Lot ' + esc(lot.lot) + "</span><div>" + (lot.titre ? '<span class="titre-lot">' + esc(lot.titre) + "</span>" : "") + etapes(lot) + chiffresLot(lot) + "</div></div>";
       }).join("") + "</div></div>");
     }
@@ -436,11 +459,11 @@ details.projet > summary h3 { font-size: 1.1rem; }
     }
     if (!client) blocs.push(bloc("En cours depuis plus de 7 jours", p.items_en_cours_anciens, function (i) { return '<span class="id">' + esc(i.id) + "</span> " + esc(i.titre) + ' <span class="discret num">' + esc(i.jours) + " j</span>"; }));
     blocs = blocs.filter(Boolean);
-    if (blocs.length) r.push('<div class="blocs">' + blocs.join("") + "</div>");
+    if (blocs.length) r.push('<div class="blocs" data-bloc="pilotage">' + blocs.join("") + "</div>");
 
     if (!client) {
       var s = p.derniere_synthese;
-      r.push('<div class="bloc"><span class="etiquette">Dernière synthèse</span>' + (s ? '<div class="synthese"><strong>' + esc(s.titre) + '</strong> <span class="num discret">' + date(s.date) + "</span><br>" + esc(s.resume) + "</div>" : '<span class="discret">Aucune synthèse.</span>') + "</div>");
+      r.push('<div class="bloc" data-bloc="synthese"><span class="etiquette">Dernière synthèse</span>' + (s ? '<div class="synthese"><strong>' + esc(s.titre) + '</strong> <span class="num discret">' + date(s.date) + "</span><br>" + esc(s.resume) + "</div>" : '<span class="discret">Aucune synthèse.</span>') + "</div>");
     }
 
     /* Items par lot */
@@ -465,11 +488,11 @@ details.projet > summary h3 { font-size: 1.1rem; }
         (interne ? '<td class="droite">' + h(i.estimation_h) + '</td><td class="droite">' + reel + "</td>" : "") +
         (!client && !interne ? '<td class="discret">' + esc(i.module || "") + "</td>" : "") + "</tr>";
     });
-    r.push('<div class="bloc"><span class="etiquette">Items · ' + p.items.length + (interne && !p.temps.journalise ? " · n. j. : temps non journalisé" : "") + '</span><div class="defilant"><table><thead><tr>' + colonnes.map(function (c, n) { return "<th" + (interne && n > 2 ? ' class="droite"' : "") + ">" + c + "</th>"; }).join("") + "</tr></thead><tbody>" + (corps || '<tr><td colspan="' + colonnes.length + '" class="discret">Aucun item visible.</td></tr>') + "</tbody></table></div></div>");
+    r.push('<div class="bloc" data-bloc="items"><span class="etiquette">Items · ' + p.items.length + (interne && !p.temps.journalise ? " · n. j. : temps non journalisé" : "") + '</span><div class="defilant"><table><thead><tr>' + colonnes.map(function (c, n) { return "<th" + (interne && n > 2 ? ' class="droite"' : "") + ">" + c + "</th>"; }).join("") + "</tr></thead><tbody>" + (corps || '<tr><td colspan="' + colonnes.length + '" class="discret">Aucun item visible.</td></tr>') + "</tbody></table></div></div>");
     r.push("</div></details>");
     return r.join("");
   }
-  html.push('<section aria-labelledby="t-detail"><h2 id="t-detail">' + (client && D.projets.length === 1 ? "Détail" : "Détail par projet") + "</h2>" +
+  html.push('<section aria-labelledby="t-detail" data-bloc="detail"><h2 id="t-detail">' + (client && D.projets.length === 1 ? "Détail" : "Détail par projet") + "</h2>" +
     (D.projets.length ? D.projets.map(function (p) {
       var alerte = (G.alertes || []).some(function (a) { return a.slug === p.slug && a.gravite === "haute"; });
       return detail(p, D.projets.length === 1 || alerte || p.type !== "interne");

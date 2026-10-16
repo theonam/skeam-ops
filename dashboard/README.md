@@ -52,6 +52,7 @@ Date de référence : date du jour à Paris. Semaine : du lundi au dimanche qui 
 | Heures réelles d'un item ou d'un lot | somme des `minutes` de toutes ses lignes de temps, validées ou non, divisée par 60 ; null si le temps n'est pas journalisé |
 | Temps non journalisé | le projet a des items `a_recetter` ou `fait` et aucune ligne de temps : la page affiche « temps non journalisé », jamais 0 h |
 | Devis non saisi | montant signé nul et aucun devis dans `client.yaml` : la page affiche « devis non saisi », jamais 0 € |
+| Heures et budget, vue interne | réel : toutes les lignes de temps du projet ; estimé : `estimation_h` des items hors `abandonne` ; vendu : montant signé, build et options, ou à défaut somme des devis envoyés ou acceptés, divisé par `taux_horaire_cible` de `catalogue/tarifs.yaml` ; consommé : réel sur vendu ; taux réel : vendu sur réel |
 | Dépassement | heures réelles supérieures de plus de 20 % aux heures estimées, par lot et par item hors `abandonne` |
 | Item bloqué | statut `a_faire` ou `en_cours` avec au moins une dépendance `externe: ...` |
 | En cours depuis plus de 7 jours | statut `en_cours` et `maj` antérieure de plus de 7 jours à la date de référence |
@@ -92,6 +93,8 @@ projets[]
   actions[]                       id, titre, contexte, priorite, points, echeance, en_retard ; p1 et p2 ouvertes
   temps                           semaine_h, semaine_theo_h, semaine_agents_h, semaine_precedente_h, total_h, hors_item_h, a_relire_h,
                                   journalise
+  budget                          heures_estimees, heures_reelles, montant_vendu_ht, source_vendu signe|devis_envoyes,
+                                  taux_horaire_cible, heures_vendues, consomme_pct, taux_reel
   derniere_synthese               date, titre, fichier, resume ; ou null
   items[]                         id, titre, lot, statut, priorite, maj, module, taille, estimation_h,
                                   heures_reelles, audience, dependances_externes[]
@@ -136,6 +139,20 @@ projets[]
 ```
 
 La vue client agrège tous les clients : elle ne se publie jamais telle quelle, mais projet par projet avec `rendre.py --projet`.
+
+## Gabarit figé, version 1
+
+Décision de Théo du 2026-10-16 : le gabarit est gravé. `format.json` fixe la version, les clés exactes de chaque objet de la sortie par audience et les blocs de la page ; `template.html` porte la même version dans `<meta name="skeam:gabarit">` et un attribut `data-bloc` par bloc. Les tests de `TestGabaritFige` échouent dès qu'une clé ou un bloc change.
+
+Blocs, dans l'ordre d'affichage :
+
+| Vue | Blocs |
+|---|---|
+| interne | bandeau ; todo, alertes et devis à envoyer ; chiffres clés ; portefeuille ; charge de la semaine ; détail par projet : infos, heures et budget, avancement par lot, listes de pilotage, dernière synthèse, items par lot |
+| commercial | bandeau ; points d'attention ; chiffres clés ; portefeuille ; détail par projet : infos, avancement par lot, items en cours depuis plus de 7 jours, dernière synthèse, items par lot |
+| client | bandeau ; détail : liens, avancement par lot, items par lot |
+
+Pour faire évoluer le gabarit : accord de Théo, puis dans la même pull request `format.json` et `template.html` à la version suivante, ce README et les tests. Les commandes du chat ne modifient jamais le gabarit : elles le prennent tel quel sur `main`.
 
 ## Todoist
 

@@ -26,6 +26,7 @@ La vue client sans slug est refusée : elle mélangerait les clients.
 - Ne jamais écrire dans un dépôt client, ne jamais commiter sur un dépôt client.
 - Rien n'est envoyé à personne : publier l'artefact ne notifie personne et le lien n'est partagé que par Théo.
 - **Toujours un artefact claude.ai**, republié au même lien, aperçu compris. Jamais un simple fichier HTML à télécharger ou à ouvrir.
+- **Gabarit figé** : `dashboard/template.html` et `dashboard/format.json` de `main`, pris tels quels. Ne jamais modifier la page générée ni le gabarit depuis le chat ; une évolution passe par Théo et une pull request, `dashboard/README.md` section Gabarit figé.
 - **Todoist** n'entre que dans la vue interne : ni instantané ni capacité `mcp` sur les vues commercial et client.
 - Confirmation de Théo avant toute écriture hors du dépôt, donc avant chaque publication, et avant tout commit sur skeam-ops.
 

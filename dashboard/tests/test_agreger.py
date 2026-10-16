@@ -397,5 +397,42 @@ class TestRendu(unittest.TestCase):
             self.assertEqual(lancer(self.SCRIPT, str(Path(tmp) / "commercial.json"), "--sortie", str(page), "--projet", "alpha").returncode, 2)
 
 
+class TestGabaritFige(unittest.TestCase):
+    """Le format de sortie et les blocs du gabarit sont figés par dashboard/format.json : toute évolution passe par Théo."""
+
+    FORMAT = json.loads((RACINE_OPS / "dashboard" / "format.json").read_text(encoding="utf-8"))
+    JEUX = TestFiltrage.JEUX
+
+    def test_cles_figees(self):
+        for jeu, parametres in self.JEUX.items():
+            for audience in agreger.AUDIENCES:
+                with self.subTest(jeu=jeu, audience=audience):
+                    donnees = vue(audience, **parametres)
+                    attendu = self.FORMAT["audiences"][audience]
+                    self.assertEqual(sorted(donnees), attendu["enveloppe"])
+                    if "global" in attendu:
+                        self.assertEqual(sorted(donnees["global"]), attendu["global"])
+                    for alerte in donnees.get("global", {}).get("alertes", []):
+                        if "alerte" in attendu:
+                            self.assertEqual(sorted(alerte), attendu["alerte"])
+                    for p in donnees["projets"]:
+                        self.assertEqual(sorted(p), attendu["projet"], p["slug"])
+                        for lot in p["lots"]:
+                            self.assertEqual(sorted(lot), attendu["lot"])
+                        for item in p["items"]:
+                            self.assertEqual(sorted(item), attendu["item"])
+                        for cle in ("budget", "temps"):
+                            if cle in attendu:
+                                self.assertEqual(sorted(p[cle]), attendu[cle])
+
+    def test_gabarit_versionne_et_complet(self):
+        gabarit = rendre.GABARIT.read_text(encoding="utf-8")
+        version = re.search(r'<meta name="skeam:gabarit" content="([0-9]+)">', gabarit)
+        self.assertIsNotNone(version, "version du gabarit absente")
+        self.assertEqual(int(version.group(1)), self.FORMAT["version"])
+        for bloc in sorted({b for blocs in self.FORMAT["blocs"].values() for b in blocs}):
+            self.assertIn(f'data-bloc="{bloc}"', gabarit, bloc)
+
+
 if __name__ == "__main__":
     unittest.main()

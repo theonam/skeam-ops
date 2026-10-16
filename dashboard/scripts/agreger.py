@@ -34,6 +34,7 @@ import validate  # noqa: E402
 
 AUDIENCES = ("interne", "commercial", "client")
 CHEMIN_OPS = Path("projet")
+TARIFS = Path(__file__).resolve().parents[2] / "catalogue" / "tarifs.yaml"
 SEUIL_DEPASSEMENT = 0.20
 DEVELOPPES = ("a_recetter", "fait")
 JOURS_EN_COURS_MAX = 7
@@ -44,7 +45,7 @@ ORDRE_GRAVITE = {"haute": 0, "moyenne": 1, "basse": 2}
 CLES_INTERNES = {
     "actions", "a_valider", "audience", "charge_semaine", "commit", "compteurs", "devis_a_envoyer",
     "dependances", "dependances_externes", "depot", "docs_interne", "ecart_pct", "estimation_h",
-    "items_bloques", "minutes", "notes", "taille", "temps", "todoist",
+    "budget", "items_bloques", "minutes", "notes", "taille", "temps", "todoist",
 }
 
 
@@ -330,6 +331,29 @@ class Calculs:
         montants = self.client["montants_ht"]
         return round(montants["build_signe"] + montants["options_signees"], 2)
 
+    def budget(self, taux: float | None) -> dict:
+        """Heures réelles contre estimées et contre vendues, vue interne seulement.
+
+        Vendu : montant signé, build et options ; à défaut, somme des devis envoyés ou acceptés,
+        signalée comme telle. Heures vendues : vendu divisé par le taux horaire cible du catalogue.
+        """
+        estime = round(sum(i["estimation_h"] for i in self.items if i["statut"] != "abandonne"), 2)
+        reel = heures(sum(l["minutes"] for l in self.temps)) if self.temps_journalise else None
+        signe = self.montant_signe()
+        envoyes = round(sum(d["montant_ht"] for d in self.client["devis"] if d["statut"] in ("envoye", "accepte")), 2)
+        montant, source = (signe, "signe") if signe else (envoyes, "devis_envoyes") if envoyes else (None, None)
+        vendues = round(montant / taux, 1) if montant and taux else None
+        return {
+            "heures_estimees": estime,
+            "heures_reelles": reel,
+            "montant_vendu_ht": montant,
+            "source_vendu": source,
+            "taux_horaire_cible": taux,
+            "heures_vendues": vendues,
+            "consomme_pct": round(reel * 100 / vendues) if vendues and reel is not None else None,
+            "taux_reel": round(montant / reel) if montant and reel else None,
+        }
+
 
 # ---------------------------------------------------------------------------
 # Composition par audience : listes blanches explicites, section 10
@@ -403,6 +427,7 @@ def projet_interne(calculs: Calculs, interne: bool) -> dict:
         "devis_a_envoyer": [{k: d[k] for k in ("objet", "montant_ht")} for d in client["devis"] if d["statut"] == "brouillon"],
         "actions": calculs.actions_ouvertes(),
         "temps": calculs.temps_resume(),
+        "budget": calculs.budget(taux_horaire_cible()),
         "todoist": dict(client["todoist"]),
         "items": items_vus(calculs, "interne"),
     }
@@ -487,6 +512,16 @@ def trier_alertes(alertes: list[dict]) -> list[dict]:
 
 # ---------------------------------------------------------------------------
 # Agrégation
+
+
+def taux_horaire_cible() -> float | None:
+    """Taux horaire cible de catalogue/tarifs.yaml, CONTRAT.md section 8.2 ; None si le catalogue n'est pas livré."""
+    if not TARIFS.is_file():
+        return None
+    try:
+        return (contrat.charger_yaml(TARIFS) or {}).get("taux_horaire_cible")
+    except contrat.ErreurLecture:
+        return None
 
 
 def maintenant_paris() -> dt.datetime:
