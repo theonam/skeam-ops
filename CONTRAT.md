@@ -190,6 +190,7 @@ Schéma : `schemas/backlog.schema.json`. Un fichier de backlog a pour seule clé
 | `commit` | hash Git en minuscules, 7 à 40 caractères, du dernier commit de code lié, ou null |
 | `maj` | date de dernière modification de l'item |
 | `notes` | facultatif : texte ou null |
+| `prix_vente_ht` | facultatif : montant HT proposé au client pour cette fonctionnalité vendue à part, hors devis signé, ou null ; décision de Théo du 2026-10-16 |
 
 Règles vérifiées par le validateur :
 
@@ -551,6 +552,7 @@ Trois niveaux emboîtés : ce que voit `client`, `commercial` le voit ; ce que v
 | Items d'audience `client` | oui | oui | oui |
 | Champs d'item `id`, `titre`, `lot`, `statut`, `priorite`, `criteres_acceptation`, `maj` | oui | oui | oui |
 | Champ d'item `module` | oui | oui | non |
+| Champ d'item `prix_vente_ht` | oui | oui | non |
 | Champs d'item `taille`, `estimation_h`, `dependances`, `commit`, `notes`, `audience`, `a_valider` | oui | non | non |
 | Avancement par lot | libre | en nombre d'items | en nombre d'items |
 | `cadrage.md`, `syntheses/` | oui | oui | oui, publiés sur commande de Théo |

@@ -168,6 +168,13 @@ class TestBacklog(BaseProjet):
                        "    montant_ht: 900\n    statut: brouillon\n    perimetre:\n      lots: [1]\n      items: []\nliens:\n")
         self.assertErreur("lot 1 déjà dans le périmètre")
 
+    def test_prix_vente(self) -> None:
+        # Prix de vente d'une fonctionnalité hors devis : facultatif, un montant positif.
+        self.remplacer("backlog/lot1.yaml", "    a_valider: false\n", "    a_valider: false\n    prix_vente_ht: 2500\n")
+        self.assertEqual([m for niveau, _, m in self.valider().messages if niveau == "ERREUR"], [])
+        self.remplacer("backlog/lot1.yaml", "    prix_vente_ht: 2500\n", "    prix_vente_ht: -10\n")
+        self.assertErreur("prix_vente_ht")
+
     def test_facture_statut(self) -> None:
         self.remplacer("client.yaml", "statut: payee", "statut: reglee")
         self.assertErreur("factures")

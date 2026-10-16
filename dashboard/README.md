@@ -53,6 +53,7 @@ Date de référence : date du jour à Paris. Semaine : du lundi au dimanche qui 
 | Temps passé par lot | vue interne seulement, toujours affiché sous chaque lot : « Temps passé x h », 0 h compris, ou « temps non journalisé », sans les heures estimées, qui restent dans le bloc Heures et budget ; la date `temps.depuis` est rappelée, car le temps d'avant cette date n'est pas connu |
 | Prochaine étape d'un devis | déduite du statut du devis et de ses factures : finaliser et envoyer le devis, le faire signer puis envoyer la facture, émettre la facture, envoyer la facture, attendre le paiement, relancer un paiement en retard, payé |
 | Couleurs des statuts | orange quand l'action est de notre côté, devis ou facture à envoyer ; bleu quand on attend le client, devis à signer, facture en attente de paiement ; vert quand c'est acquis, devis signé, facture payée ; rouge pour un refus ou un retard |
+| Fonctionnalités supplémentaires facturables | vue commerciale : les items visibles, hors abandonnés, qui ne sont dans aucun devis envoyé ou signé, avec leur `prix_vente_ht`, « prix à définir » sinon, et le total ; un devis en brouillon n'apparaît pas, ses fonctionnalités sont dans cette liste |
 | Devis et lots | vues interne et commerciale : pour chaque devis, ses lots, entiers ou en partie, avec leur avancement compté comme celui des lots ; l'engagement et le paiement : le statut du devis tant qu'aucune facture non annulée n'existe, puis le statut de chaque facture, en retard si elle est envoyée et son échéance passée. Périmètre et factures viennent de `client.yaml`, CONTRAT.md section 3 ; un item cité par un devis lui appartient, sinon il suit son lot. Les items d'aucun devis sont listés à part |
 | Temps non journalisé | le projet a des items `a_recetter` ou `fait` et aucune ligne de temps : la page affiche « temps non journalisé », jamais 0 h |
 | Devis non saisi | montant signé nul et aucun devis dans `client.yaml` : la page affiche « devis non saisi », jamais 0 € |
@@ -151,7 +152,7 @@ projets[]
 
 La vue client agrège tous les clients : elle ne se publie jamais telle quelle, mais projet par projet avec `rendre.py --projet`.
 
-## Gabarit figé, version 4
+## Gabarit figé, version 5
 
 Décision de Théo du 2026-10-16 : le gabarit est gravé. `format.json` fixe la version, les clés exactes de chaque objet de la sortie par audience et les blocs de la page ; `template.html` porte la même version dans `<meta name="skeam:gabarit">` et un attribut `data-bloc` par bloc. Les tests de `TestGabaritFige` échouent dès qu'une clé ou un bloc change.
 
@@ -159,6 +160,7 @@ Décision de Théo du 2026-10-16 : le gabarit est gravé. `format.json` fixe la 
 - Version 2, 2026-10-16, demande de Théo : temps passé par lot toujours affiché et libellé, clé `temps.depuis`.
 - Version 3, 2026-10-16, demandes de Théo : bloc Devis et lots, clés `devis[].perimetre`, `devis[].factures`, `hors_devis` ; sous chaque lot, le temps passé seul.
 - Version 4, 2026-10-16, demandes de Théo : vue commerciale minimaliste, réduite à la facturation, l'avancement, la satisfaction du client et ce qui peut se vendre ; prochaine étape de chaque devis ; statuts de devis et de facture en couleur dans toutes les vues ; clé `ids` des parties de lot, pour nommer les fonctionnalités.
+- Version 5, 2026-10-16, demande de Théo : dans la vue commerciale, « Fonctionnalités supplémentaires facturables » remplace le devis en brouillon et la liste des fonctionnalités hors devis : chacune avec son prix de vente, champ `prix_vente_ht` du backlog, et le total ; clé `facturables` ; la date de cadrage s'affiche « onboarding ».
 
 Blocs, dans l'ordre d'affichage :
 

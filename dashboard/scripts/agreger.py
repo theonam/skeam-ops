@@ -283,6 +283,25 @@ class Calculs:
             "ids": [item["id"] for item in items if visible(item, audience)],
         }
 
+    def facturables(self, audience: str) -> list[dict] | None:
+        """Fonctionnalités vendables en plus : dans aucun devis envoyé ou signé, avec leur prix de vente.
+
+        Un devis en brouillon ou refusé n'engage pas le client : ses fonctionnalités restent à vendre.
+        None sans aucun périmètre de devis renseigné : la liste ne serait pas fiable.
+        """
+        liste = self.client["devis"]
+        if not any(d.get("perimetre") for d in liste):
+            return None
+        par_item = {ident: n for n, d in enumerate(liste) if d.get("perimetre") for ident in d["perimetre"]["items"]}
+        par_lot = {lot: n for n, d in enumerate(liste) if d.get("perimetre") for lot in d["perimetre"]["lots"]}
+        engages = {n for n, d in enumerate(liste) if d["statut"] in ("envoye", "accepte")}
+        resultat = []
+        for item in sorted(self.items, key=lambda i: (i["lot"], i["id"])):
+            proprietaire = par_item.get(item["id"], par_lot.get(item["lot"]))
+            if compte_avancement(item) and visible(item, audience) and proprietaire not in engages:
+                resultat.append({"id": item["id"], "titre": item["titre"], "lot": item["lot"], "prix_vente_ht": item.get("prix_vente_ht")})
+        return resultat
+
     def devis(self, audience: str) -> tuple[list[dict], list[dict] | None]:
         """Chaque devis avec son périmètre et ses factures, et ce qui n'est dans aucun devis.
 
@@ -465,6 +484,7 @@ def projet_commercial(calculs: Calculs) -> dict:
         "devis_saisi": bool(client["devis"]),
         "devis": calculs.devis("commercial")[0],
         "hors_devis": calculs.devis("commercial")[1],
+        "facturables": calculs.facturables("commercial"),
         "liens": {k: liens[k] for k in ("demo", "prod", "docs_client", "docs_commercial")},
         "lots": calculs.lots("commercial"),
         "items_en_cours_anciens": calculs.items_en_cours_anciens("commercial"),
@@ -490,6 +510,7 @@ def projet_interne(calculs: Calculs, interne: bool) -> dict:
         "todoist": dict(client["todoist"]),
         "devis": calculs.devis("interne")[0],
         "hors_devis": calculs.devis("interne")[1],
+        "facturables": calculs.facturables("interne"),
         "items": items_vus(calculs, "interne"),
     }
     resultat["compteurs"] = {"devis_a_envoyer": len(resultat["devis_a_envoyer"])}
@@ -661,7 +682,7 @@ def verifier_filtrage(donnees: dict) -> None:
         raise ErreurDonnees(f"clés internes dans la vue {donnees['audience']} : {', '.join(fuites)}")
     if any(p.get("slug") == "ops" for p in donnees["projets"]):
         raise ErreurDonnees(f"projet interne ops dans la vue {donnees['audience']}")
-    if donnees["audience"] == "client" and any(c in ("apporteur", "montants_ht", "devis", "dates", "global") for c in cles(contenu)):
+    if donnees["audience"] == "client" and any(c in ("apporteur", "montants_ht", "devis", "dates", "global", "facturables", "prix_vente_ht") for c in cles(contenu)):
         raise ErreurDonnees("données commerciales dans la vue client")
 
 

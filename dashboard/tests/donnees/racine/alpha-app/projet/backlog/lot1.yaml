@@ -79,5 +79,6 @@ items:
       - La fiche chantier affiche adresse, client et menuiseries à poser.
     audience: client
     a_valider: false
+    prix_vente_ht: 1200
     commit: d4d4d4d
     maj: 2026-10-09
