@@ -198,3 +198,20 @@ items:
     commit: ca1e759
     maj: 2026-10-16
     notes: Décision de Théo du 2026-10-16, appliquée aussi au backlog d'egm-app, commit ca8d9e1 sur projet/skeam-ops.
+  - id: OPS-413
+    titre: Avancement par lot en nombre d'items et en pourcentage dans toutes les vues
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: fait
+    taille: S
+    estimation_h: 1
+    dependances: []
+    criteres_acceptation:
+      - Chaque lot affiche dans toutes les vues développés et testés par l'IA en x sur N et en pourcentage, en cours et à faire, avec une barre empilée.
+      - Aucune estimation ni aucun temps n'apparaît dans les vues commercial et client.
+    audience: interne
+    a_valider: false
+    commit: 086787d
+    maj: 2026-10-16
+    notes: Retour de Théo du 2026-10-16, un seul pourcentage à 0 % donnait l'aspect d'un devis figé.
