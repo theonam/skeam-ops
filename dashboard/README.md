@@ -178,6 +178,9 @@ Décision de Théo du 2026-10-16 : le temps passé se mesure automatiquement, sa
 - L'agent est choisi d'après le numéro de l'item, `agents_par_plage` de `.claude/pointage.json`, sinon `agent` par défaut. Un dépôt sans `.claude/pointage.json` n'est pas pointé.
 - Le temps après le dernier commit d'une session n'est pas compté, ni le temps de Théo hors session : réunion, recette, essais sur appareil. Ce dernier s'écrit à la main, `agent` `theo`.
 - Deux agents en parallèle comptent chacun leur temps : la somme est du temps d'agents, pas du temps d'horloge.
+- Une branche de code sans dossier `projet/` suivi, celles d'egm-app par exemple : les lignes attendent hors du dépôt, `~/.claude/pointage/attente-<session>-<prefixe>.jsonl`, et partent avec le prochain commit de la session sur une branche qui a `projet/`. Une session terminée sans ce commit perd ce temps.
+- Claude Code relit `.claude/settings.json` quand une extraction de branche le change : une branche sans `.claude/` coupe les hooks pour le reste de la session. Chaque branche de travail porte donc `.claude/`.
+- Le fichier de temps ajouté au commit par le hook est attendu : l'agent ne le retire pas.
 - Le script n'utilise que la bibliothèque standard et ne bloque jamais la session : il se copie tel quel dans un dépôt client, sous `.claude/hooks/pointage.py`, avec son `.claude/pointage.json`.
 
 ## Todoist

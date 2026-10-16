@@ -134,7 +134,13 @@ class TestBoutEnBout(unittest.TestCase):
             evenement.update(tool_name="Bash", tool_input={"command": commande or "ls"})
         return pointage.traiter(evenement, t(quand))
 
+    def projet_suivi(self):
+        (self.depot / "projet").mkdir(exist_ok=True)
+        (self.depot / "projet" / "client.yaml").write_text("slug: ops\n", encoding="utf-8")
+        subprocess.run(["git", "-C", str(self.depot), "add", "projet/client.yaml"], check=True)
+
     def test_session_avec_pause_et_deux_commits(self):
+        self.projet_suivi()
         self.evenement("SessionStart", "2026-10-16 09:00:00")
         self.evenement("UserPromptSubmit", "2026-10-16 10:00:00")
         self.evenement("PreToolUse", "2026-10-16 10:10:00")
@@ -160,7 +166,35 @@ class TestBoutEnBout(unittest.TestCase):
             self.assertEqual(ligne["note"], "Pointage automatique, session abcdef12")
         indexes = subprocess.run(["git", "-C", str(self.depot), "diff", "--cached", "--name-only"],
                                  capture_output=True, text=True, check=True).stdout.split()
-        self.assertEqual(sorted(indexes), ["projet/temps/2026-10-ops-dashboard.jsonl", "projet/temps/2026-10-ops-init.jsonl"])
+        self.assertEqual(sorted(indexes), ["projet/client.yaml", "projet/temps/2026-10-ops-dashboard.jsonl", "projet/temps/2026-10-ops-init.jsonl"])
+
+    def test_branche_de_code_sans_projet_puis_commit_de_pilotage(self):
+        """Comme egm-app : code sur main sans projet/, pilotage sur projet/skeam-ops, configuration absente de demo."""
+        self.evenement("UserPromptSubmit", "2026-10-16 10:00:00")
+        code = self.evenement("PreToolUse", "2026-10-16 10:40:00", 'git commit -m "OPS-417: code"')
+        self.assertEqual([(l["debut"], l["minutes"]) for l in code], [("10:00", 40)])
+        self.assertFalse((self.depot / "projet").exists())
+        # Branche demo : ni configuration ni projet/ ; la configuration gardée prend le relais.
+        (self.depot / ".claude" / "pointage.json").unlink()
+        demo = self.evenement("PreToolUse", "2026-10-16 10:55:00", 'git commit -m "OPS-417: report dans la démo"')
+        self.assertEqual([(l["debut"], l["minutes"]) for l in demo], [("10:40", 15)])
+        # Un dossier projet/ resté vide après un changement de branche ne compte pas.
+        (self.depot / "projet" / "temps").mkdir(parents=True)
+        reste = self.evenement("PreToolUse", "2026-10-16 10:57:00", 'git commit -m "OPS-417: report"')
+        self.assertEqual([(l["debut"], l["minutes"]) for l in reste], [("10:55", 2)])
+        self.assertFalse((self.depot / "projet" / "temps" / "2026-10-ops-dashboard.jsonl").exists())
+        # Branche de pilotage : projet/ suivi, les lignes en attente partent avec ce commit.
+        self.projet_suivi()
+        pilotage = self.evenement("PreToolUse", "2026-10-16 11:00:00", 'git commit -m "OPS-417: a_recetter"')
+        self.assertEqual([(l["debut"], l["minutes"]) for l in pilotage], [("10:00", 40), ("10:40", 15), ("10:55", 2), ("10:57", 3)])
+        fichier = self.depot / "projet" / "temps" / "2026-10-ops-dashboard.jsonl"
+        self.assertEqual(len(fichier.read_text(encoding="utf-8").splitlines()), 4)
+        self.assertEqual(list((Path(self.tmp.name) / "etat").glob("attente-*")), [])
+
+    def test_copie_du_script_pour_les_branches_qui_ne_l_ont_pas(self):
+        self.evenement("SessionStart", "2026-10-16 10:00:00")
+        copie = Path(self.tmp.name) / "etat" / "pointage.py"
+        self.assertEqual(copie.read_bytes(), (RACINE_OPS / "dashboard" / "scripts" / "pointage.py").read_bytes())
 
     def test_depot_sans_configuration_non_pointe(self):
         (self.depot / ".claude" / "pointage.json").unlink()

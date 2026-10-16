@@ -32,7 +32,7 @@ Nouvel item dans son propre fichier de backlog, avec le plus petit numéro libre
 
 ## Journal de temps
 
-Le temps des sessions Claude Code est pointé automatiquement : le hook de `.claude/settings.json` appelle `dashboard/scripts/pointage.py` à chaque événement de session et, à chaque `git commit`, écrit le temps écoulé depuis le commit précédent dans le fichier de temps de l'agent, rattaché à l'item cité en tête du message, puis l'ajoute au commit. Ne plus écrire de ligne de temps à la main pour une session Claude Code, ni faire de commit « temps de session ».
+Le temps des sessions Claude Code est pointé automatiquement : le hook de `.claude/settings.json` appelle `dashboard/scripts/pointage.py` à chaque événement de session et, à chaque `git commit`, écrit le temps écoulé depuis le commit précédent dans le fichier de temps de l'agent, rattaché à l'item cité en tête du message, puis l'ajoute au commit. Ne plus écrire de ligne de temps à la main pour une session Claude Code, ni faire de commit « temps de session ». Le fichier de temps ajouté au commit par le hook est attendu : ne pas le retirer.
 
 Seul le temps passé hors session s'écrit à la main, à la demande de Théo : une ligne `source` `theo`, `agent` `theo`, dans `projet/temps/AAAA-MM-theo.jsonl`, au format de `CONTRAT.md` section 6.
 

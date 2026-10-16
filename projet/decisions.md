@@ -36,3 +36,10 @@ Décisions prises pendant la pose du socle commun, branche feat/init, à confirm
 - **Raison** : chaque chantier ne modifie que son dossier.
 - **Impact** : CONTRAT.md section 11.7.
 - **Source** : Consigne de Théo du 2026-10-15
+
+## 2026-10-16 Temps passé mesuré automatiquement, chiffrage automatique mis de côté
+
+- **Décision** : le temps passé par tâche et par lot, Claude et Théo ensemble, est mesuré automatiquement par un hook Claude Code à chaque commit, dans skeam-ops et egm-app. Le chiffrage automatique, prix conseillé, chiffrer.py, calibrer.py et /skeam-chiffrage, est mis de côté : rien n'est supprimé ni abandonné, on n'y travaille plus.
+- **Raison** : seule l'estimation du temps de développement compte pour le pilotage interne ; le temps déclaré par les agents n'était pas fiable, une seule tâche par session, aucun temps de Théo, 31 tâches développées sur 48 sans aucune minute.
+- **Impact** : OPS-417, consigne Journal de temps de projet/CLAUDE-projet.md, .claude/ dans skeam-ops et sur les branches main, demo et projet/skeam-ops d'egm-app ; OPS-205 et OPS-105 en attente.
+- **Source** : Consigne de Théo du 2026-10-16

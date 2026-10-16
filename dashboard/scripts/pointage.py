@@ -15,7 +15,16 @@ Principe :
 - à chaque `git commit`, juste avant qu'il parte, le temps écoulé depuis le
   commit précédent de la session est écrit en lignes de temps au format de
   CONTRAT.md section 6, rattachées à l'item cité dans le message du commit, et
-  le fichier de temps est ajouté au commit.
+  le fichier de temps est ajouté au commit ;
+- sur une branche sans dossier `projet/`, celle du code d'egm-app par exemple,
+  les lignes attendent hors du dépôt, `attente-<session>-<prefixe>.jsonl`, et
+  partent avec le prochain commit de la session sur une branche qui a `projet/`.
+
+Changement de branche : Claude Code relit `.claude/settings.json` quand le
+fichier change ; une branche qui ne l'a pas coupe donc les hooks. Chaque branche
+où l'agent travaille doit porter `.claude/`. Par sécurité, le script se copie
+dans le dossier d'état et la configuration y est gardée par dépôt, et la
+commande du hook appelle la copie quand le script du dépôt manque.
 
 Configuration, dans le dépôt où part le commit : `.claude/pointage.json`.
 
@@ -66,6 +75,36 @@ RE_ITEM_GENERIQUE = re.compile(r"\b[A-Z][A-Z0-9]{1,11}-[0-9]{3}\b")
 
 def dossier_etat() -> Path:
     return Path(os.environ.get("POINTAGE_ETAT") or Path.home() / ".claude" / "pointage")
+
+
+def cle_depot(racine: Path) -> str:
+    return re.sub(r"[^A-Za-z0-9_.-]", "_", str(racine.resolve()).strip("/\\")) or "racine"
+
+
+def configuration(racine: Path) -> dict | None:
+    """`.claude/pointage.json` du dépôt, gardé dans le dossier d'état pour les branches qui ne l'ont pas."""
+    cache = dossier_etat() / "config" / f"{cle_depot(racine)}.json"
+    fichier = racine / ".claude" / "pointage.json"
+    if fichier.is_file():
+        texte = fichier.read_text(encoding="utf-8")
+        config = json.loads(texte)
+        cache.parent.mkdir(parents=True, exist_ok=True)
+        if not cache.is_file() or cache.read_text(encoding="utf-8") != texte:
+            cache.write_text(texte, encoding="utf-8")
+        return config
+    return json.loads(cache.read_text(encoding="utf-8")) if cache.is_file() else None
+
+
+def garder_copie() -> None:
+    """Copie ce script dans le dossier d'état, appelée par le hook quand le dépôt n'a pas le script."""
+    source = Path(__file__).resolve()
+    copie = dossier_etat() / "pointage.py"
+    if source == copie.resolve():
+        return
+    contenu = source.read_bytes()
+    if not copie.is_file() or copie.read_bytes() != contenu:
+        copie.parent.mkdir(parents=True, exist_ok=True)
+        copie.write_bytes(contenu)
 
 
 def heure_locale(horodatage: float) -> datetime:
@@ -168,6 +207,16 @@ def racine_git(dossier: Path) -> Path | None:
     return Path(sortie.stdout.strip()) if sortie.returncode == 0 and sortie.stdout.strip() else None
 
 
+def projet_suivi(racine: Path) -> bool:
+    """Vrai si la branche courante suit des fichiers dans projet/ ; un dossier resté après un changement de branche ne compte pas."""
+    try:
+        sortie = subprocess.run(["git", "-C", str(racine), "ls-files", "--", "projet"],
+                                capture_output=True, text=True, timeout=10)
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return sortie.returncode == 0 and bool(sortie.stdout.strip())
+
+
 def agent_pour(config: dict, item: str | None) -> str:
     if item:
         numero = int(item.rsplit("-", 1)[1])
@@ -252,25 +301,47 @@ def traiter(evenement: dict, maintenant: float) -> list[dict]:
     commande = ""
     if genre == "PreToolUse" and evenement.get("tool_name") == "Bash":
         commande = str((evenement.get("tool_input") or {}).get("command") or "")
-    with Etat(str(evenement.get("session_id") or "")) as etat:
+    if genre in ("SessionStart", "UserPromptSubmit"):
+        garder_copie()
+    session_id = str(evenement.get("session_id") or "")
+    with Etat(session_id) as etat:
         etat.ajouter(maintenant, genre)
         if not RE_COMMIT.search(commande):
             return []
         evenements = etat.lire()
         etat.repartir_de(maintenant)
     racine = racine_git(dossier_du_commit(commande, str(evenement.get("cwd") or "")))
-    if racine is None or not (racine / ".claude" / "pointage.json").is_file():
+    config = configuration(racine) if racine else None
+    if racine is None or config is None:
         return []
-    config = json.loads((racine / ".claude" / "pointage.json").read_text(encoding="utf-8"))
     item = item_du_commit(commande, config.get("prefixe"))
-    session = str(evenement.get("session_id") or "")[:8]
+    session = session_id[:8]
     note = f"Pointage automatique, session {session}" if session else "Pointage automatique"
     pause_s = 60 * float(config.get("pause_minutes", PAUSE_MINUTES))
     lignes = lignes_de_temps(segments(evenements, pause_s), item, agent_pour(config, item), note)
-    for fichier in ecrire_lignes(racine, lignes):
+    nom = re.sub(r"[^A-Za-z0-9_.-]", "_", f"{session_id or 'inconnue'}-{config.get('prefixe') or 'sans'}")
+    attente = dossier_etat() / f"attente-{nom}.jsonl"
+    if not projet_suivi(racine):
+        # Branche de code sans dossier projet : les lignes attendent le prochain commit de pilotage.
+        if lignes:
+            attente.parent.mkdir(parents=True, exist_ok=True)
+            with open(attente, "a", encoding="utf-8") as fichier:
+                for ligne in lignes:
+                    fichier.write(json.dumps(ligne, ensure_ascii=False, separators=(",", ":")) + "\n")
+        return lignes
+    en_attente = []
+    if attente.is_file():
+        for brute in attente.read_text(encoding="utf-8").splitlines():
+            try:
+                en_attente.append(json.loads(brute))
+            except ValueError:
+                continue
+    for fichier in ecrire_lignes(racine, en_attente + lignes):
         subprocess.run(["git", "-C", str(racine), "add", "--", str(fichier.relative_to(racine))],
                        capture_output=True, timeout=10)
-    return lignes
+    if attente.is_file():
+        attente.unlink()
+    return en_attente + lignes
 
 
 def main() -> int:
