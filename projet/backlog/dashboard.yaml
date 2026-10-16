@@ -163,3 +163,20 @@ items:
     a_valider: false
     commit: 1bf33cb
     maj: 2026-10-16
+  - id: OPS-411
+    titre: Avancement sans validation ni recette de Théo, et titre de chaque lot
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: en_cours
+    taille: S
+    estimation_h: 2
+    dependances: []
+    criteres_acceptation:
+      - La vue interne n'affiche plus ni « à valider » ni « testé par Théo », ni leurs compteurs ; l'avancement par lot montre développé et testé par l'IA.
+      - Chaque lot porte le titre et le but écrits dans la section Découpage en lots de cadrage.md, dans le tableau des items comme dans l'avancement.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-16
+    notes: Décision de Théo du 2026-10-16 ; l'évolution du contrat pour a_valider reste à arbitrer.

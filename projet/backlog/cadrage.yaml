@@ -109,7 +109,7 @@ items:
     module: null
     lot: 2
     priorite: souhaitable
-    statut: a_faire
+    statut: abandonne
     taille: S
     estimation_h: 2
     dependances:
@@ -121,7 +121,7 @@ items:
     audience: interne
     a_valider: true
     commit: null
-    maj: 2026-10-15
+    maj: 2026-10-16
     notes: Besoin découvert pendant OPS-306, voir skills/PROPOSITIONS-CONTRAT.md, entrée Script de vue par audience.
   - id: OPS-308
     titre: Backlog en tableau par lot dans la vue publiée
