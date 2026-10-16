@@ -5,7 +5,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_faire
+    statut: a_recetter
     taille: L
     estimation_h: 8
     dependances: []
@@ -14,14 +14,14 @@ items:
       - Pour les audiences commercial et client, la sortie ne contient aucune donnée exclue par la section 10 ; un test le vérifie sur exemples/.
     audience: interne
     a_valider: false
-    commit: null
+    commit: ad6b9f4
     maj: 2026-10-15
   - id: OPS-402
     titre: Rendu du dashboard
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_faire
+    statut: a_recetter
     taille: M
     estimation_h: 6
     dependances:
@@ -30,14 +30,14 @@ items:
       - Une page lit dashboard/out/<audience>.json et affiche par projet statut, lots, avancement et, en interne, temps et actions.
     audience: interne
     a_valider: false
-    commit: null
+    commit: 57c620c
     maj: 2026-10-15
   - id: OPS-403
     titre: Commandes /dashboard et /calibrer
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_faire
+    statut: a_recetter
     taille: S
     estimation_h: 3
     dependances:
@@ -47,7 +47,7 @@ items:
       - dashboard/skills/dashboard/SKILL.md et dashboard/skills/calibrer/SKILL.md orchestrent les scripts de CONTRAT.md section 11.
     audience: interne
     a_valider: false
-    commit: null
+    commit: b1a7572
     maj: 2026-10-15
   - id: OPS-404
     titre: Commande /publier
@@ -83,3 +83,83 @@ items:
     a_valider: false
     commit: null
     maj: 2026-10-15
+  - id: OPS-406
+    titre: Avancement en trois étapes par lot
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_recetter
+    taille: M
+    estimation_h: 3
+    dependances: []
+    criteres_acceptation:
+      - La vue interne affiche par lot développé, testé par l'IA et testé par Théo en x sur N, avec une barre empilée, même sans aucun item développé.
+      - En vue interne les items a_valider sont comptés et leur nombre signalé ; les vues commercial et client gardent la règle de CONTRAT.md section 10.
+      - Tant que teste_ia n'est pas au contrat, l'étape testé par l'IA affiche non suivi.
+    audience: interne
+    a_valider: false
+    commit: ed7992a
+    maj: 2026-10-16
+    notes: Retours de Théo du 2026-10-15 ; proposition teste_ia dans skills/PROPOSITIONS-CONTRAT.md, chantier cadrage.
+  - id: OPS-407
+    titre: Todo Todoist en direct dans la vue interne
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_recetter
+    taille: M
+    estimation_h: 4
+    dependances: []
+    criteres_acceptation:
+      - La vue interne affiche au plus huit tâches p1 et p2 des sections Client du projet Todoist SKEAM, retards d'abord, regroupées par client.
+      - La page lit Todoist en direct et Théo coche une tâche depuis la page ; à défaut, un instantané pris à la génération s'affiche avec un lien vers chaque tâche.
+    audience: interne
+    a_valider: false
+    commit: ed7992a
+    maj: 2026-10-16
+  - id: OPS-408
+    titre: Compteurs par projet des recettes, validations et devis
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_recetter
+    taille: S
+    estimation_h: 2
+    dependances: []
+    criteres_acceptation:
+      - Les items à tester, à valider et les devis à envoyer ne sont plus des lignes de la todo mais des compteurs par projet qui se déplient au clic.
+    audience: interne
+    a_valider: false
+    commit: ed7992a
+    maj: 2026-10-16
+  - id: OPS-409
+    titre: Pas de zéro trompeur sur le temps et le montant signé
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_recetter
+    taille: S
+    estimation_h: 1
+    dependances: []
+    criteres_acceptation:
+      - Un projet qui a des items développés et aucune ligne de temps affiche temps non journalisé, jamais 0 h.
+      - Un projet sans montant signé et sans devis saisi dans client.yaml affiche devis non saisi, jamais 0 €.
+    audience: interne
+    a_valider: false
+    commit: ed7992a
+    maj: 2026-10-16
+  - id: OPS-410
+    titre: Sortie toujours publiée en artefact claude.ai
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_recetter
+    taille: XS
+    estimation_h: 1
+    dependances: []
+    criteres_acceptation:
+      - /dashboard publie chaque vue en artefact claude.ai au même lien, aperçu compris, jamais en simple fichier HTML à télécharger.
+    audience: interne
+    a_valider: false
+    commit: 1bf33cb
+    maj: 2026-10-16

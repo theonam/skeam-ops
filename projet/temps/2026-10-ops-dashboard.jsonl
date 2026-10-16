@@ -1,0 +1,3 @@
+{"date":"2026-10-15","debut":"22:16","fin":"22:31","minutes":15,"item":"OPS-401","source":"claude-code","agent":"ops-dashboard","note":"agreger.py, données de test, gabarit, rendre.py, commandes /dashboard et /calibrer : OPS-401 à OPS-403","valide":false}
+{"date":"2026-10-15","debut":"23:56","fin":"00:10","minutes":14,"item":"OPS-406","source":"claude-code","agent":"ops-dashboard","note":"Retours de Théo du 15/10 : trois étapes, Todoist, compteurs, zéros trompeurs ; session passée minuit","valide":false}
+{"date":"2026-10-16","debut":"05:37","fin":"05:39","minutes":2,"item":"OPS-406","source":"claude-code","agent":"ops-dashboard","note":"Reprise après redémarrage : publication de la recette E G M en artefact, documentation, /dashboard","valide":false}

@@ -1,0 +1,10 @@
+items:
+  - id: ACT-BETA-001
+    titre: Proposer une date de formation
+    contexte: Avant la mise en service.
+    priorite: p3
+    points: 1pt
+    echeance: null
+    statut: ouverte
+    todoist_id: null
+    source: manuel

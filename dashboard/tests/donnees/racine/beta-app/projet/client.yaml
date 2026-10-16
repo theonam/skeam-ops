@@ -1,0 +1,37 @@
+# Client fictif des tests du dashboard : en recette, dans les temps, mise en service à venir.
+slug: beta
+nom: Bêta Plomberie
+raison_sociale: Bêta Plomberie SARL
+siren: "123123123"
+adresse: null
+contacts:
+  - nom: Sophie Leroy
+    role: Responsable administrative
+    email: null
+    tel: null
+statut: recette
+apporteur: theo
+dates:
+  premier_contact: 2026-08-20
+  cadrage: 2026-09-05
+  signature: 2026-09-12
+  mise_en_service: 2026-11-02
+montants_ht:
+  build_signe: 5200
+  options_signees: 0
+  run_annuel: 960
+devis:
+  - dougs_id: 2c3d4e5f-6a7b-4c8d-8e9f-1a2b3c4d5e6f
+    objet: Application Bêta Plomberie, lots 0 et 1 et maintenance
+    montant_ht: 6160
+    statut: accepte
+liens:
+  depot: theonam/beta-app
+  demo: null
+  prod: https://beta-app.example
+  docs_interne: null
+  docs_commercial: null
+  docs_client: null
+todoist:
+  projet_id: null
+  section_id: null

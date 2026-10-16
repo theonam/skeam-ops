@@ -1,0 +1,10 @@
+items:
+  - id: ACT-OPS-001
+    titre: Relire la pull request du dashboard
+    contexte: Livraison du chantier dashboard.
+    priorite: p1
+    points: 2pt
+    echeance: 2026-10-16
+    statut: ouverte
+    todoist_id: null
+    source: OPS-401

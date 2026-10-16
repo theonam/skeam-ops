@@ -1,0 +1,654 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Pilotage SKEAM</title>
+<!--
+Gabarit du dashboard SKEAM, chantier dashboard. Page autonome : dashboard/scripts/rendre.py remplace
+le contenu null de script#donnees par la vue JSON d'agreger.py et, en vue interne, celui de script#todoist
+par la configuration Todoist et l'instantané pris à la génération. Format : dashboard/README.md.
+Publiée en artefact avec la capacité mcp sur Todoist, la page lit la todo en direct et coche les tâches.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Mise en page : bandeau, puis todo, alertes et compteurs, chiffres clés, portefeuille, charge, détail par projet ; une colonne sur téléphone. */
+:root {
+  --fond: #f3f5f8;
+  --surface: #ffffff;
+  --encre: #18212c;
+  --discret: #5a6676;
+  --trait: #d9dfe7;
+  --accent: #1d5a86;
+  --accent-doux: #e3edf5;
+  --critique: #b42318;
+  --critique-doux: #fdecea;
+  --attention: #a15c07;
+  --attention-doux: #fdf3e2;
+  --ok: #1e7a46;
+  --ok-doux: #e5f4ea;
+  --piste: #e6eaf0;
+  --agents: #8fb3cf;
+  --etape-theo: #1d5a86;
+  --etape-ia: #5b8fb8;
+  --etape-dev: #a9c7de;
+  --f-titre: "IBM Plex Sans Condensed", "Arial Narrow", "Roboto Condensed", system-ui, sans-serif;
+  --f-texte: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --f-donnee: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --rayon: 8px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --fond: #11161c; --surface: #19202a; --encre: #e4e9f0; --discret: #97a3b3; --trait: #2a3340;
+    --accent: #79b4e0; --accent-doux: #1b2d3d; --critique: #f2877b; --critique-doux: #3a1d1b;
+    --attention: #e8b25c; --attention-doux: #33281a; --ok: #6cc893; --ok-doux: #17301f;
+    --piste: #26303c; --agents: #3f6a8c; --etape-theo: #8cc2ea; --etape-ia: #4f86b2; --etape-dev: #2e5170;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --fond: #11161c; --surface: #19202a; --encre: #e4e9f0; --discret: #97a3b3; --trait: #2a3340;
+  --accent: #79b4e0; --accent-doux: #1b2d3d; --critique: #f2877b; --critique-doux: #3a1d1b;
+  --attention: #e8b25c; --attention-doux: #33281a; --ok: #6cc893; --ok-doux: #17301f;
+  --piste: #26303c; --agents: #3f6a8c; --etape-theo: #8cc2ea; --etape-ia: #4f86b2; --etape-dev: #2e5170;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--fond); color: var(--encre);
+  font: 15px/1.5 var(--f-texte);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 48px;
+}
+main { max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+h1, h2, h3 { font-family: var(--f-titre); font-weight: 600; text-wrap: balance; margin: 0; line-height: 1.2; }
+h1 { font-size: 1.6rem; }
+h2 { font-size: 1.15rem; letter-spacing: .01em; }
+h3 { font-size: 1rem; }
+a { color: var(--accent); }
+a:focus-visible, summary:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+button { font: inherit; color: inherit; }
+.num, .id { font-family: var(--f-donnee); font-variant-numeric: tabular-nums; }
+.id { font-size: .82em; color: var(--discret); white-space: nowrap; }
+.discret { color: var(--discret); }
+.manquant { color: var(--attention); font-style: italic; }
+.etiquette { font-family: var(--f-titre); font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--discret); font-weight: 500; }
+section { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.entete-section { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+
+/* Bandeau */
+.bandeau { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px 24px; flex-wrap: wrap; border-bottom: 2px solid var(--encre); padding-bottom: 12px; }
+.bandeau .meta { display: flex; gap: 6px 16px; flex-wrap: wrap; font-size: .85rem; color: var(--discret); }
+.audience { display: inline-block; font-family: var(--f-titre); font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; padding: 2px 8px; border-radius: 4px; background: var(--accent-doux); color: var(--accent); font-weight: 600; vertical-align: middle; margin-left: 8px; }
+
+/* Chiffres clés */
+.chiffres { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--trait); border: 1px solid var(--trait); border-radius: var(--rayon); overflow: hidden; }
+.chiffre { background: var(--surface); padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; }
+.chiffre .valeur { font-family: var(--f-donnee); font-size: 1.3rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+.chiffre .note { font-size: .78rem; }
+
+/* À traiter */
+.traiter { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 16px; align-items: start; }
+.colonne { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.liste { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--trait); border-radius: var(--rayon); }
+.liste > li { padding: 10px 14px 10px 16px; border-top: 1px solid var(--trait); display: flex; flex-direction: column; gap: 2px; position: relative; min-width: 0; }
+.liste > li:first-child { border-top: 0; }
+.liste > li::before { content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px; border-radius: 2px; background: var(--trait); }
+.liste > li.haute::before, .liste > li.retard::before { background: var(--critique); }
+.liste > li.moyenne::before { background: var(--attention); }
+.liste > li.basse::before { background: var(--discret); }
+.liste .ligne1 { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.liste .vide { color: var(--discret); }
+.liste .vide::before { display: none; }
+.projet-nom { font-family: var(--f-titre); font-weight: 600; font-size: .85rem; }
+
+/* Todo Todoist */
+.todo .groupe { padding: 8px 14px 4px; font-family: var(--f-titre); font-weight: 600; font-size: .85rem; border-top: 1px solid var(--trait); background: var(--fond); }
+.todo .groupe:first-child { border-top: 0; border-radius: var(--rayon) var(--rayon) 0 0; }
+.todo .groupe::before { display: none; }
+.todo .tache { flex-direction: row; align-items: flex-start; gap: 10px; }
+.cocher { flex: none; width: 22px; height: 22px; margin-top: 1px; border: 2px solid var(--discret); border-radius: 50%; background: transparent; cursor: pointer; padding: 0; }
+.cocher.p1 { border-color: var(--critique); }
+.cocher.p2 { border-color: var(--attention); }
+.cocher:hover { background: var(--accent-doux); }
+.cocher:disabled { opacity: .5; cursor: progress; }
+.tache .texte { display: flex; flex-direction: column; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
+.tache .erreur { color: var(--critique); font-size: .82rem; }
+.etat-source { font-size: .8rem; color: var(--discret); }
+.bouton { border: 1px solid var(--trait); background: var(--surface); border-radius: 6px; padding: 4px 10px; cursor: pointer; font-size: .85rem; }
+.bouton:hover { border-color: var(--accent); }
+
+/* Compteurs */
+.compteurs { background: var(--surface); border: 1px solid var(--trait); border-radius: var(--rayon); }
+.compteurs-projet { padding: 10px 14px; border-top: 1px solid var(--trait); display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: baseline; }
+.compteurs-projet:first-child { border-top: 0; }
+.compteurs-projet .projet-nom { flex: 0 0 100%; }
+details.compteur { flex: 1 1 100%; }
+details.compteur > summary { display: inline-flex; cursor: pointer; list-style: none; }
+details.compteur > summary::-webkit-details-marker { display: none; }
+details.compteur ul { margin: 6px 0 2px; padding-left: 1.1em; font-size: .88rem; display: flex; flex-direction: column; gap: 3px; max-height: 18rem; overflow-y: auto; }
+.rangee-compteurs { display: flex; flex-wrap: wrap; gap: 8px; flex: 0 0 100%; }
+.rangee-compteurs details.compteur { flex: 0 1 auto; }
+.rangee-compteurs details.compteur[open] { flex: 1 1 100%; }
+
+/* Pastilles */
+.pastille { display: inline-block; font-size: .72rem; line-height: 1.5; padding: 0 7px; border-radius: 999px; white-space: nowrap; font-weight: 500; background: var(--piste); color: var(--discret); }
+details.compteur > summary .pastille { font-size: .8rem; padding: 1px 9px; }
+details.compteur > summary .pastille::after { content: " ▾"; }
+details.compteur[open] > summary .pastille::after { content: " ▴"; }
+.p-critique { background: var(--critique-doux); color: var(--critique); }
+.p-attention { background: var(--attention-doux); color: var(--attention); }
+.p-ok { background: var(--ok-doux); color: var(--ok); }
+.p-accent { background: var(--accent-doux); color: var(--accent); }
+
+/* Portefeuille */
+.defilant { overflow-x: auto; background: var(--surface); border: 1px solid var(--trait); border-radius: var(--rayon); }
+table { border-collapse: collapse; width: 100%; min-width: 34rem; font-size: .9rem; }
+th { text-align: left; font-family: var(--f-titre); font-weight: 500; font-size: .72rem; text-transform: uppercase; letter-spacing: .07em; color: var(--discret); padding: 10px 12px; border-bottom: 1px solid var(--trait); white-space: nowrap; }
+td { padding: 10px 12px; border-top: 1px solid var(--trait); vertical-align: top; }
+tr:first-child td { border-top: 0; }
+td.droite, th.droite { text-align: right; }
+.portefeuille td:first-child a { font-weight: 600; text-decoration: none; color: var(--encre); }
+.portefeuille td:first-child a:hover { text-decoration: underline; }
+.lots-mini { display: flex; flex-direction: column; gap: 4px; min-width: 190px; }
+.lots-mini .jauge { grid-template-columns: 3.2em 1fr 6.4em; white-space: nowrap; }
+.groupe-lot td { background: var(--fond); font-family: var(--f-titre); font-size: .78rem; text-transform: uppercase; letter-spacing: .07em; color: var(--discret); padding-block: 6px; }
+
+/* Jauges */
+.jauge { display: grid; grid-template-columns: 3.2em 1fr 4.6em; align-items: center; gap: 8px; font-size: .8rem; }
+.piste { height: 6px; background: var(--piste); border-radius: 3px; position: relative; overflow: visible; }
+.piste > span { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; background: var(--accent); }
+.piste.temps > span { background: var(--agents); }
+.piste.temps.depasse > span { background: var(--critique); }
+.piste .repere { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--encre); opacity: .55; border-radius: 1px; }
+.etapes { display: flex; height: 8px; background: var(--piste); border-radius: 4px; overflow: hidden; }
+.etapes span { display: block; height: 100%; }
+.etapes .theo { background: var(--etape-theo); }
+.etapes .ia { background: var(--etape-ia); }
+.etapes .dev { background: var(--etape-dev); }
+.lot-etapes { display: grid; grid-template-columns: 4.2em 1fr; gap: 6px 12px; align-items: start; font-size: .85rem; padding-block: 6px; border-top: 1px solid var(--trait); }
+.lot-etapes:first-child { border-top: 0; }
+.lot-etapes .chiffres-etapes { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 6px; }
+.lot-etapes .chiffres-etapes i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 5px; vertical-align: 0; }
+.lot-etapes .heures { margin-top: 6px; display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
+
+/* Charge */
+.charge { background: var(--surface); border: 1px solid var(--trait); border-radius: var(--rayon); padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.barre-charge { display: grid; grid-template-columns: minmax(90px, 160px) 1fr 9em; gap: 10px; align-items: center; font-size: .88rem; }
+.barre-charge .pile { display: flex; height: 14px; background: var(--piste); border-radius: 3px; overflow: hidden; }
+.barre-charge .theo { background: var(--accent); }
+.barre-charge .agents { background: var(--agents); }
+.legende { display: flex; gap: 16px; flex-wrap: wrap; font-size: .78rem; color: var(--discret); }
+.legende i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+
+/* Détail */
+details.projet { background: var(--surface); border: 1px solid var(--trait); border-radius: var(--rayon); }
+details.projet > summary { cursor: pointer; list-style: none; padding: 14px 16px; display: flex; gap: 8px 14px; align-items: baseline; flex-wrap: wrap; }
+details.projet > summary::-webkit-details-marker { display: none; }
+details.projet > summary::before { content: "▸"; color: var(--discret); transition: transform .15s; display: inline-block; }
+details.projet[open] > summary::before { transform: rotate(90deg); }
+details.projet > summary h3 { font-size: 1.1rem; }
+.corps-projet { padding: 4px 16px 18px; display: flex; flex-direction: column; gap: 18px; border-top: 1px solid var(--trait); }
+.grille-infos { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px 20px; padding-top: 14px; }
+.grille-infos div { display: flex; flex-direction: column; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
+.blocs { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 16px; }
+.bloc { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.bloc ul { margin: 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 4px; font-size: .9rem; }
+.synthese { border-left: 3px solid var(--accent); padding: 4px 0 4px 12px; font-size: .92rem; max-width: 70ch; }
+.lots-detail { display: flex; flex-direction: column; gap: 10px; }
+.lot-detail { display: grid; grid-template-columns: 4.5em 1fr; gap: 4px 10px; align-items: center; font-size: .85rem; }
+.vide-page { background: var(--surface); border: 1px dashed var(--trait); border-radius: var(--rayon); padding: 24px; color: var(--discret); }
+@media (max-width: 560px) {
+  body { font-size: 14px; }
+  h1 { font-size: 1.35rem; }
+  .barre-charge { grid-template-columns: 1fr 9em; }
+  .barre-charge .nom { grid-column: 1 / -1; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<main id="app"><p class="vide-page">Chargement du tableau de bord.</p></main>
+
+<script id="donnees" type="application/json">null</script>
+<script id="todoist" type="application/json">null</script>
+<script>
+(function () {
+  "use strict";
+  var app = document.getElementById("app");
+  function lireJson(id) { try { return JSON.parse(document.getElementById(id).textContent); } catch (e) { return null; } }
+  var D = lireJson("donnees");
+  var TD = lireJson("todoist");
+  if (!D || !D.projets) {
+    app.innerHTML = '<p class="vide-page">Aucune donnée intégrée. Produire la page avec <code>python dashboard/scripts/rendre.py dashboard/out/&lt;audience&gt;.json --sortie dashboard/out/&lt;audience&gt;.html</code>.</p>';
+    return;
+  }
+
+  var STATUTS = { prospect: "Prospect", cadrage: "Cadrage", devis_envoye: "Devis envoyé", signe: "Signé", en_dev: "En développement", recette: "Recette", run: "Run", clos: "Clos" };
+  var STATUTS_ITEM = { a_faire: "À faire", en_cours: "En cours", a_recetter: "À recetter", fait: "Fait", abandonne: "Abandonné" };
+  var CLASSE_ITEM = { a_faire: "", en_cours: "p-accent", a_recetter: "p-attention", fait: "p-ok", abandonne: "" };
+  var APPORTEURS = { theo: "Théo", jonathan: "Jonathan", autre: "Autre" };
+  var DEVIS = { brouillon: "brouillon", envoye: "envoyé", accepte: "accepté", refuse: "refusé" };
+  var TYPES_ALERTE = { depassement_lot: "Dépassement", depassement_item: "Dépassement", bloque_externe: "Bloqué", en_cours_ancien: "Enlisé", registre_desynchronise: "Registre" };
+  var LIENS = { demo: "Démo", prod: "Production", docs_client: "Docs client", docs_commercial: "Docs commercial", docs_interne: "Docs interne" };
+  var NON_JOURNALISE = '<span class="manquant">temps non journalisé</span>';
+  var DEVIS_NON_SAISI = '<span class="manquant">devis non saisi</span>';
+  var interne = D.audience === "interne";
+  var client = D.audience === "client";
+
+  function esc(v) {
+    return String(v == null ? "" : v).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  var fmtEuro = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
+  var fmtNombre = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 2 });
+  function euro(v) { return '<span class="num">' + esc(fmtEuro.format(v || 0)) + "</span>"; }
+  function h(v) { return '<span class="num">' + esc(fmtNombre.format(v || 0)) + " h</span>"; }
+  function date(iso) {
+    if (!iso) return "";
+    var p = iso.slice(0, 10).split("-");
+    return p[2] + "/" + p[1] + "/" + p[0];
+  }
+  function pastille(texte, classe) { return '<span class="pastille ' + (classe || "") + '">' + esc(texte) + "</span>"; }
+  function statutProjet(s) { return pastille(STATUTS[s] || s, s === "en_dev" || s === "recette" ? "p-accent" : s === "run" ? "p-ok" : ""); }
+  function statutItem(s) { return pastille(STATUTS_ITEM[s] || s, CLASSE_ITEM[s]); }
+  function ancre(slug) { return "projet-" + String(slug).replace(/[^a-z0-9]/g, ""); }
+  function lienProjet(p) { return '<a href="#' + ancre(p.slug) + '" data-ouvrir="' + esc(p.slug) + '">' + esc(p.nom) + "</a>"; }
+  function liens(l) {
+    var out = [];
+    Object.keys(LIENS).forEach(function (k) {
+      if (l && typeof l[k] === "string" && l[k].indexOf("https://") === 0) out.push('<a href="' + esc(l[k]) + '" target="_blank" rel="noopener">' + LIENS[k] + "</a>");
+    });
+    return out.join(" · ");
+  }
+  function signe(p) {
+    if (p.type === "interne") return '<span class="discret">projet interne</span>';
+    return !p.montant_signe_ht && !p.devis_saisi ? DEVIS_NON_SAISI : euro(p.montant_signe_ht);
+  }
+  function jauge(pct) {
+    if (pct == null) return '<div class="piste"></div>';
+    return '<div class="piste"><span style="width:' + Math.max(0, Math.min(100, pct)) + '%"></span></div>';
+  }
+  function pctTexte(pct) { return pct == null ? "aucun item engagé" : pct + " %"; }
+  function etapes(l) {
+    var n = l.nb_items || 0;
+    if (!n) return '<div class="etapes"></div>';
+    var theo = l.teste_theo, ia = l.teste_ia == null ? theo : Math.max(l.teste_ia, theo), dev = Math.max(l.developpe, ia);
+    function seg(c, x) { return x > 0 ? '<span class="' + c + '" style="width:' + (x / n * 100) + '%"></span>' : ""; }
+    return '<div class="etapes" role="img" aria-label="' + esc(l.developpe + " développés, " + (l.teste_ia == null ? "test IA non suivi, " : l.teste_ia + " testés par l'IA, ") + theo + " testés par Théo, sur " + n) + '">' +
+      seg("theo", theo) + seg("ia", ia - theo) + seg("dev", dev - ia) + "</div>";
+  }
+  function echeance(e) {
+    if (!e) return '<span class="discret">Aucune</span>';
+    var quand = e.en_retard ? pastille("en retard", "p-critique") : e.dans_jours === 0 ? pastille("aujourd'hui", "p-attention") : e.dans_jours <= 7 ? pastille("dans " + e.dans_jours + " j", "p-attention") : "";
+    return '<span class="num">' + date(e.date) + "</span> " + quand + '<br><span class="discret">' + esc(e.libelle) + "</span>";
+  }
+  function trier(liste, cle) { return liste.slice().sort(function (a, b) { return a[cle] < b[cle] ? -1 : a[cle] > b[cle] ? 1 : 0; }); }
+  function aujourdhui() {
+    try { return new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Paris" }); } catch (e) { return new Date().toISOString().slice(0, 10); }
+  }
+  function heure(ms) { return new Date(ms).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }); }
+
+  var html = [];
+  var G = D.global || {};
+  var titre = client && D.projets.length === 1 ? "Avancement " + D.projets[0].nom : "Pilotage SKEAM";
+  document.title = titre;
+  var meta = ["Généré le " + date(D.genere_le) + " à " + esc(D.genere_le.slice(11, 16))];
+  if (D.semaine) meta.push("Semaine du " + date(D.semaine.debut) + " au " + date(D.semaine.fin));
+  html.push('<header class="bandeau"><h1>' + esc(titre) + (client ? "" : '<span class="audience">' + esc(D.audience) + "</span>") + '</h1><div class="meta"><span>' + meta.join("</span><span>") + "</span></div></header>");
+
+  /* Todo, alertes et compteurs en haut */
+  if (!client) {
+    var alertes = G.alertes || [];
+    var blocAlertes = '<section aria-labelledby="t-alertes"><div class="entete-section"><h2 id="t-alertes">' + (interne ? "Ce qui bloque ou dérape" : "Points d'attention") + '</h2><span class="discret num">' + alertes.length + '</span></div><ul class="liste">';
+    if (!alertes.length) blocAlertes += '<li class="vide">Rien à signaler.</li>';
+    alertes.forEach(function (a) {
+      blocAlertes += '<li class="' + esc(a.gravite) + '"><div class="ligne1">' + pastille(TYPES_ALERTE[a.type] || a.type, a.gravite === "haute" ? "p-critique" : a.gravite === "moyenne" ? "p-attention" : "") +
+        ' <span class="projet-nom">' + esc(a.nom) + "</span></div><span>" + esc(a.message) + "</span></li>";
+    });
+    blocAlertes += "</ul></section>";
+    if (interne) {
+      var blocTodo = '<section aria-labelledby="t-todo"><div class="entete-section"><h2 id="t-todo">Ma todo</h2><span class="etat-source" id="todo-etat"></span></div><ul class="liste todo" id="todo-liste"><li class="vide">Lecture de Todoist.</li></ul></section>';
+      var compteurs = D.projets.filter(function (p) { var c = p.compteurs; return c && (c.a_tester || c.a_valider || c.devis_a_envoyer); });
+      var blocCompteurs = '<section aria-labelledby="t-compteurs"><div class="entete-section"><h2 id="t-compteurs">À tester, valider, envoyer</h2></div><div class="compteurs">' +
+        (compteurs.length ? compteurs.map(function (p) {
+          var c = p.compteurs, r = [];
+          function deplier(n, libelle, classe, lignes) {
+            return n ? '<details class="compteur"><summary>' + pastille(n + " " + libelle, classe) + "</summary><ul>" + lignes + "</ul></details>" : "";
+          }
+          function lignesItems(liste) { return liste.map(function (i) { return '<li><span class="id">' + esc(i.id) + "</span> " + esc(i.titre) + ' <span class="discret">lot ' + esc(i.lot) + "</span></li>"; }).join(""); }
+          r.push(deplier(c.a_tester, "à tester", "p-attention", lignesItems(p.items_a_recetter)));
+          r.push(deplier(c.a_valider, "à valider", "p-accent", lignesItems(p.items_a_valider)));
+          r.push(deplier(c.devis_a_envoyer, c.devis_a_envoyer > 1 ? "devis à envoyer" : "devis à envoyer", "p-critique", p.devis_a_envoyer.map(function (d) { return "<li>" + euro(d.montant_ht) + " " + esc(d.objet) + "</li>"; }).join("")));
+          return '<div class="compteurs-projet"><span class="projet-nom">' + lienProjet(p) + '</span><div class="rangee-compteurs">' + r.join("") + "</div></div>";
+        }).join("") : '<div class="compteurs-projet discret">Rien à tester, à valider ni à envoyer.</div>') + "</div></section>";
+      html.push('<div class="traiter">' + blocTodo + '<div class="colonne">' + blocAlertes + blocCompteurs + "</div></div>");
+    } else {
+      html.push(blocAlertes);
+    }
+
+    /* Chiffres clés */
+    var nonSaisis = G.nb_devis_non_saisis || 0;
+    var chiffres = [
+      ["Total signé HT", euro(G.total_signe_ht), nonSaisis ? '<span class="manquant">+ ' + nonSaisis + (nonSaisis > 1 ? " devis non saisis" : " devis non saisi") + "</span>" : ""],
+      ["Run annuel HT", euro(G.run_annuel_ht), ""],
+      ["Clients actifs", '<span class="num">' + esc(G.nb_clients) + "</span>", ""],
+    ];
+    if (interne && G.charge_semaine) {
+      var nonJ = G.charge_semaine.par_projet.filter(function (c) { return !c.journalise; });
+      chiffres.push(["Charge de la semaine", h(G.charge_semaine.total_h), nonJ.length ? '<span class="manquant">hors ' + esc(nonJ.map(function (c) { return c.nom; }).join(", ")) + ", temps non journalisé</span>" : ""]);
+    }
+    html.push('<div class="chiffres">' + chiffres.map(function (c) { return '<div class="chiffre"><span class="etiquette">' + c[0] + '</span><span class="valeur">' + c[1] + "</span>" + (c[2] ? '<span class="note">' + c[2] + "</span>" : "") + "</div>"; }).join("") + "</div>");
+  }
+
+  /* Portefeuille */
+  if (!client) {
+    var lignes = D.projets.map(function (p) {
+      var nbAlertes = (G.alertes || []).filter(function (a) { return a.slug === p.slug; });
+      var hautes = nbAlertes.filter(function (a) { return a.gravite === "haute"; }).length;
+      var lots = p.lots.map(function (l) {
+        if (interne) return '<div class="jauge"><span class="discret">Lot ' + esc(l.lot) + "</span>" + etapes(l) + '<span class="num">' + esc(l.developpe) + "/" + esc(l.nb_items) + " dév.</span></div>";
+        return '<div class="jauge"><span class="discret">Lot ' + esc(l.lot) + "</span>" + jauge(l.pourcentage) + '<span class="num">' + pctTexte(l.pourcentage) + "</span></div>";
+      }).join("");
+      return "<tr><td>" + lienProjet(p) + (p.type === "interne" ? ' <span class="pastille">interne</span>' : "") + '<br><span class="discret">' + esc(APPORTEURS[p.apporteur] || p.apporteur) + "</span></td>" +
+        "<td>" + statutProjet(p.statut) + "</td>" +
+        "<td>" + echeance(p.prochaine_echeance) + "</td>" +
+        '<td class="droite">' + signe(p) + '<br><span class="discret">run ' + esc(fmtEuro.format(p.montants_ht.run_annuel || 0)) + "</span></td>" +
+        '<td><div class="lots-mini">' + (lots || '<span class="discret">Pas de lot</span>') + "</div></td>" +
+        (interne ? '<td class="droite">' + (p.temps.journalise ? h(p.temps.semaine_h) : NON_JOURNALISE) + "</td>" : "") +
+        "<td>" + (nbAlertes.length ? pastille(nbAlertes.length + (nbAlertes.length > 1 ? " alertes" : " alerte"), hautes ? "p-critique" : "p-attention") : pastille("RAS", "p-ok")) + "</td></tr>";
+    }).join("");
+    html.push('<section aria-labelledby="t-portefeuille"><div class="entete-section"><h2 id="t-portefeuille">Portefeuille</h2><span class="discret">' +
+      (G.portefeuille || []).map(function (s) { return esc(STATUTS[s.statut] || s.statut) + " " + s.nb_clients; }).join(" · ") + '</span></div><div class="defilant"><table class="portefeuille"><thead><tr><th>Projet</th><th>Statut</th><th>Prochaine échéance</th><th class="droite">Signé HT</th><th>Avancement</th>' +
+      (interne ? '<th class="droite">Semaine</th>' : "") + "<th>État</th></tr></thead><tbody>" + lignes + "</tbody></table></div>" +
+      (interne ? '<div class="legende"><span><i style="background:var(--etape-theo)"></i>Testé par Théo</span><span><i style="background:var(--etape-ia)"></i>Testé par l\'IA</span><span><i style="background:var(--etape-dev)"></i>Développé</span><span>Items engagés du lot, à valider compris</span></div>' : "") + "</section>");
+  }
+
+  /* Charge de la semaine */
+  if (interne && G.charge_semaine) {
+    var cs = G.charge_semaine;
+    var max = Math.max.apply(null, cs.par_projet.map(function (c) { return Math.max(c.heures, c.heures_semaine_precedente); }).concat([1]));
+    html.push('<section aria-labelledby="t-charge"><div class="entete-section"><h2 id="t-charge">Charge de la semaine</h2><span class="discret">Théo ' + esc(fmtNombre.format(cs.total_theo_h)) + " h · agents " + esc(fmtNombre.format(cs.total_agents_h)) + ' h</span></div><div class="charge">' +
+      cs.par_projet.map(function (c) {
+        if (!c.journalise) return '<div class="barre-charge"><span class="nom">' + esc(c.nom) + '</span><div class="pile"></div><span class="droite">' + NON_JOURNALISE + "</span></div>";
+        return '<div class="barre-charge"><span class="nom">' + esc(c.nom) + '</span><div class="pile" title="Semaine précédente : ' + esc(fmtNombre.format(c.heures_semaine_precedente)) + ' h"><span class="theo" style="width:' + (c.heures_theo / max * 100) + '%"></span><span class="agents" style="width:' + (c.heures_agents / max * 100) + '%"></span></div><span class="droite">' + h(c.heures) + "</span></div>";
+      }).join("") +
+      '<div class="legende"><span><i style="background:var(--accent)"></i>Théo</span><span><i style="background:var(--agents)"></i>Agents</span><span>Échelle commune, semaine en cours</span></div></div></section>');
+  }
+
+  /* Détail par projet */
+  function bloc(titreBloc, elements, rendu) {
+    if (!elements || !elements.length) return "";
+    return '<div class="bloc"><span class="etiquette">' + titreBloc + " · " + elements.length + "</span><ul>" + elements.map(function (e) { return "<li>" + rendu(e) + "</li>"; }).join("") + "</ul></div>";
+  }
+  function lotInterne(lot, journalise) {
+    var n = lot.nb_items;
+    var r = '<div class="lot-etapes"><span class="num">Lot ' + esc(lot.lot) + "</span><div>" + etapes(lot) +
+      '<div class="chiffres-etapes">' +
+      '<span><i style="background:var(--etape-dev)"></i>Développé <span class="num">' + esc(lot.developpe) + " sur " + esc(n) + "</span></span>" +
+      '<span><i style="background:var(--etape-ia)"></i>Testé par l\'IA ' + (lot.teste_ia == null ? '<span class="discret">non suivi</span>' : '<span class="num">' + esc(lot.teste_ia) + " sur " + esc(n) + "</span>") + "</span>" +
+      '<span><i style="background:var(--etape-theo)"></i>Testé par Théo <span class="num">' + esc(lot.teste_theo) + " sur " + esc(n) + "</span></span>" +
+      (lot.nb_a_valider ? " " + pastille(lot.nb_a_valider + " à valider", "p-accent") : "") + "</div>";
+    if (!journalise) {
+      r += '<div class="heures"><div class="piste temps"></div><span>' + NON_JOURNALISE + ' <span class="discret">· ' + esc(fmtNombre.format(lot.heures_estimees)) + " h estimées</span></span></div>";
+    } else {
+      var ratio = lot.heures_estimees ? lot.heures_reelles / lot.heures_estimees : 0;
+      r += '<div class="heures"><div class="piste temps' + (lot.depassement ? " depasse" : "") + '"><span style="width:' + (Math.min(ratio / 1.5, 1) * 100) + '%"></span><i class="repere" style="left:' + (100 / 1.5) + '%"></i></div><span class="num">' + esc(fmtNombre.format(lot.heures_reelles)) + " / " + esc(fmtNombre.format(lot.heures_estimees)) + " h" +
+        (lot.ecart_pct != null && lot.heures_reelles > 0 ? " " + pastille((lot.ecart_pct > 0 ? "+" : "") + lot.ecart_pct + " %", lot.depassement ? "p-critique" : lot.ecart_pct > 0 ? "p-attention" : "") : "") + "</span></div>";
+    }
+    return r + "</div></div>";
+  }
+  function detail(p, ouvert) {
+    var r = [];
+    var resume = [statutProjet(p.statut)];
+    if (!client) resume.push('<span class="discret">' + esc(APPORTEURS[p.apporteur] || p.apporteur) + "</span>");
+    r.push('<details class="projet" id="' + ancre(p.slug) + '"' + (ouvert ? " open" : "") + "><summary><h3>" + esc(p.nom) + "</h3>" + resume.join(" ") + "</summary><div class=\"corps-projet\">");
+    if (!client) {
+      var infos = [
+        ["Prochaine échéance", echeance(p.prochaine_echeance)],
+        ["Signé HT", signe(p) + (p.devis_saisi || p.montant_signe_ht ? ' <span class="discret">dont options ' + esc(fmtEuro.format(p.montants_ht.options_signees || 0)) + "</span>" : "")],
+        ["Run annuel HT", euro(p.montants_ht.run_annuel)],
+        ["Dates", ["premier_contact", "cadrage", "signature", "mise_en_service"].filter(function (k) { return p.dates[k]; }).map(function (k) { return { premier_contact: "contact", cadrage: "cadrage", signature: "signature", mise_en_service: "mise en service" }[k] + ' <span class="num">' + date(p.dates[k]) + "</span>"; }).join("<br>") || '<span class="discret">Aucune</span>'],
+      ];
+      if (p.devis.length) infos.push(["Devis", p.devis.map(function (d) { return euro(d.montant_ht) + " " + pastille(DEVIS[d.statut] || d.statut, d.statut === "accepte" ? "p-ok" : d.statut === "brouillon" ? "p-attention" : "") + '<br><span class="discret">' + esc(d.objet) + "</span>"; }).join("<br>")]);
+      if (interne) infos.push(["Temps", p.temps.journalise ? h(p.temps.semaine_h) + ' cette semaine<br><span class="discret">' + esc(fmtNombre.format(p.temps.total_h)) + " h au total, " + esc(fmtNombre.format(p.temps.a_relire_h)) + " h à relire</span>" : NON_JOURNALISE + '<br><span class="discret">items développés sans aucune ligne de temps</span>']);
+      var l = liens(p.liens);
+      if (l) infos.push(["Liens", l]);
+      r.push('<div class="grille-infos">' + infos.map(function (i) { return '<div><span class="etiquette">' + i[0] + "</span><span>" + i[1] + "</span></div>"; }).join("") + "</div>");
+    } else if (liens(p.liens)) {
+      r.push('<div class="grille-infos"><div><span class="etiquette">Liens</span><span>' + liens(p.liens) + "</span></div></div>");
+    }
+
+    /* Lots */
+    if (interne) {
+      r.push('<div class="bloc"><span class="etiquette">Avancement par lot · heures réelles contre estimées</span><div>' + p.lots.map(function (lot) { return lotInterne(lot, p.temps.journalise); }).join("") + "</div></div>");
+    } else {
+      r.push('<div class="bloc"><span class="etiquette">Avancement par lot</span><div class="lots-detail">' + p.lots.map(function (lot) {
+        return '<div class="lot-detail"><span class="num">Lot ' + esc(lot.lot) + '</span><div class="jauge" style="grid-template-columns:1fr 9em">' + jauge(lot.pourcentage) + '<span class="num">' + pctTexte(lot.pourcentage) + "</span></div></div>";
+      }).join("") + "</div></div>");
+    }
+
+    /* Listes de pilotage */
+    var blocs = [];
+    if (interne) {
+      blocs.push(bloc("Actions p1 et p2 du dépôt", p.actions, function (a) { return pastille(a.priorite, a.priorite === "p1" ? "p-critique" : "p-attention") + " " + esc(a.titre) + (a.echeance ? ' <span class="num discret">' + date(a.echeance) + "</span>" : "") + (a.en_retard ? " " + pastille("en retard", "p-critique") : "") + ' <span class="id">' + esc(a.id) + "</span>"; }));
+      blocs.push(bloc("Bloqués par une dépendance externe", p.items_bloques, function (i) { return '<span class="id">' + esc(i.id) + "</span> " + esc(i.titre) + '<br><span class="discret">attend ' + esc(i.dependances_externes.join(" ; ")) + "</span>"; }));
+    }
+    if (!client) blocs.push(bloc("En cours depuis plus de 7 jours", p.items_en_cours_anciens, function (i) { return '<span class="id">' + esc(i.id) + "</span> " + esc(i.titre) + ' <span class="discret num">' + esc(i.jours) + " j</span>"; }));
+    blocs = blocs.filter(Boolean);
+    if (blocs.length) r.push('<div class="blocs">' + blocs.join("") + "</div>");
+
+    if (!client) {
+      var s = p.derniere_synthese;
+      r.push('<div class="bloc"><span class="etiquette">Dernière synthèse</span>' + (s ? '<div class="synthese"><strong>' + esc(s.titre) + '</strong> <span class="num discret">' + date(s.date) + "</span><br>" + esc(s.resume) + "</div>" : '<span class="discret">Aucune synthèse.</span>') + "</div>");
+    }
+
+    /* Items par lot */
+    var colonnes = client ? ["Item", "Statut"] : interne ? ["Id", "Item", "Statut", "Estimé", "Réel"] : ["Id", "Item", "Statut", "Module"];
+    var corps = "";
+    var lotCourant = null;
+    trier(p.items, "id").sort(function (a, b) { return a.lot - b.lot; }).forEach(function (i) {
+      if (i.lot !== lotCourant) { lotCourant = i.lot; corps += '<tr class="groupe-lot"><td colspan="' + colonnes.length + '">Lot ' + esc(i.lot) + "</td></tr>"; }
+      var marques = "";
+      if (interne && i.a_valider) marques += " " + pastille("à valider", "p-accent");
+      if (interne && i.dependances_externes.length && (i.statut === "a_faire" || i.statut === "en_cours")) marques += " " + pastille("bloqué", "p-critique");
+      if (interne && i.audience !== "client") marques += " " + pastille(i.audience);
+      var reel = "";
+      if (interne) {
+        var depasse = i.heures_reelles != null && i.estimation_h && i.heures_reelles > i.estimation_h * 1.2;
+        reel = i.heures_reelles == null ? '<span class="discret">n. j.</span>' : i.heures_reelles ? (depasse ? pastille(fmtNombre.format(i.heures_reelles) + " h", "p-critique") : h(i.heures_reelles)) : '<span class="discret">-</span>';
+      }
+      corps += "<tr>" + (client ? "" : '<td class="id">' + esc(i.id) + "</td>") + "<td>" + esc(i.titre) + marques + "</td><td>" + statutItem(i.statut) + "</td>" +
+        (interne ? '<td class="droite">' + h(i.estimation_h) + '</td><td class="droite">' + reel + "</td>" : "") +
+        (!client && !interne ? '<td class="discret">' + esc(i.module || "") + "</td>" : "") + "</tr>";
+    });
+    r.push('<div class="bloc"><span class="etiquette">Items · ' + p.items.length + (interne && !p.temps.journalise ? " · n. j. : temps non journalisé" : "") + '</span><div class="defilant"><table><thead><tr>' + colonnes.map(function (c, n) { return "<th" + (interne && n > 2 ? ' class="droite"' : "") + ">" + c + "</th>"; }).join("") + "</tr></thead><tbody>" + (corps || '<tr><td colspan="' + colonnes.length + '" class="discret">Aucun item visible.</td></tr>') + "</tbody></table></div></div>");
+    r.push("</div></details>");
+    return r.join("");
+  }
+  html.push('<section aria-labelledby="t-detail"><h2 id="t-detail">' + (client && D.projets.length === 1 ? "Détail" : "Détail par projet") + "</h2>" +
+    (D.projets.length ? D.projets.map(function (p) {
+      var alerte = (G.alertes || []).some(function (a) { return a.slug === p.slug && a.gravite === "haute"; });
+      return detail(p, D.projets.length === 1 || alerte);
+    }).join("") : '<p class="vide-page">Aucun projet actif.</p>') + "</section>");
+
+  app.innerHTML = html.join("");
+  app.addEventListener("click", function (ev) {
+    var lien = ev.target.closest && ev.target.closest("[data-ouvrir]");
+    if (!lien) return;
+    var cible = document.getElementById(ancre(lien.getAttribute("data-ouvrir")));
+    if (cible) cible.open = true;
+  });
+  function ouvrirAncre() {
+    var id = location.hash.slice(1);
+    var cible = id && document.getElementById(id);
+    if (cible && cible.tagName === "DETAILS") cible.open = true;
+  }
+  window.addEventListener("hashchange", ouvrirAncre);
+  ouvrirAncre();
+
+  /* ------------------------------------------------------------------
+     Todo Todoist : lecture directe par la capacité mcp, sinon instantané. */
+  if (!interne) return;
+  var liste = document.getElementById("todo-liste");
+  var etat = document.getElementById("todo-etat");
+  var CFG = (TD && TD.config) || null;
+  var INST = (TD && TD.instantane) || null;
+  var direct = { sections: null, taches: null, partiel: false, recuLe: null };
+  var mcp = null;
+  var messageDirect = "";
+  var enCours = {};
+  var erreurs = {};
+  var besoinAccord = false;
+
+  function normaliser(s) { return String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Za-z0-9]/g, "").toUpperCase(); }
+  function projetDeSection(section, nom) {
+    for (var i = 0; i < D.projets.length; i++) {
+      var p = D.projets[i];
+      if (p.todoist && p.todoist.section_id && p.todoist.section_id === section) return p;
+    }
+    for (var j = 0; j < D.projets.length; j++) {
+      var q = D.projets[j];
+      if (normaliser(nom) === normaliser(q.nom) || normaliser(nom) === normaliser(q.slug)) return q;
+    }
+    return null;
+  }
+  function selection(sections, taches) {
+    var noms = {};
+    sections.forEach(function (s) { if (String(s.name).indexOf(CFG.prefixe_section) === 0) noms[s.id] = s.name.slice(CFG.prefixe_section.length); });
+    var jour = aujourdhui();
+    var retenues = taches.filter(function (t) { return noms[t.sectionId] != null && CFG.priorites.indexOf(t.priority) >= 0 && !t.checked && !enCours["fait-" + t.id]; })
+      .map(function (t) { return { t: t, retard: !!(t.dueDate && t.dueDate.slice(0, 10) < jour) }; })
+      .sort(function (a, b) {
+        if (a.retard !== b.retard) return a.retard ? -1 : 1;
+        if (a.t.priority !== b.t.priority) return a.t.priority < b.t.priority ? -1 : 1;
+        var da = a.t.dueDate || "9999", db = b.t.dueDate || "9999";
+        return da < db ? -1 : da > db ? 1 : String(a.t.content).localeCompare(String(b.t.content), "fr");
+      });
+    var total = retenues.length;
+    retenues = retenues.slice(0, CFG.max_taches);
+    var groupes = [], index = {};
+    retenues.forEach(function (r) {
+      var id = r.t.sectionId;
+      if (!(id in index)) { index[id] = groupes.length; groupes.push({ section: id, nom: noms[id], projet: projetDeSection(id, noms[id]), taches: [] }); }
+      groupes[index[id]].taches.push(r);
+    });
+    return { groupes: groupes, total: total };
+  }
+  function afficherTodo() {
+    if (!CFG) { liste.innerHTML = '<li class="vide">Todoist n\'est pas configuré pour cette page.</li>'; etat.textContent = ""; return; }
+    var live = direct.sections && direct.taches;
+    var src = live ? direct : INST;
+    if (!src) {
+      liste.innerHTML = '<li class="vide">' + (messageDirect || "Todoist n'a pas pu être lu et aucun instantané n'est intégré.") + "</li>";
+      etat.textContent = "";
+      return;
+    }
+    var sel = selection(src.sections, src.taches);
+    var lignesTodo = [];
+    sel.groupes.forEach(function (g) {
+      lignesTodo.push('<li class="groupe">' + (g.projet ? lienProjet(g.projet) : esc(g.nom)) + "</li>");
+      g.taches.forEach(function (r) {
+        var t = r.t;
+        var lien = "https://app.todoist.com/app/task/" + encodeURIComponent(t.id);
+        var case_ = live && mcp ? '<button type="button" class="cocher ' + esc(t.priority) + '" data-tache="' + esc(t.id) + '" aria-label="Marquer comme faite : ' + esc(t.content) + '"' + (enCours[t.id] ? " disabled" : "") + "></button>" : "";
+        lignesTodo.push('<li class="tache' + (r.retard ? " retard" : "") + '">' + case_ + '<div class="texte"><div class="ligne1">' + pastille(t.priority, t.priority === "p1" ? "p-critique" : "p-attention") +
+          (t.dueDate ? ' <span class="num ' + (r.retard ? "" : "discret") + '">' + date(t.dueDate) + "</span>" : "") + (r.retard ? " " + pastille("en retard", "p-critique") : "") + "</div>" +
+          '<span><a href="' + lien + '" target="_blank" rel="noopener">' + esc(t.content) + "</a></span>" + (erreurs[t.id] ? '<span class="erreur">' + esc(erreurs[t.id]) + "</span>" : "") + "</div></li>");
+      });
+    });
+    if (!sel.total) lignesTodo.push('<li class="vide">Aucune tâche p1 ou p2 ouverte dans les sections client.</li>');
+    if (sel.total > CFG.max_taches) lignesTodo.push('<li class="vide">' + (sel.total - CFG.max_taches) + " autres tâches p1 ou p2 dans Todoist.</li>");
+    if (src.partiel) lignesTodo.push('<li class="vide">Plus de 100 tâches dans le projet : liste partielle.</li>');
+    liste.innerHTML = lignesTodo.join("");
+    if (besoinAccord && mcp) etat.innerHTML = '<button type="button" class="bouton" id="todo-autoriser">Autoriser la lecture de Todoist</button> ';
+    else etat.innerHTML = "";
+    if (live) {
+      etat.innerHTML += "En direct" + (direct.recuLe ? " · " + heure(direct.recuLe) : "") + (messageDirect ? ' · <span class="manquant">' + esc(messageDirect) + "</span>" : "");
+    } else {
+      etat.innerHTML += "Instantané du " + date(INST.releve_le) + " à " + esc(String(INST.releve_le).slice(11, 16)) + (messageDirect ? ' · <span class="manquant">' + esc(messageDirect) + "</span>" : "") + " · cocher dans Todoist";
+    }
+  }
+  function messageErreur(err) {
+    var code = err && err.code;
+    if (code === "needs_reauth") return "Reconnecter Todoist dans claude.ai, Réglages, Connecteurs.";
+    if (code === "server_not_connected" || code === "selection_required") return "Ajouter ou choisir le connecteur Todoist dans claude.ai, Réglages, Connecteurs.";
+    if (code === "not_in_manifest" || code === "approval_required" || code === "consent_required") return "Lecture de Todoist non autorisée pour cette page.";
+    if (code === "blocked_by_policy") return "Todoist est bloqué par la politique de l'organisation.";
+    if (code === "server_unavailable" || code === "upstream_error" || code === "rate_limited") return "Todoist ne répond pas, nouvel essai à la prochaine actualisation.";
+    return "Lecture directe de Todoist impossible.";
+  }
+  var RETIRER = { needs_reauth: 1, server_not_connected: 1, selection_required: 1, not_in_manifest: 1, approval_required: 1, blocked_by_policy: 1, consent_required: 1 };
+  function surveiller(outil, entree, cle) {
+    return mcp.watchTool(CFG.connecteur, outil, entree, function (ev) {
+      if (ev.type === "data") {
+        besoinAccord = false;
+        var charge = ev.result && ev.result.payload;
+        if (cle === "sections") direct.sections = (charge && charge.sections) || [];
+        else { direct.taches = (charge && charge.tasks) || []; direct.partiel = !!(charge && charge.hasMore); }
+        direct.recuLe = ev.result.cache ? ev.result.cache.storedAt : Date.now();
+        messageDirect = "";
+      } else {
+        messageDirect = messageErreur(ev.error);
+        if (ev.error && ev.error.code === "approval_required") besoinAccord = true;
+        if (RETIRER[ev.error && ev.error.code]) { direct.sections = null; direct.taches = null; }
+      }
+      afficherTodo();
+    }, { refetchInterval: 60000 });
+  }
+  function cocher(id) {
+    enCours[id] = true;
+    delete erreurs[id];
+    afficherTodo();
+    mcp.callTool(CFG.connecteur, "complete-tasks", { ids: [id] }).then(function () {
+      enCours["fait-" + id] = true;
+      delete enCours[id];
+      afficherTodo();
+      mcp.invalidate(CFG.connecteur, "find-tasks").catch(function () {});
+    }, function (err) {
+      delete enCours[id];
+      var code = err && err.code;
+      erreurs[id] = code === "server_unavailable" || code === "upstream_error" || code === "cancelled"
+        ? "Résultat incertain : vérifier dans Todoist avant de recocher."
+        : code === "tool_error" ? "Todoist a refusé : " + (err.message || "erreur") : messageErreur(err);
+      afficherTodo();
+    });
+  }
+  function autoriser() {
+    besoinAccord = false;
+    messageDirect = "";
+    afficherTodo();
+    Promise.all([
+      mcp.callTool(CFG.connecteur, "find-sections", { projectId: CFG.projet_id }),
+      mcp.callTool(CFG.connecteur, "find-tasks", { projectId: CFG.projet_id, limit: 100 }),
+    ]).then(function (res) {
+      direct.sections = (res[0].payload && res[0].payload.sections) || [];
+      direct.taches = (res[1].payload && res[1].payload.tasks) || [];
+      direct.partiel = !!(res[1].payload && res[1].payload.hasMore);
+      direct.recuLe = Date.now();
+      afficherTodo();
+    }, function (err) {
+      messageDirect = messageErreur(err);
+      if (err && err.code === "approval_required") besoinAccord = true;
+      afficherTodo();
+    });
+  }
+  etat.addEventListener("click", function (ev) {
+    if (ev.target && ev.target.id === "todo-autoriser") autoriser();
+  });
+  liste.addEventListener("click", function (ev) {
+    var bouton = ev.target.closest && ev.target.closest("[data-tache]");
+    if (bouton && !bouton.disabled) cocher(bouton.getAttribute("data-tache"));
+  });
+  afficherTodo();
+  if (CFG && window.claude && typeof window.claude.use === "function") {
+    window.claude.use("mcp").then(function (ns) {
+      if (!ns) return;
+      mcp = ns;
+      surveiller("find-sections", { projectId: CFG.projet_id }, "sections");
+      surveiller("find-tasks", { projectId: CFG.projet_id, limit: 100 }, "taches");
+    }, function () {});
+  }
+})();
+</script>

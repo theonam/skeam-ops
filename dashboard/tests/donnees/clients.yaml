@@ -1,0 +1,17 @@
+# Registre fictif des tests du dashboard. Format : CONTRAT.md section 12.
+clients:
+  - slug: alpha
+    nom: Alpha Menuiserie
+    depot: theonam/alpha-app
+    statut: en_dev
+    actif: true
+  - slug: beta
+    nom: Bêta Plomberie
+    depot: theonam/beta-app
+    statut: recette
+    actif: true
+  - slug: gamma
+    nom: Gamma Paysages
+    depot: theonam/gamma-app
+    statut: prospect
+    actif: false

@@ -1,0 +1,32 @@
+items:
+  - id: ALPHA-001
+    titre: Connexion des menuisiers par lien reçu par SMS
+    module: authentification
+    lot: 0
+    priorite: indispensable
+    statut: fait
+    taille: S
+    estimation_h: 4
+    dependances: []
+    criteres_acceptation:
+      - Un menuisier se connecte sans mot de passe depuis son téléphone.
+    audience: client
+    a_valider: false
+    commit: a1a1a1a
+    maj: 2026-10-04
+  - id: ALPHA-002
+    titre: Catalogue des menuiseries
+    module: catalogue-produits
+    lot: 0
+    priorite: indispensable
+    statut: fait
+    taille: S
+    estimation_h: 3
+    dependances:
+      - ALPHA-001
+    criteres_acceptation:
+      - Le catalogue liste chaque modèle avec ses dimensions standard.
+    audience: client
+    a_valider: false
+    commit: b2b2b2b
+    maj: 2026-10-06

@@ -1,0 +1,16 @@
+items:
+  - id: ALPHA-007
+    titre: Application utilisable hors ligne
+    module: null
+    lot: 2
+    priorite: optionnel
+    statut: abandonne
+    taille: L
+    estimation_h: 10
+    dependances: []
+    criteres_acceptation:
+      - Les saisies faites sans réseau sont envoyées au retour du réseau.
+    audience: client
+    a_valider: false
+    commit: null
+    maj: 2026-10-09

@@ -1,0 +1,64 @@
+items:
+  - id: BETA-001
+    titre: Connexion des plombiers
+    module: authentification
+    lot: 0
+    priorite: indispensable
+    statut: fait
+    taille: S
+    estimation_h: 4
+    dependances: []
+    criteres_acceptation:
+      - Un plombier se connecte depuis son téléphone.
+    audience: client
+    a_valider: false
+    commit: e5e5e5e
+    maj: 2026-09-29
+  - id: BETA-002
+    titre: Bons d'intervention
+    module: interventions
+    lot: 1
+    priorite: indispensable
+    statut: fait
+    taille: M
+    estimation_h: 6
+    dependances:
+      - BETA-001
+    criteres_acceptation:
+      - Le plombier remplit et fait signer le bon d'intervention sur place.
+    audience: client
+    a_valider: false
+    commit: f6f6f6f
+    maj: 2026-10-03
+  - id: BETA-003
+    titre: Facturation des interventions
+    module: facturation
+    lot: 1
+    priorite: indispensable
+    statut: a_recetter
+    taille: M
+    estimation_h: 5
+    dependances:
+      - BETA-002
+    criteres_acceptation:
+      - Une facture est préparée pour chaque bon signé.
+    audience: client
+    a_valider: false
+    commit: 0a0a0a0
+    maj: 2026-10-12
+  - id: BETA-004
+    titre: Tableau de bord du gérant
+    module: tableau-de-bord
+    lot: 1
+    priorite: souhaitable
+    statut: en_cours
+    taille: S
+    estimation_h: 3
+    dependances:
+      - BETA-002
+    criteres_acceptation:
+      - Le gérant voit le chiffre d'affaires de la semaine.
+    audience: commercial
+    a_valider: false
+    commit: null
+    maj: 2026-10-14
