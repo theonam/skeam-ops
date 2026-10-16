@@ -273,7 +273,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: en_cours
+    statut: fait
     taille: S
     estimation_h: 2
     dependances: []
@@ -282,6 +282,6 @@ items:
       - Chaque devis porte sa prochaine étape, et les statuts de devis et de facture sont en couleur dans les vues interne et commerciale.
     audience: interne
     a_valider: false
-    commit: null
+    commit: aef8ad9
     maj: 2026-10-16
-    notes: "Demandes de Théo du 2026-10-16 au soir : vue commerciale sans un mot inutile pour un commercial, couleurs des statuts. Gabarit en version 4."
+    notes: "Demandes de Théo du 2026-10-16 au soir : vue commerciale sans un mot inutile pour un commercial, couleurs des statuts. Gabarit en version 4. Vérifié le 2026-10-16 : tests au vert, vue commerciale rendue à 390 et 1 100 px sur les données d'E G M, sans défilement horizontal ni erreur, sans temps, identifiant ni étape interne ; vue interne inchangée hors couleurs et prochaine étape."
