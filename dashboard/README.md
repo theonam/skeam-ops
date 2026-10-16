@@ -45,8 +45,8 @@ Date de référence : date du jour à Paris. Semaine : du lundi au dimanche qui 
 
 | Indicateur | Règle |
 |---|---|
-| Avancement d'un lot, vues commercial et client | items `fait` divisés par les items du lot hors `abandonne`, toutes audiences confondues, pourcentage entier arrondi à l'inférieur, CONTRAT.md section 10 ; null si le lot n'a aucun item compté, affiché « aucun item engagé » |
-| Avancement d'un lot, vue interne | deux étapes sur N, N les items du lot hors `abandonne` : développé, items `a_recetter` ou `fait` ; testé par l'IA, items `fait`, statut que l'agent pose après avoir vérifié chaque critère d'acceptation. Ni « à valider » ni « testé par Théo » n'existent plus, décision de Théo du 2026-10-16 |
+| Avancement d'un lot, toutes les vues | en nombre d'items, CONTRAT.md section 10 : N items du lot hors `abandonne`, toutes audiences confondues ; à faire, en cours, développés, items `a_recetter` ou `fait`, et terminés, items `fait`, posés par l'agent après vérification de chaque critère, affichés « testé par l'IA », ou « terminé » en vue client ; pourcentages entiers arrondis à l'inférieur. `pourcentage`, part des terminés, est la formule du contrat |
+| Heures d'un lot, vue interne | estimées et réelles en plus des comptes |
 | Titre d'un lot | puce `- **Lot N** : titre. But.` de la section Découpage en lots de `cadrage.md` : première phrase pour le titre, le reste pour la description ; null sans puce pour ce lot |
 | Heures estimées d'un lot | somme des `estimation_h` des N items de la vue interne |
 | Heures réelles d'un item ou d'un lot | somme des `minutes` de toutes ses lignes de temps, validées ou non, divisée par 60 ; null si le temps n'est pas journalisé |
@@ -82,8 +82,8 @@ projets[]
   slug, nom, type client|interne, statut, apporteur, dates, prochaine_echeance,
   montants_ht, montant_signe_ht, devis_saisi, devis[] : objet, montant_ht, statut,
   liens                           les six liens de client.yaml
-  lots[]                          lot, titre, description, pourcentage, nb_items, developpe, teste_ia,
-                                  heures_estimees, heures_reelles, ecart_pct, depassement
+  lots[]                          lot, titre, description, nb_items, a_faire, en_cours, developpe, termine,
+                                  pct_developpe, pourcentage, heures_estimees, heures_reelles, ecart_pct, depassement
   items_en_cours_anciens[]        id, titre, lot, maj, jours
   items_bloques[]                 id, titre, lot, statut, dependances_externes[]
   devis_a_envoyer[]               objet, montant_ht ; devis en brouillon
@@ -116,7 +116,8 @@ projets[]
   slug, nom, type, statut, apporteur, dates, prochaine_echeance, montants_ht, montant_signe_ht,
   devis[] : objet, montant_ht, statut
   liens                           demo, prod, docs_client, docs_commercial
-  lots[]                          lot, titre, description, pourcentage ; lots ayant au moins un item visible
+  lots[]                          lot, titre, description, nb_items, a_faire, en_cours, developpe, termine, pct_developpe,
+                                  pourcentage ; lots ayant au moins un item visible
   items_en_cours_anciens[]        sur les items visibles
   derniere_synthese
   items[]                         id, titre, lot, statut, priorite, maj, module ; audiences commercial et client
@@ -129,7 +130,8 @@ audience, genere_le
 projets[]
   slug, nom, statut
   liens                           demo, prod, docs_client
-  lots[]                          lot, titre, description, pourcentage
+  lots[]                          lot, titre, description, nb_items, a_faire, en_cours, developpe, termine, pct_developpe,
+                                  pourcentage
   items[]                         id, titre, lot, statut, priorite, maj ; audience client
 ```
 

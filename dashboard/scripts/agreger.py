@@ -42,9 +42,9 @@ ORDRE_STATUTS = ["en_dev", "recette", "signe", "devis_envoye", "cadrage", "prosp
 ORDRE_GRAVITE = {"haute": 0, "moyenne": 1, "basse": 2}
 # Clés qui ne doivent jamais apparaître hors de l'audience interne : contrôle de sûreté final.
 CLES_INTERNES = {
-    "actions", "a_valider", "audience", "charge_semaine", "commit", "compteurs", "devis_a_envoyer", "developpe",
+    "actions", "a_valider", "audience", "charge_semaine", "commit", "compteurs", "devis_a_envoyer",
     "dependances", "dependances_externes", "depot", "docs_interne", "ecart_pct", "estimation_h",
-    "items_bloques", "minutes", "notes", "taille", "temps", "teste_ia", "todoist",
+    "items_bloques", "minutes", "notes", "taille", "temps", "todoist",
 }
 
 
@@ -234,24 +234,28 @@ class Calculs:
             du_lot = [item for item in self.items if item["lot"] == lot]
             if not any(visible(item, audience) for item in du_lot):
                 continue
+            # Comptes en nombre d'items, toutes audiences confondues, hors abandonne : CONTRAT.md section 10.
             comptes = [item for item in du_lot if compte_avancement(item)]
-            faits = sum(1 for item in comptes if item["statut"] == "fait")
+            nombre = {statut: sum(1 for item in comptes if item["statut"] == statut) for statut in ("a_faire", "en_cours", "a_recetter", "fait")}
+            developpe = nombre["a_recetter"] + nombre["fait"]
             cadrage = self.lots_cadrage.get(lot, {})
             entree: dict[str, Any] = {
                 "lot": lot,
                 "titre": cadrage.get("titre"),
                 "description": cadrage.get("description"),
-                "pourcentage": (faits * 100) // len(comptes) if comptes else None,
+                "nb_items": len(comptes),
+                "a_faire": nombre["a_faire"],
+                "en_cours": nombre["en_cours"],
+                "developpe": developpe,
+                # fait est posé par l'agent après avoir vérifié chaque critère d'acceptation : développé et testé par l'IA.
+                "termine": nombre["fait"],
+                "pct_developpe": (developpe * 100) // len(comptes) if comptes else None,
+                "pourcentage": (nombre["fait"] * 100) // len(comptes) if comptes else None,
             }
             if audience == "interne":
-                engages = [item for item in du_lot if item["statut"] != "abandonne"]
-                estime = sum(item["estimation_h"] for item in engages)
+                estime = sum(item["estimation_h"] for item in comptes)
                 reel = heures(sum(self.minutes_item.get(item["id"], 0) for item in du_lot)) if self.temps_journalise else None
                 entree |= {
-                    "nb_items": len(engages),
-                    "developpe": sum(1 for item in engages if item["statut"] in DEVELOPPES),
-                    # fait est posé par l'agent après avoir vérifié chaque critère d'acceptation : c'est le test de l'IA.
-                    "teste_ia": sum(1 for item in engages if item["statut"] == "fait"),
                     "heures_estimees": round(estime, 2),
                     "heures_reelles": reel,
                     "ecart_pct": None if reel is None else ecart(reel, estime),
