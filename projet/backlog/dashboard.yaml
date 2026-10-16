@@ -273,7 +273,7 @@ items:
     module: null
     lot: 2
     priorite: indispensable
-    statut: en_cours
+    statut: fait
     taille: M
     estimation_h: 2
     dependances: []
@@ -284,6 +284,6 @@ items:
       - La consigne Journal de temps de projet/CLAUDE-projet.md ne demande plus de ligne écrite à la main pour une session Claude Code.
     audience: interne
     a_valider: false
-    commit: null
+    commit: 4f396d6
     maj: 2026-10-16
-    notes: Décision de Théo du 2026-10-16, seule l'estimation du temps passé par tâche et par lot compte ; le chiffrage automatique est mis de côté.
+    notes: 'Décision de Théo du 2026-10-16, seule l''estimation du temps passé par tâche et par lot compte ; le chiffrage automatique est mis de côté. Vérifié le 2026-10-16 : tests de dashboard/tests/test_pointage.py au vert, session à pause, outil long, passage de minuit, doublon, dépôt non configuré, hook sur entrée invalide ; essai réel avec claude -p dans un dépôt jetable, la ligne de temps OPS-417 est entrée dans le commit. Non vérifié : le hook dans une session cloud ouverte à la racine de skeam-ops, à voir à la prochaine session d''un chantier.'

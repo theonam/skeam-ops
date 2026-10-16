@@ -7,3 +7,4 @@
 {"date":"2026-10-16","debut":"15:28","fin":"15:31","minutes":3,"item":"OPS-414","source":"claude-code","agent":"ops-dashboard","note":"Heures et budget, gabarit figé version 1","valide":false}
 {"date":"2026-10-16","debut":"16:30","fin":"16:42","minutes":12,"item":"OPS-415","source":"claude-code","agent":"ops-dashboard","note":"Temps passé par lot toujours affiché, gabarit en version 2","valide":false}
 {"date":"2026-10-16","debut":"16:42","fin":"16:49","minutes":7,"item":"OPS-416","source":"claude-code","agent":"ops-dashboard","note":"Devis et lots, périmètre et factures au contrat, temps passé seul sous chaque lot","valide":false}
+{"date":"2026-10-16","debut":"21:29","fin":"21:34","minutes":5,"item":"OPS-417","source":"claude-code","agent":"ops-dashboard","note":"Pointage automatique : hook, tests, essai réel, consigne ; ligne écrite à la main, le hook ne tournait pas dans cette session","valide":false}
