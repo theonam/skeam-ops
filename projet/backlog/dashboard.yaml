@@ -290,7 +290,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: en_cours
+    statut: fait
     taille: S
     estimation_h: 1
     dependances: []
@@ -299,6 +299,6 @@ items:
       - Le prix de vente d'un item se tient dans le backlog, champ prix_vente_ht du contrat, invisible du client.
     audience: interne
     a_valider: false
-    commit: null
+    commit: 0844e55
     maj: 2026-10-16
-    notes: "Demande de Théo du 2026-10-16 au soir ; la date de cadrage s'affiche onboarding. Gabarit en version 5."
+    notes: "Demande de Théo du 2026-10-16 au soir ; la date de cadrage s'affiche onboarding. Gabarit en version 5. Vérifié le 2026-10-16 : tests au vert ; vue commerciale rendue sur les données d'E G M, douze fonctionnalités facturables chiffrées, total 27 500 € HT, devis en brouillon masqué, pas de défilement horizontal au téléphone ; vue client sans prix."
