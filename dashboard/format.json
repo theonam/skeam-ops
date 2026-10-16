@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "description": "Format figé de la sortie d'agreger.py et blocs du gabarit, version 1 du 2026-10-16. Toute évolution passe par Théo, incrémente la version ici et dans template.html, et met à jour dashboard/README.md.",
+  "version": 2,
+  "description": "Format figé de la sortie d'agreger.py et blocs du gabarit, version 2 du 2026-10-16, temps passé par lot toujours affiché et date de début du journal de temps. Toute évolution passe par Théo, incrémente la version ici et dans template.html, et met à jour dashboard/README.md.",
   "audiences": {
     "interne": {
       "enveloppe": [
@@ -87,6 +87,7 @@
       ],
       "temps": [
         "a_relire_h",
+        "depuis",
         "hors_item_h",
         "journalise",
         "semaine_agents_h",

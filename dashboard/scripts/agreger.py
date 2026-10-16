@@ -325,6 +325,8 @@ class Calculs:
             "hors_item_h": heures(sum(l["minutes"] for l in self.temps if l["item"] is None)),
             "a_relire_h": heures(sum(l["minutes"] for l in self.temps if not l["valide"])),
             "journalise": self.temps_journalise,
+            # Première ligne de temps du projet : le temps passé n'est connu qu'à partir de cette date.
+            "depuis": min((l["date"] for l in self.temps), default=None),
         }
 
     def montant_signe(self) -> float:

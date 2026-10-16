@@ -232,3 +232,21 @@ items:
     commit: 7006f90
     maj: 2026-10-16
     notes: Demande de Théo du 2026-10-16 de templater et graver dans la roche le gabarit.
+  - id: OPS-415
+    titre: Temps passé par lot toujours affiché et libellé, avec la date depuis laquelle le temps est noté
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: fait
+    taille: S
+    estimation_h: 1
+    dependances: []
+    criteres_acceptation:
+      - Dans la vue interne, chaque lot affiche une ligne Temps passé, en heures contre les heures estimées, même à zéro ou non journalisé.
+      - La date de la première ligne de temps du projet est affichée, pour qu'un temps noté depuis peu ne passe pas pour le temps réel du lot.
+      - Les vues commercial et client n'affichent toujours aucun temps ; le gabarit passe en version 2 selon la procédure du README.
+    audience: interne
+    a_valider: false
+    commit: 6c6e5e8
+    maj: 2026-10-16
+    notes: 'Demande de Théo du 2026-10-16, le nombre d''heures passées par lot doit apparaître tout le temps. Vérifié le 2026-10-16 : tests du dashboard au vert, gabarit en version 2, page interne rendue au téléphone et au bureau avec une ligne Temps passé sous chacun des 8 lots et la date de début du journal, vue commerciale sans aucune ligne de temps.'

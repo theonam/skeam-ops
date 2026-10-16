@@ -147,7 +147,7 @@ class TestVueInterne(unittest.TestCase):
     def test_temps_et_charge(self):
         self.assertEqual(self.alpha["temps"], {"semaine_h": 4.0, "semaine_theo_h": 1.5, "semaine_agents_h": 2.5,
                                                "semaine_precedente_h": 6.0, "total_h": 15.5, "hors_item_h": 2.5, "a_relire_h": 2.5,
-                                               "journalise": True})
+                                               "journalise": True, "depuis": "2026-10-01"})
         charge = self.vue["global"]["charge_semaine"]
         self.assertEqual((charge["total_h"], charge["total_theo_h"], charge["total_agents_h"]), (8.75, 1.5, 7.25))
         self.assertEqual([c["slug"] for c in charge["par_projet"]], ["alpha", "beta", "ops"])
