@@ -38,6 +38,9 @@ Les critères d'acceptation du backlog citent les règles par leur numéro, ex. 
 
 <!-- Lot 0 : démo. Lots 1 et suivants : livraisons. Le champ lot des items du backlog fait foi. -->
 
+- **Lot 0** : démo. Connexion et catalogue des menuiseries. <!-- source de test -->
+- **Lot 1** : devis de pose et commandes fournisseurs.
+
 ## Décisions
 
 <!-- Résumé des décisions utiles au client ; le journal complet est dans decisions.md. -->

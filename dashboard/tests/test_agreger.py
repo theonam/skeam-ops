@@ -88,10 +88,13 @@ class TestVueInterne(unittest.TestCase):
 
     def test_lots(self):
         lot0, lot1, lot2 = self.alpha["lots"]
-        self.assertEqual(lot0, {"lot": 0, "pourcentage": 100, "nb_items": 2, "nb_a_valider": 0, "developpe": 2, "teste_ia": None,
-                                "teste_theo": 2, "heures_estimees": 7, "heures_reelles": 8.5, "ecart_pct": 21, "depassement": True})
+        self.assertEqual(lot0, {"lot": 0, "titre": "Démo", "description": "Connexion et catalogue des menuiseries.", "pourcentage": 100,
+                                "nb_items": 2, "developpe": 2, "teste_ia": None, "heures_estimees": 7, "heures_reelles": 8.5,
+                                "ecart_pct": 21, "depassement": True})
         # En interne, ALPHA-006 à valider compte et se signale ; le pourcentage du contrat l'exclut toujours.
-        self.assertEqual((lot1["pourcentage"], lot1["nb_items"], lot1["nb_a_valider"], lot1["developpe"], lot1["teste_theo"]), (25, 5, 1, 2, 1))
+        self.assertEqual((lot1["pourcentage"], lot1["nb_items"], lot1["developpe"]), (25, 5, 2))
+        self.assertEqual((lot1["titre"], lot1["description"]), ("Devis de pose et commandes fournisseurs", ""))
+        self.assertEqual((lot2["titre"], lot2["description"]), (None, None))
         self.assertEqual((lot1["heures_estimees"], lot1["heures_reelles"]), (14, 4.5))
         self.assertEqual((lot2["pourcentage"], lot2["nb_items"], lot2["developpe"]), (None, 0, 0))
         self.assertEqual([l["pourcentage"] for l in self.beta["lots"]], [100, 33])
@@ -106,7 +109,7 @@ class TestVueInterne(unittest.TestCase):
                                    .replace("audience: client", "audience: interne").replace("a_valider: false", "a_valider: true"), encoding="utf-8")
             interne = projet(vue("interne", clients=copie / "clients.yaml", racine=copie / "racine", cwd=copie), "beta")
             commercial = vue("commercial", clients=copie / "clients.yaml", racine=copie / "racine", cwd=copie)
-        self.assertEqual([(l["developpe"], l["teste_theo"], l["nb_items"], l["nb_a_valider"]) for l in interne["lots"]], [(1, 1, 1, 1), (2, 1, 3, 3)])
+        self.assertEqual([(l["developpe"], l["nb_items"]) for l in interne["lots"]], [(1, 1), (2, 3)])
         self.assertEqual([l["pourcentage"] for l in interne["lots"]], [None, None])
         self.assertEqual(projet(commercial, "beta")["lots"], [])
 
@@ -160,16 +163,17 @@ class TestVueInterne(unittest.TestCase):
 
     def test_compteurs(self):
         self.assertNotIn("a_faire", self.vue["global"])
-        self.assertEqual(self.alpha["compteurs"], {"a_tester": 1, "a_valider": 1, "devis_a_envoyer": 1})
+        self.assertEqual(self.alpha["compteurs"], {"devis_a_envoyer": 1})
+        self.assertNotIn("items_a_valider", self.alpha)
+        self.assertNotIn("a_valider", self.alpha["items"][0])
         self.assertEqual(self.alpha["devis_a_envoyer"], [{"objet": "Option export comptable", "montant_ht": 1200}])
-        self.assertEqual(self.beta["compteurs"], {"a_tester": 1, "a_valider": 0, "devis_a_envoyer": 0})
+        self.assertEqual(self.beta["compteurs"], {"devis_a_envoyer": 0})
         self.assertEqual(self.alpha["todoist"], {"projet_id": "7Kg9WRYyqxw67WR8", "section_id": None})
 
     def test_listes_du_projet(self):
         self.assertEqual([i["id"] for i in self.alpha["items_bloques"]], ["ALPHA-003"])
         self.assertEqual(self.alpha["items_bloques"][0]["dependances_externes"], ["grille tarifaire de pose fournie par le client"])
         self.assertEqual([(i["id"], i["jours"]) for i in self.alpha["items_en_cours_anciens"]], [("ALPHA-003", 13)])
-        self.assertEqual([i["id"] for i in self.alpha["items_a_valider"]], ["ALPHA-006"])
         self.assertEqual([a["id"] for a in self.alpha["actions"]], ["ACT-ALPHA-001", "ACT-ALPHA-002"])
         self.assertEqual(len(self.alpha["items"]), 8)
 
@@ -224,7 +228,7 @@ class TestFiltrage(unittest.TestCase):
             for item in p["items"]:
                 self.assertEqual(set(item), CHAMPS_ITEM[audience])
             for lot in p["lots"]:
-                self.assertEqual(set(lot), {"lot", "pourcentage"})
+                self.assertEqual(set(lot), {"lot", "titre", "description", "pourcentage"})
         return donnees
 
     def test_commercial(self):
@@ -250,8 +254,8 @@ class TestFiltrage(unittest.TestCase):
                     self.assertEqual(set(p), {"slug", "nom", "statut", "liens", "lots", "items"})
                     self.assertEqual(set(p["liens"]), {"demo", "prod", "docs_client"})
         # Avancement toutes audiences confondues, sans révéler les items cachés.
-        self.assertEqual(projet(vue("client"), "alpha")["lots"], [{"lot": 0, "pourcentage": 100}, {"lot": 1, "pourcentage": 25},
-                                                                  {"lot": 2, "pourcentage": None}])
+        self.assertEqual([(l["lot"], l["pourcentage"], l["titre"]) for l in projet(vue("client"), "alpha")["lots"]],
+                         [(0, 100, "Démo"), (1, 25, "Devis de pose et commandes fournisseurs"), (2, None, None)])
 
     def test_controle_de_surete(self):
         fuite = {"audience": "commercial", "genere_le": "x", "projets": [{"slug": "a", "items": [{"estimation_h": 3}]}]}

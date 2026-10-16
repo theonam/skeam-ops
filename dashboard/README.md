@@ -46,7 +46,8 @@ Date de référence : date du jour à Paris. Semaine : du lundi au dimanche qui 
 | Indicateur | Règle |
 |---|---|
 | Avancement d'un lot, vues commercial et client | items `fait` divisés par les items du lot hors `abandonne` et hors `a_valider: true`, toutes audiences confondues, pourcentage entier arrondi à l'inférieur, CONTRAT.md section 10 ; null si le lot n'a aucun item compté, affiché « aucun item engagé » |
-| Avancement d'un lot, vue interne | trois étapes sur N, N les items du lot hors `abandonne`, `a_valider: true` compris et signalés : développé, items `a_recetter` ou `fait` ; testé par l'IA, items `teste_ia: true` ou `fait`, null et affiché « non suivi » tant qu'aucun item ne porte `teste_ia`, champ proposé au contrat par le chantier cadrage ; testé par Théo, items `fait` |
+| Avancement d'un lot, vue interne | deux étapes sur N, N les items du lot hors `abandonne`, quel que soit `a_valider` : développé, items `a_recetter` ou `fait` ; testé par l'IA, items `teste_ia: true` ou `fait`, null et affiché « non suivi » tant qu'aucun item ne porte `teste_ia`, champ proposé au contrat par le chantier cadrage. Ni « à valider » ni « testé par Théo » ne s'affichent, décision de Théo du 2026-10-16 |
+| Titre d'un lot | puce `- **Lot N** : titre. But.` de la section Découpage en lots de `cadrage.md` : première phrase pour le titre, le reste pour la description ; null sans puce pour ce lot |
 | Heures estimées d'un lot | somme des `estimation_h` des N items de la vue interne |
 | Heures réelles d'un item ou d'un lot | somme des `minutes` de toutes ses lignes de temps, validées ou non, divisée par 60 ; null si le temps n'est pas journalisé |
 | Temps non journalisé | le projet a des items `a_recetter` ou `fait` et aucune ligne de temps : la page affiche « temps non journalisé », jamais 0 h |
@@ -81,27 +82,26 @@ projets[]
   slug, nom, type client|interne, statut, apporteur, dates, prochaine_echeance,
   montants_ht, montant_signe_ht, devis_saisi, devis[] : objet, montant_ht, statut,
   liens                           les six liens de client.yaml
-  lots[]                          lot, pourcentage, nb_items, nb_a_valider, developpe, teste_ia, teste_theo,
+  lots[]                          lot, titre, description, pourcentage, nb_items, developpe, teste_ia,
                                   heures_estimees, heures_reelles, ecart_pct, depassement
   items_en_cours_anciens[]        id, titre, lot, maj, jours
   items_bloques[]                 id, titre, lot, statut, dependances_externes[]
-  items_a_valider[], items_a_recetter[]   id, titre, lot, statut
   devis_a_envoyer[]               objet, montant_ht ; devis en brouillon
-  compteurs                       a_tester, a_valider, devis_a_envoyer : nombres des trois listes ci-dessus
+  compteurs                       devis_a_envoyer : nombre de la liste ci-dessus
   todoist                         projet_id, section_id de client.yaml, pour rattacher les tâches au projet
   actions[]                       id, titre, contexte, priorite, points, echeance, en_retard ; p1 et p2 ouvertes
   temps                           semaine_h, semaine_theo_h, semaine_agents_h, semaine_precedente_h, total_h, hors_item_h, a_relire_h,
                                   journalise
   derniere_synthese               date, titre, fichier, resume ; ou null
   items[]                         id, titre, lot, statut, priorite, maj, module, taille, estimation_h,
-                                  heures_reelles, audience, a_valider, dependances_externes[]
+                                  heures_reelles, audience, dependances_externes[]
 ```
 
 `prochaine_echeance` vaut null ou `date`, `libelle`, `source` id d'action ou `client.yaml`, `en_retard`, `dans_jours`.
 
 Types d'alerte : `depassement_lot` et `depassement_item` haute, `bloque_externe` moyenne, `en_cours_ancien` moyenne, `registre_desynchronise` basse quand le statut de `clients.yaml` diffère de celui de `client.yaml`, qui fait foi.
 
-La todo ne vient plus du dépôt mais de Todoist, voir plus bas. Les actions de `actions.yaml` restent dans le détail du projet ; leurs retards ne font plus d'alerte, Todoist faisant foi pour la todo. Recettes, validations et devis à envoyer sont des compteurs par projet, dépliables.
+La todo ne vient plus du dépôt mais de Todoist, voir plus bas. Les actions de `actions.yaml` restent dans le détail du projet ; leurs retards ne font plus d'alerte, Todoist faisant foi pour la todo. Les devis à envoyer sont un compteur par projet, dépliable ; recettes et validations ne s'affichent plus.
 
 ### Vue commercial
 
@@ -116,7 +116,7 @@ projets[]
   slug, nom, type, statut, apporteur, dates, prochaine_echeance, montants_ht, montant_signe_ht,
   devis[] : objet, montant_ht, statut
   liens                           demo, prod, docs_client, docs_commercial
-  lots[]                          lot, pourcentage ; lots ayant au moins un item visible
+  lots[]                          lot, titre, description, pourcentage ; lots ayant au moins un item visible
   items_en_cours_anciens[]        sur les items visibles
   derniere_synthese
   items[]                         id, titre, lot, statut, priorite, maj, module ; audiences commercial et client, hors a_valider
@@ -129,7 +129,7 @@ audience, genere_le
 projets[]
   slug, nom, statut
   liens                           demo, prod, docs_client
-  lots[]                          lot, pourcentage
+  lots[]                          lot, titre, description, pourcentage
   items[]                         id, titre, lot, statut, priorite, maj ; audience client, hors a_valider
 ```
 
