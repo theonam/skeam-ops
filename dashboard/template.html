@@ -2,7 +2,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="claude:viewport-fit-sides" content="cover">
 <title>Pilotage SKEAM</title>
-<meta name="skeam:gabarit" content="1">
+<meta name="skeam:gabarit" content="2">
 <!--
 Gabarit du dashboard SKEAM, chantier dashboard. Page autonome : dashboard/scripts/rendre.py remplace
 le contenu null de script#donnees par la vue JSON d'agreger.py et, en vue interne, celui de script#todoist
@@ -176,7 +176,9 @@ td.droite, th.droite { text-align: right; }
 .lot-etapes:first-child { border-top: 0; }
 .lot-etapes .chiffres-etapes { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 6px; }
 .lot-etapes .chiffres-etapes i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 5px; vertical-align: 0; }
-.lot-etapes .heures { margin-top: 6px; display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
+.lot-etapes .heures { margin-top: 6px; display: grid; grid-template-columns: auto 1fr; gap: 4px 8px; align-items: baseline; }
+.lot-etapes .heures .piste { grid-column: 1 / -1; grid-row: 2; }
+.lot-etapes .libelle-heures { font-size: .8125rem; font-weight: 600; }
 
 /* Charge */
 .charge { background: var(--surface); border: 1px solid var(--trait); border-radius: var(--rayon); padding: 14px; display: flex; flex-direction: column; gap: 10px; }
@@ -388,15 +390,16 @@ details.projet > summary h3 { font-size: 1.1rem; }
     if (!elements || !elements.length) return "";
     return '<div class="bloc"><span class="etiquette">' + titreBloc + " · " + elements.length + "</span><ul>" + elements.map(function (e) { return "<li>" + rendu(e) + "</li>"; }).join("") + "</ul></div>";
   }
-  function lotInterne(lot, journalise) {
-    var n = lot.nb_items;
+  function lotInterne(lot, temps) {
     var r = '<div class="lot-etapes"><span class="num">Lot ' + esc(lot.lot) + "</span><div>" + (lot.titre ? '<span class="titre-lot">' + esc(lot.titre) + "</span>" : "") + etapes(lot) + chiffresLot(lot);
-    if (!journalise) {
-      r += '<div class="heures"><div class="piste temps"></div><span>' + NON_JOURNALISE + ' <span class="discret">· ' + esc(fmtNombre.format(lot.heures_estimees)) + " h estimées</span></span></div>";
+    var estime = esc(fmtNombre.format(lot.heures_estimees)) + " h estimées";
+    if (!temps.journalise) {
+      r += '<div class="heures"><span class="libelle-heures">Temps passé</span><div class="piste temps"></div><span>' + NON_JOURNALISE + ' <span class="discret">· ' + estime + "</span></span></div>";
     } else {
       var ratio = lot.heures_estimees ? lot.heures_reelles / lot.heures_estimees : 0;
-      r += '<div class="heures"><div class="piste temps' + (lot.depassement ? " depasse" : "") + '"><span style="width:' + (Math.min(ratio / 1.5, 1) * 100) + '%"></span><i class="repere" style="left:' + (100 / 1.5) + '%"></i></div><span class="num">' + esc(fmtNombre.format(lot.heures_reelles)) + " / " + esc(fmtNombre.format(lot.heures_estimees)) + " h" +
-        (lot.ecart_pct != null && lot.heures_reelles > 0 ? " " + pastille((lot.ecart_pct > 0 ? "+" : "") + lot.ecart_pct + " %", lot.depassement ? "p-critique" : lot.ecart_pct > 0 ? "p-attention" : "") : "") + "</span></div>";
+      // Seul un dépassement est signalé : un écart négatif vient le plus souvent du temps non noté avant le début du journal.
+      r += '<div class="heures"><span class="libelle-heures">Temps passé</span><div class="piste temps' + (lot.depassement ? " depasse" : "") + '"><span style="width:' + (Math.min(ratio / 1.5, 1) * 100) + '%"></span><i class="repere" style="left:' + (100 / 1.5) + '%"></i></div><span><span class="num">' + esc(fmtNombre.format(lot.heures_reelles)) + " h</span> " + '<span class="discret">sur ' + estime + "</span>" +
+        (lot.ecart_pct != null && lot.ecart_pct > 0 ? " " + pastille("+" + lot.ecart_pct + " %", lot.depassement ? "p-critique" : "p-attention") : "") + "</span></div>";
     }
     return r + "</div></div>";
   }
@@ -404,7 +407,7 @@ details.projet > summary h3 { font-size: 1.1rem; }
     var b = p.budget;
     if (!b) return "";
     var lignes = [
-      ["Réel", b.heures_reelles, b.heures_reelles == null ? NON_JOURNALISE : h(b.heures_reelles)],
+      ["Réel", b.heures_reelles, b.heures_reelles == null ? NON_JOURNALISE : h(b.heures_reelles) + (p.temps.depuis ? ' <span class="discret">depuis le ' + date(p.temps.depuis) + "</span>" : "")],
       ["Estimé", b.heures_estimees, h(b.heures_estimees) + ' <span class="discret">backlog, tous lots</span>'],
       ["Vendu", b.heures_vendues, b.heures_vendues == null ? '<span class="manquant">rien de vendu</span>' : h(b.heures_vendues)],
     ];
@@ -433,7 +436,7 @@ details.projet > summary h3 { font-size: 1.1rem; }
         ["Dates", ["premier_contact", "cadrage", "signature", "mise_en_service"].filter(function (k) { return p.dates[k]; }).map(function (k) { return { premier_contact: "contact", cadrage: "cadrage", signature: "signature", mise_en_service: "mise en service" }[k] + ' <span class="num">' + date(p.dates[k]) + "</span>"; }).join("<br>") || '<span class="discret">Aucune</span>'],
       ];
       if (p.devis.length) infos.push(["Devis", p.devis.map(function (d) { return euro(d.montant_ht) + " " + pastille(DEVIS[d.statut] || d.statut, d.statut === "accepte" ? "p-ok" : d.statut === "brouillon" ? "p-attention" : "") + '<br><span class="discret">' + esc(d.objet) + "</span>"; }).join("<br>")]);
-      if (interne) infos.push(["Temps", p.temps.journalise ? h(p.temps.semaine_h) + ' cette semaine<br><span class="discret">' + esc(fmtNombre.format(p.temps.total_h)) + " h au total, " + esc(fmtNombre.format(p.temps.a_relire_h)) + " h à relire</span>" : NON_JOURNALISE + '<br><span class="discret">items développés sans aucune ligne de temps</span>']);
+      if (interne) infos.push(["Temps", p.temps.journalise ? h(p.temps.semaine_h) + ' cette semaine<br><span class="discret">' + esc(fmtNombre.format(p.temps.total_h)) + " h au total depuis le " + date(p.temps.depuis) + ", " + esc(fmtNombre.format(p.temps.a_relire_h)) + " h à relire</span>" : NON_JOURNALISE + '<br><span class="discret">items développés sans aucune ligne de temps</span>']);
       var l = liens(p.liens);
       if (l) infos.push(["Liens", l]);
       r.push('<div class="grille-infos" data-bloc="infos">' + infos.map(function (i) { return '<div><span class="etiquette">' + i[0] + "</span><span>" + i[1] + "</span></div>"; }).join("") + "</div>");
@@ -444,7 +447,7 @@ details.projet > summary h3 { font-size: 1.1rem; }
     /* Lots */
     if (interne) {
       r.push(blocBudget(p));
-      r.push('<div class="bloc" data-bloc="lots"><span class="etiquette">Avancement par lot · heures réelles contre estimées</span><div>' + p.lots.map(function (lot) { return lotInterne(lot, p.temps.journalise); }).join("") + "</div></div>");
+      r.push('<div class="bloc" data-bloc="lots"><span class="etiquette">Avancement par lot · temps passé contre estimé' + (p.temps.depuis ? ", temps noté depuis le " + date(p.temps.depuis) : "") + '</span><div>' + p.lots.map(function (lot) { return lotInterne(lot, p.temps); }).join("") + "</div></div>");
     } else {
       r.push('<div class="bloc" data-bloc="lots"><span class="etiquette">Avancement par lot</span><div>' + p.lots.map(function (lot) {
         return '<div class="lot-etapes"><span class="num">Lot ' + esc(lot.lot) + "</span><div>" + (lot.titre ? '<span class="titre-lot">' + esc(lot.titre) + "</span>" : "") + etapes(lot) + chiffresLot(lot) + "</div></div>";

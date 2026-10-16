@@ -50,6 +50,7 @@ Date de référence : date du jour à Paris. Semaine : du lundi au dimanche qui 
 | Titre d'un lot | puce `- **Lot N** : titre. But.` de la section Découpage en lots de `cadrage.md` : première phrase pour le titre, le reste pour la description ; null sans puce pour ce lot |
 | Heures estimées d'un lot | somme des `estimation_h` des N items de la vue interne |
 | Heures réelles d'un item ou d'un lot | somme des `minutes` de toutes ses lignes de temps, validées ou non, divisée par 60 ; null si le temps n'est pas journalisé |
+| Temps passé par lot | vue interne seulement, toujours affiché sous chaque lot : « Temps passé x h sur y h estimées », 0 h compris, ou « temps non journalisé » ; la date `temps.depuis` est rappelée, car le temps d'avant cette date n'est pas connu. Seul un dépassement est signalé : un écart négatif vient le plus souvent du temps non noté |
 | Temps non journalisé | le projet a des items `a_recetter` ou `fait` et aucune ligne de temps : la page affiche « temps non journalisé », jamais 0 h |
 | Devis non saisi | montant signé nul et aucun devis dans `client.yaml` : la page affiche « devis non saisi », jamais 0 € |
 | Heures et budget, vue interne | réel : toutes les lignes de temps du projet ; estimé : `estimation_h` des items hors `abandonne` ; vendu : montant signé, build et options, ou à défaut somme des devis envoyés ou acceptés, divisé par `taux_horaire_cible` de `catalogue/tarifs.yaml` ; consommé : réel sur vendu ; taux réel : vendu sur réel |
@@ -92,7 +93,7 @@ projets[]
   todoist                         projet_id, section_id de client.yaml, pour rattacher les tâches au projet
   actions[]                       id, titre, contexte, priorite, points, echeance, en_retard ; p1 et p2 ouvertes
   temps                           semaine_h, semaine_theo_h, semaine_agents_h, semaine_precedente_h, total_h, hors_item_h, a_relire_h,
-                                  journalise
+                                  journalise, depuis : date de la première ligne de temps du projet, ou null
   budget                          heures_estimees, heures_reelles, montant_vendu_ht, source_vendu signe|devis_envoyes,
                                   taux_horaire_cible, heures_vendues, consomme_pct, taux_reel
   derniere_synthese               date, titre, fichier, resume ; ou null
@@ -140,9 +141,12 @@ projets[]
 
 La vue client agrège tous les clients : elle ne se publie jamais telle quelle, mais projet par projet avec `rendre.py --projet`.
 
-## Gabarit figé, version 1
+## Gabarit figé, version 2
 
 Décision de Théo du 2026-10-16 : le gabarit est gravé. `format.json` fixe la version, les clés exactes de chaque objet de la sortie par audience et les blocs de la page ; `template.html` porte la même version dans `<meta name="skeam:gabarit">` et un attribut `data-bloc` par bloc. Les tests de `TestGabaritFige` échouent dès qu'une clé ou un bloc change.
+
+- Version 1, 2026-10-16 : premier gabarit gravé.
+- Version 2, 2026-10-16, demande de Théo : temps passé par lot toujours affiché et libellé, clé `temps.depuis`.
 
 Blocs, dans l'ordre d'affichage :
 
