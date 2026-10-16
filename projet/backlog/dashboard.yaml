@@ -237,7 +237,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: en_cours
+    statut: fait
     taille: S
     estimation_h: 1
     dependances: []
@@ -247,6 +247,6 @@ items:
       - Les vues commercial et client n'affichent toujours aucun temps ; le gabarit passe en version 2 selon la procédure du README.
     audience: interne
     a_valider: false
-    commit: null
+    commit: 6c6e5e8
     maj: 2026-10-16
-    notes: Demande de Théo du 2026-10-16, le nombre d'heures passées par lot doit apparaître tout le temps.
+    notes: 'Demande de Théo du 2026-10-16, le nombre d''heures passées par lot doit apparaître tout le temps. Vérifié le 2026-10-16 : tests du dashboard au vert, gabarit en version 2, page interne rendue au téléphone et au bureau avec une ligne Temps passé sous chacun des 8 lots et la date de début du journal, vue commerciale sans aucune ligne de temps.'
