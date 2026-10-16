@@ -2,7 +2,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="claude:viewport-fit-sides" content="cover">
 <title>Pilotage SKEAM</title>
-<meta name="skeam:gabarit" content="4">
+<meta name="skeam:gabarit" content="5">
 <!--
 Gabarit du dashboard SKEAM, chantier dashboard. Page autonome : dashboard/scripts/rendre.py remplace
 le contenu null de script#donnees par la vue JSON d'agreger.py et, en vue interne, celui de script#todoist
@@ -188,6 +188,10 @@ td.droite, th.droite { text-align: right; }
 .devis-partie { display: grid; grid-template-columns: 3.5rem 1fr; gap: 2px 10px; margin-top: 8px; }
 .devis-partie .ligne-partie { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: baseline; font-size: .875rem; }
 .etape-suivante { font-size: .875rem; font-weight: 600; }
+.facturables { list-style: disc; margin: 6px 0 0; padding-left: 1.1rem; }
+.facturables li { padding: 4px 0; font-size: .9rem; }
+.facturables li span:first-child { margin-right: 10px; }
+.facturables .prix { white-space: nowrap; float: right; }
 .etapes .dev-seul { background: var(--etape-ia); }
 .fonctions-lot { margin-top: 10px; }
 .liste-fonctions { list-style: none; margin: 4px 0 0; padding: 0; }
@@ -525,6 +529,15 @@ details.projet > summary h3 { font-size: 1.1rem; }
       return pastille("facture " + (f.numero ? f.numero + " " : "") + (f.en_retard ? "en retard" : FACTURE[f.statut] || f.statut), classe) + " " + euro(f.montant_ht) + (f.echeance && f.statut === "envoyee" ? ' <span class="discret">échéance ' + date(f.echeance) + "</span>" : "");
     }).join(" ") + etape;
   }
+  /** Vue commerciale : les fonctionnalités vendables en plus, chacune avec son prix de vente. */
+  function blocFacturables(p) {
+    var liste = p.facturables || [];
+    if (!liste.length) return "";
+    var total = liste.reduce(function (t, f) { return t + (f.prix_vente_ht || 0); }, 0);
+    var sansPrix = liste.some(function (f) { return f.prix_vente_ht == null; });
+    return '<div class="devis-carte"><div class="devis-tete"><span class="objet">Fonctionnalités supplémentaires facturables</span>' + (total ? '<span style="white-space:nowrap">' + euro(total) + ' <span class="discret">HT' + (sansPrix ? ", hors prix à définir" : "") + "</span></span>" : "") + '</div><ul class="facturables">' +
+      liste.map(function (f) { return "<li><span>" + esc(f.titre) + "</span>" + (f.prix_vente_ht != null ? '<span class="prix">' + euro(f.prix_vente_ht) + ' <span class="discret">HT</span></span>' : '<span class="discret">prix à définir</span>') + "</li>"; }).join("") + "</ul></div>";
+  }
   function blocDevis(p) {
     if (!p.devis.length && !(p.hors_devis && p.hors_devis.length)) return "";
     TITRES_ITEMS = {};
@@ -532,11 +545,12 @@ details.projet > summary h3 { font-size: 1.1rem; }
     LOTS_DECRITS = {};
     DESCRIPTIONS_LOTS = {};
     (p.lots || []).forEach(function (l) { DESCRIPTIONS_LOTS[l.lot] = l.description; });
-    var r = p.devis.map(function (d) {
+    var r = p.devis.filter(function (d) { return !commercial || d.statut !== "brouillon"; }).map(function (d) {
       return '<div class="devis-carte"><div class="devis-tete"><span class="objet">' + esc(d.objet) + "</span>" + '<span style="white-space:nowrap">' + euro(d.montant_ht) + ' <span class="discret">HT</span></span></div><div class="devis-paiement">' + paiementDevis(d) + "</div>" +
         (d.perimetre ? (d.perimetre.length ? d.perimetre.map(partieDevis).join("") : '<p class="discret">Aucun item dans ce périmètre.</p>') : '<p class="discret">Lots du devis non renseignés.</p>') + "</div>";
     }).join("");
-    if (p.hors_devis && p.hors_devis.length) r += '<div class="devis-carte"><div class="devis-tete"><span class="objet">' + (commercial ? "À vendre en plus" : "À proposer au client, hors devis") + "</span></div>" + (commercial ? "" : '<p class="discret">Fonctionnalités qui ne sont dans aucun devis : chacune peut faire l\'objet d\'un devis complémentaire.</p>') + p.hors_devis.map(partieAProposer).join("") + "</div>";
+    if (commercial) r += blocFacturables(p);
+    else if (p.hors_devis && p.hors_devis.length) r += '<div class="devis-carte"><div class="devis-tete"><span class="objet">' + (commercial ? "À vendre en plus" : "À proposer au client, hors devis") + "</span></div>" + (commercial ? "" : '<p class="discret">Fonctionnalités qui ne sont dans aucun devis : chacune peut faire l\'objet d\'un devis complémentaire.</p>') + p.hors_devis.map(partieAProposer).join("") + "</div>";
     return '<div class="bloc" data-bloc="devis-lots"><span class="etiquette">' + (commercial ? "Devis, facturation et avancement" : "Devis et lots · ce qui est vendu, où en est le développement, prochaine étape") + '</span><div>' + r + "</div></div>";
   }
   function detail(p, ouvert) {
@@ -549,7 +563,7 @@ details.projet > summary h3 { font-size: 1.1rem; }
         ["Prochaine échéance", echeance(p.prochaine_echeance)],
         ["Signé HT", signe(p) + ((p.devis_saisi || p.montant_signe_ht) && (!commercial || p.montants_ht.options_signees) ? ' <span class="discret">dont options ' + esc(fmtEuro.format(p.montants_ht.options_signees || 0)) + "</span>" : "")],
         ["Run annuel HT", euro(p.montants_ht.run_annuel)],
-        ["Dates", ["premier_contact", "cadrage", "signature", "mise_en_service"].filter(function (k) { return p.dates[k]; }).map(function (k) { return { premier_contact: "contact", cadrage: "cadrage", signature: "signature", mise_en_service: "mise en service" }[k] + ' <span class="num">' + date(p.dates[k]) + "</span>"; }).join("<br>") || '<span class="discret">Aucune</span>'],
+        ["Dates", ["premier_contact", "cadrage", "signature", "mise_en_service"].filter(function (k) { return p.dates[k]; }).map(function (k) { return { premier_contact: "contact", cadrage: "onboarding", signature: "signature", mise_en_service: "mise en service" }[k] + ' <span class="num">' + date(p.dates[k]) + "</span>"; }).join("<br>") || '<span class="discret">Aucune</span>'],
       ];
       if (interne) infos.push(["Temps", p.temps.journalise ? h(p.temps.semaine_h) + ' cette semaine<br><span class="discret">' + esc(fmtNombre.format(p.temps.total_h)) + " h au total depuis le " + date(p.temps.depuis) + ", " + esc(fmtNombre.format(p.temps.a_relire_h)) + " h à relire</span>" : NON_JOURNALISE + '<br><span class="discret">items développés sans aucune ligne de temps</span>']);
       var l = liens(p.liens);

@@ -48,7 +48,8 @@
         "a_valider": { "type": "boolean" },
         "commit": { "$ref": "commun.schema.json#/$defs/commit_ou_null" },
         "maj": { "$ref": "commun.schema.json#/$defs/date" },
-        "notes": { "type": ["string", "null"] }
+        "notes": { "type": ["string", "null"] },
+        "prix_vente_ht": { "oneOf": [{ "$ref": "commun.schema.json#/$defs/montant_ht" }, { "type": "null" }] }
       }
     }
   }

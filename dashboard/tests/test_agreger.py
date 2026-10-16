@@ -224,6 +224,14 @@ class TestDevisEtLots(unittest.TestCase):
         interne = [i for d in self.alpha("interne")["devis"] for partie in d["perimetre"] or [] for i in partie["ids"]]
         self.assertTrue(any(audiences[i] == "interne" for i in interne) or not any(a == "interne" for a in audiences.values()))
 
+    def test_facturables(self):
+        # À vendre en plus : ce qui n'est dans aucun devis envoyé ou signé, ici l'item du devis en brouillon, avec son prix.
+        facturables = {f["id"]: f for f in self.alpha("commercial")["facturables"]}
+        self.assertIn("ALPHA-008", facturables)
+        self.assertEqual(facturables["ALPHA-008"]["prix_vente_ht"], 1200)
+        self.assertNotIn("ALPHA-001", facturables)
+        self.assertNotIn("facturables", vue("client")["projets"][0])
+
     def test_factures_et_retard(self):
         factures = self.alpha("commercial")["devis"][0]["factures"]
         self.assertEqual([(f["statut"], f["en_retard"]) for f in factures], [("payee", False), ("envoyee", True)])
