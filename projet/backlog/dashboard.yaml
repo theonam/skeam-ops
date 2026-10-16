@@ -255,7 +255,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: en_cours
+    statut: fait
     taille: M
     estimation_h: 3
     dependances: []
@@ -265,6 +265,6 @@ items:
       - Sous chaque lot de la vue interne, seul le temps passé s'affiche, sans les heures estimées.
     audience: interne
     a_valider: false
-    commit: null
+    commit: 508fd8e
     maj: 2026-10-16
-    notes: 'Demandes de Théo du 2026-10-16 : voir en un coup d''œil quel devis couvre quel lot ; périmètre en lots et items ; statut du devis puis statut de la facture ; temps passé seul sous chaque lot.'
+    notes: 'Demandes de Théo du 2026-10-16 : voir en un coup d''œil quel devis couvre quel lot ; périmètre en lots et items ; statut du devis puis statut de la facture ; temps passé seul sous chaque lot. Vérifié le 2026-10-16 : tests de scripts, dashboard, catalogue et skills au vert, exemples du contrat valides ; pages interne et commerciale rendues à 390 et 1 440 px sur les données d''E G M, trois devis avec leurs lots, lots 3 et 5 dans aucun devis, aucune heure estimée sous les lots, aucun temps dans la vue commerciale.'
