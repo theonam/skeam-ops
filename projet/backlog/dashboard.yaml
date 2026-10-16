@@ -203,7 +203,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: en_cours
+    statut: fait
     taille: S
     estimation_h: 1
     dependances: []
@@ -212,6 +212,6 @@ items:
       - Aucune estimation ni aucun temps n'apparaît dans les vues commercial et client.
     audience: interne
     a_valider: false
-    commit: null
+    commit: 086787d
     maj: 2026-10-16
     notes: Retour de Théo du 2026-10-16, un seul pourcentage à 0 % donnait l'aspect d'un devis figé.
