@@ -1,27 +1,27 @@
 # Chantier cadrage, branche feat/cadrage, agent ops-cadrage, dossier skills/. Ids OPS-301 à OPS-399.
 items:
   - id: OPS-301
-    titre: Commande /nouveau-client
+    titre: Commande /skeam-nouveau-client
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_faire
+    statut: a_recetter
     taille: S
     estimation_h: 3
     dependances: []
     criteres_acceptation:
-      - skills/nouveau-client/SKILL.md appelle scripts/nouveau_dossier.py et ajoute l'entrée au registre clients.yaml.
+      - skills/skeam-nouveau-client/SKILL.md appelle scripts/nouveau_dossier.py et ajoute l'entrée au registre clients.yaml.
       - La commande crée le projet et la section Todoist après confirmation de Théo et renseigne client.yaml todoist.
     audience: interne
     a_valider: false
-    commit: null
+    commit: fa09a7a
     maj: 2026-10-15
   - id: OPS-302
-    titre: Commande /import-transcript
+    titre: Commande /skeam-import-transcript
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_faire
+    statut: a_recetter
     taille: L
     estimation_h: 8
     dependances:
@@ -32,14 +32,14 @@ items:
       - Le dossier projet passe scripts/validate.py après import.
     audience: interne
     a_valider: false
-    commit: null
+    commit: 0076e3f
     maj: 2026-10-15
   - id: OPS-303
-    titre: Commande /cadrage
+    titre: Commande /skeam-cadrage
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_faire
+    statut: a_recetter
     taille: L
     estimation_h: 8
     dependances:
@@ -49,14 +49,14 @@ items:
       - Les items créés sans accord de Théo portent a_valider true et audience interne.
     audience: interne
     a_valider: false
-    commit: null
+    commit: 5663c2b
     maj: 2026-10-15
   - id: OPS-304
-    titre: Commande /chiffrage
+    titre: Commande /skeam-chiffrage
     module: null
     lot: 1
     priorite: indispensable
-    statut: a_faire
+    statut: a_recetter
     taille: M
     estimation_h: 4
     dependances:
@@ -66,14 +66,14 @@ items:
       - Le brouillon est référencé dans client.yaml devis avec le statut brouillon.
     audience: interne
     a_valider: false
-    commit: null
+    commit: 9b70431
     maj: 2026-10-15
   - id: OPS-305
-    titre: Commande /sync-todoist
+    titre: Commande /skeam-sync-todoist
     module: null
     lot: 1
     priorite: souhaitable
-    statut: a_faire
+    statut: a_recetter
     taille: M
     estimation_h: 5
     dependances:
@@ -83,5 +83,77 @@ items:
       - todoist_id et statut sont reportés dans actions.yaml ; une seconde synchronisation ne crée aucun doublon.
     audience: interne
     a_valider: false
+    commit: 7fb7336
+    maj: 2026-10-15
+  - id: OPS-306
+    titre: Commande /skeam-publier
+    module: null
+    lot: 1
+    priorite: souhaitable
+    statut: a_recetter
+    taille: M
+    estimation_h: 5
+    dependances:
+      - OPS-301
+    criteres_acceptation:
+      - La commande produit la vue interne, commerciale ou client d'un dossier projet en appliquant le tableau des audiences de CONTRAT.md section 10.
+      - La vue client ne contient ni estimation, ni temps, ni note, ni tarif, ni contenu de interne/.
+      - Le document est publié en doc Claude après validation de Théo et son URL est écrite dans client.yaml liens.
+    audience: interne
+    a_valider: false
+    commit: b39141f
+    maj: 2026-10-15
+    notes: Demandée par Théo dans la consigne du chantier cadrage ; CONTRAT.md section 11.7 la range au chantier dashboard, voir skills/PROPOSITIONS-CONTRAT.md.
+  - id: OPS-307
+    titre: Faire converger vue.py et agreger.py sur le filtrage par audience
+    module: null
+    lot: 2
+    priorite: souhaitable
+    statut: a_faire
+    taille: S
+    estimation_h: 2
+    dependances:
+      - OPS-306
+      - "externe: format de sortie de dashboard/scripts/agreger.py, chantier dashboard"
+    criteres_acceptation:
+      - Le tableau des audiences de CONTRAT.md section 10 est appliqué par un seul code, partagé par /skeam-publier et /dashboard.
+      - Les tests de skills/tests/test_vue.py passent sans modification de leurs attentes.
+    audience: interne
+    a_valider: true
     commit: null
+    maj: 2026-10-15
+    notes: Besoin découvert pendant OPS-306, voir skills/PROPOSITIONS-CONTRAT.md, entrée Script de vue par audience.
+  - id: OPS-308
+    titre: Backlog en tableau par lot dans la vue publiée
+    module: null
+    lot: 2
+    priorite: souhaitable
+    statut: a_recetter
+    taille: S
+    estimation_h: 2
+    dependances:
+      - OPS-306
+    criteres_acceptation:
+      - Le backlog de la vue publiée tient en un tableau par lot, une ligne par item, avec les critères en dessous ou dans une colonne.
+      - test_vue.py vérifie toujours le filtrage par audience.
+    audience: interne
+    a_valider: false
+    commit: b39141f
+    maj: 2026-10-15
+    notes: Besoin découvert au test réel sur E G M, validé par Théo le 2026-10-15 avec la vue en onglets et la page d'accueil.
+  - id: OPS-309
+    titre: Avancement en trois étapes, proposition de contrat et brief du chantier dashboard
+    module: null
+    lot: 1
+    priorite: souhaitable
+    statut: a_recetter
+    taille: XS
+    estimation_h: 1
+    dependances: []
+    criteres_acceptation:
+      - skills/PROPOSITIONS-CONTRAT.md décrit le champ teste_ia et les trois indicateurs développé, testé par l'IA, testé par Théo.
+      - Un brief pour la conversation du chantier dashboard reprend les retours de Théo du 2026-10-15 sur la vue interne.
+    audience: interne
+    a_valider: false
+    commit: ee5bcc4
     maj: 2026-10-15
