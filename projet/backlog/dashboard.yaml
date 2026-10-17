@@ -325,7 +325,7 @@ items:
     module: null
     lot: 1
     priorite: indispensable
-    statut: en_cours
+    statut: a_recetter
     taille: M
     estimation_h: 6
     dependances: []
@@ -336,15 +336,15 @@ items:
       - templates/depot-client/ et scripts/installer_conso.py installent le relevé dans un dépôt.
     audience: interne
     a_valider: false
-    commit: null
+    commit: 53bbc99
     maj: 2026-10-17
-    notes: Demande de Théo du 2026-10-17 au soir, temps et coût des agents suivis dans les dashboards et rattachés aux items, lots et projets.
+    notes: "Demande de Théo du 2026-10-17 au soir, temps et coût des agents suivis dans les dashboards et rattachés aux items, lots et projets. Vérifié le 2026-10-17 : 38 tests de scripts/test_conso.py, crochet réel sur l'historique de cette session en 0,6 s, aucun chemin ni contenu dans le fichier. Non vérifié : le crochet SessionStart dans une session cloud neuve ouverte à la racine d'un dépôt client, et CLAUDE_CODE_SESSION_ID en local sur le poste de Théo."
   - id: OPS-421
     titre: Temps machine, durée réelle et coût des agents dans la vue interne du dashboard
     module: null
     lot: 1
     priorite: indispensable
-    statut: en_cours
+    statut: a_recetter
     taille: M
     estimation_h: 5
     dependances:
@@ -356,8 +356,9 @@ items:
       - Gabarit en version 6 et tests à jour.
     audience: interne
     a_valider: false
-    commit: null
+    commit: "5655846"
     maj: 2026-10-17
+    notes: "Vérifié le 2026-10-17 : tests du dashboard, page interne rendue à 390 et 1 440 px sans défilement horizontal. Non vérifié : la vue publiée avec les vrais clones, qui attend le relevé d'egm-app, OPS-422."
   - id: OPS-422
     titre: Relevé installé chez E G M et dans skeam-ops, session du 17/10 rattrapée
     module: null
