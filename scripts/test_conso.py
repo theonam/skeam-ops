@@ -214,18 +214,31 @@ class TestLibelles(BaseTemp):
         self.assertEqual(agents["a1b2c3d4e5f6"].ids_libelle(), ["EGM-023", "EGM-024"])
         self.assertEqual(conso.ids_du_texte("facturation:R6"), [])
 
-    def test_nettoyage(self):
-        texte = "Relire\tle  fichier /home/theo/secret.txt\n de theo@example.com " + "x" * 120
-        propre = conso.nettoyer(texte, 80)
-        self.assertLessEqual(len(propre), 80)
-        self.assertNotIn("/home", propre)
-        self.assertNotIn("@", propre)
-        self.assertNotIn("\t", propre)
-        self.assertEqual(conso.nettoyer("terrain:EGM-011", 80), "terrain:EGM-011")
-        self.assertEqual(conso.nettoyer("facturation:EGM-021 et EGM-022", 80), "facturation:EGM-021 et EGM-022")
-        self.assertNotIn("ghp_", conso.nettoyer("jeton ghp_abcdefgh12345678 et 9b5538f3a98f455a3adb0c77ee210ef8", 80))
-        self.assertNotIn("9b5538f3a98f", conso.nettoyer("jeton 9b5538f3a98f455a3adb0c77ee210ef8", 80))
-        self.assertIsNone(conso.nettoyer(None, 80))
+    def test_libelle_ecrit_liste_blanche(self):
+        cas = {
+            "terrain:EGM-011": "terrain:EGM-011",
+            "facturation:EGM-021 et EGM-022": "facturation:EGM-021 EGM-022",
+            "Intégration": "intégration",
+            "collecte:docs-app": "collecte",
+            "outils-skeam-ops": "outils",
+            "relecture adverse de /home/theo/secret.txt par theo@example.com": "relecture",
+            "Préparer le lot d'arbitrages pour Théo": None,
+            "facturation:A-012 rabais négocié bailleur X": "facturation",
+            "facturation:EGM-012 rabais négocié bailleur X et OPS-420": "facturation:EGM-012",
+            "EGM-001 et EGM-002": "EGM-001 EGM-002",
+            "jeton ghp_abcdefgh12345678": None,
+            None: None,
+        }
+        for texte, attendu in cas.items():
+            with self.subTest(texte):
+                self.assertEqual(conso.libelle_ecrit(texte, "EGM"), attendu)
+                if attendu is not None:
+                    self.assertTrue(contrat.RE_LIBELLE_CONSO.match(attendu))
+        self.assertEqual((conso.mot_connu("Chantiers"), conso.mot_connu("Phase libre")), ("chantiers", None))
+        self.assertLessEqual(len(conso.libelle_ecrit("terrain:" + " ".join(f"EGM-{n:03d}" for n in range(30)), "EGM")), 80)
+
+    def test_liste_du_contrat(self):
+        self.assertEqual(sorted(conso.MOTS_LIBELLE.values()), sorted(contrat.MOTS_LIBELLE_CONSO))
 
 
 class TestLien(BaseTemp):
@@ -377,6 +390,8 @@ class TestCapture(BaseTemp):
         self.config.workflow("wf_r", "a1b2c3d4e5f6", [utilisateur(5, cwd), reponse(9, "w1", cwd=cwd, lecture=200_000)],
                              "terrain:EGM-011 /home/secret/chemin sk-ant-api03-AbCdEf123456 theo@example.com")
         self.config.workflow("wf_r", "abcdefabcdef", [utilisateur(5, cwd), reponse(9, "w2", cwd=cwd)], "client:BETA-002")
+        self.config.workflow("wf_r", "a7a7a7a7a7a7", [utilisateur(5, cwd), reponse(9, "w3", cwd=cwd)], "facturation:EGM-012 rabais bailleur X et BETA-004",
+                             phase="Chantiers secrets")
         self.config.sous_agent("a0a0a0a0a0a0", [utilisateur(6, cwd), reponse(7, "s1", cwd=cwd, modele="claude-haiku-5-5", web=1)], "chercheur")
 
     def capturer(self):
@@ -391,7 +406,13 @@ class TestCapture(BaseTemp):
         for interdit in (SECRET, "sk-ant", "theo@", "/home", "secret/projet", "Bonjour", "confidentielle", "wip/secret-branche", "cwd", "test@example"):
             self.assertNotIn(interdit, texte)
         lignes = [json.loads(l) for l in texte.splitlines()]
-        self.assertEqual([l["agent_id"] for l in lignes], [None, "a1b2c3d4e5f6", "a0a0a0a0a0a0"])
+        self.assertEqual([l["agent_id"] for l in lignes], [None, "a1b2c3d4e5f6", "a7a7a7a7a7a7", "a0a0a0a0a0a0"])
+        # Libellé et phase réduits à la liste blanche ; items, commits et ids d'un autre projet retirés.
+        mixte = lignes[2]
+        self.assertEqual((mixte["libelle"], mixte["phase"], mixte["items"]), ("facturation:EGM-012", "chantiers", [{"id": "EGM-012", "part": 0.5}]))
+        self.assertEqual((lignes[1]["libelle"], lignes[3]["libelle"]), ("terrain:EGM-011", None))
+        for interdit in ("BETA", "rabais", "bailleur", "secrets"):
+            self.assertNotIn(interdit, texte)
         self.assertEqual(list(lignes[0]), list(conso.ORDRE_CLES))
         # Une ligne liée seulement à un autre projet n'est pas écrite ici ; une ligne mixte cite les ids des deux.
         self.assertNotIn('"abcdefabcdef"', texte)
@@ -681,6 +702,8 @@ class TestValidationConso(unittest.TestCase):
 
     def test_valide(self):
         self.assertEqual(self.erreurs(), [])
+        # Les parts des items d'autres projets, écrits dans leurs dépôts, manquent à la somme.
+        self.assertEqual(self.erreurs(items=[{"id": "EGM-001", "part": 0.25}], libelle="terrain:EGM-001", phase="chantiers"), [])
 
     def test_controles(self):
         cas = {
@@ -688,7 +711,10 @@ class TestValidationConso(unittest.TestCase):
             "fin antérieure": dict(fin="2026-10-14T09:00:00+02:00", periodes=[]),
             "periodes[0]": dict(periodes=[["2026-10-14T09:00:00+02:00", "2026-10-14T10:30:00+02:00"]]),
             "ecriture_cache_1h": dict(modeles={"claude-opus-5-5": {"entree": 1, "sortie": 2, "lecture_cache": 3, "ecriture_cache": 4, "ecriture_cache_1h": 5, "recherches_web": 0}}),
-            "somme": dict(items=[{"id": "EGM-001", "part": 0.5}]),
+            "somme": dict(items=[{"id": "EGM-001", "part": 0.7}, {"id": "EGM-002", "part": 0.7}]),
+            "plusieurs préfixes": dict(items=[{"id": "EGM-001", "part": 0.5}, {"id": "OPS-002", "part": 0.5}]),
+            "libelle": dict(libelle="Préparer le lot pour Théo"),
+            "phase": dict(phase="Chantiers"),
             "lien vaut aucun": dict(lien="aucun"),
             "champ non prévu": dict(cout_usd=3.2),
             "format": dict(debut="2026-10-14 10:00"),

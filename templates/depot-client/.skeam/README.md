@@ -13,7 +13,7 @@ Ce dossier relève automatiquement le temps et la consommation des agents Claude
 
 Pour chaque agent : début, fin, périodes actives, un silence de plus de 15 minutes coupant une période, minutes actives, nombre de réponses du modèle, jetons par modèle, entrée, sortie, lecture et écriture du cache, recherches web, et les items travaillés, trouvés dans le libellé de l'agent, sinon dans les commits faits pendant son activité, pondérés par le temps passé avant chacun, sinon, par estimation, dans ceux des autres agents de son run de workflow quand ils relèvent tous du même projet.
 
-Jamais : contenu de conversation, consigne, chemin, nom de branche, secret, donnée personnelle, coût. Le coût est calculé par le dashboard de skeam-ops, au tarif de l'API.
+Jamais : contenu de conversation, consigne, texte libre, chemin, nom de branche, secret, donnée personnelle, coût, id d'item d'un autre projet. Le libellé et la phase d'un agent se réduisent à un mot d'une liste fixée par le contrat, `terrain`, `facturation`, `relecture`…, et aux ids d'items de ce dépôt. Le coût est calculé par le dashboard de skeam-ops, au tarif de l'API.
 
 ## Fonctionnement
 

@@ -421,6 +421,25 @@ class TestConso(unittest.TestCase):
         self.assertEqual((beta.sortie()["heures_machine"], beta.sortie()["heures_reelles"]), (0.4, 0.0))
         self.assertEqual(resultat.globale()["heures_reelles"], 1.0)
 
+    def test_copies_de_depots_differents_reunies(self):
+        """Chaque dépôt n'écrit que les items de son préfixe : la même ligne lue dans deux dépôts les réunit."""
+        base = {"version": 1, "session": "s-partagee-02", "session_distante": None, "agent_id": None, "type": "principal",
+                "run": None, "phase": None, "libelle": None, "debut": "2026-10-14T10:00:00+02:00", "fin": "2026-10-14T11:00:00+02:00",
+                "periodes": [["2026-10-14T10:00:00+02:00", "2026-10-14T11:00:00+02:00"]], "minutes_actives": 60.0, "messages": 4,
+                "modeles": {"claude-opus-5-5": {"entree": 10, "sortie": 10, "lecture_cache": 0, "ecriture_cache": 0, "ecriture_cache_1h": 0, "recherches_web": 0}},
+                "lien": "commits", "commits": [], "releve_le": "2026-10-14T12:00:00+02:00"}
+        alpha = dict(base, items=[{"id": "ALPHA-001", "part": 0.6}])
+        beta = dict(base, items=[{"id": "BETA-001", "part": 0.4}], messages=5, releve_le="2026-10-14T13:00:00+02:00")
+        releves = conso.dedoublonner([(alpha, "alpha"), (beta, "beta")])
+        self.assertEqual(len(releves), 1)
+        self.assertEqual((releves[0].ligne["items"], releves[0].ligne["messages"], releves[0].depots),
+                         ([{"id": "ALPHA-001", "part": 0.6}, {"id": "BETA-001", "part": 0.4}], 5, ["alpha", "beta"]))
+        # Lue dans alpha seulement : alpha garde sa part, la part de beta ne compte qu'au global.
+        seule = conso.ventiler(conso.dedoublonner([(alpha, "alpha")]), {"ALPHA": "alpha", "BETA": "beta"},
+                               {"alpha": {"ALPHA-001": 0}, "beta": {}}, conso.charger_tarifs(TARIFS_TEST), dt.date(2026, 10, 12))
+        self.assertEqual((seule.projets["alpha"].sortie()["heures_machine"], seule.projets["alpha"].sortie()["hors_item"]["heures_machine"]), (0.6, 0.0))
+        self.assertEqual(seule.globale()["heures_machine"], 1.0)
+
     def test_union(self):
         t = lambda h, m: dt.datetime(2026, 10, 14, h, m, tzinfo=ZoneInfo("Europe/Paris"))
         self.assertEqual(conso.union_minutes([(t(9, 0), t(10, 0)), (t(9, 30), t(10, 30)), (t(11, 0), t(11, 15))]), 105)

@@ -45,6 +45,15 @@ RE_ID_ITEM = re.compile(r"^(?P<prefixe>[A-Z][A-Z0-9]{1,11})-(?P<numero>[0-9]{3})
 RE_ID_ACTION = re.compile(r"^ACT-(?P<prefixe>[A-Z][A-Z0-9]{1,11})-(?P<numero>[0-9]{3})$")
 # Relevé de consommation des agents, hors de projet/ : <racine du dépôt>/.skeam/conso/, section 15.
 RE_FICHIER_CONSO = re.compile(r"^(?P<date>[0-9]{4}-[0-9]{2}-[0-9]{2})-(?P<session>[A-Za-z0-9_-]{8,64})\.jsonl$")
+# Seuls mots admis dans libelle et phase d'une ligne de consommation, section 15.1 ; même liste que
+# MOTS_LIBELLE de templates/depot-client/.skeam/conso.py.
+MOTS_LIBELLE_CONSO = (
+    "analyse", "bilan", "cadrage", "chantiers", "chiffrage", "collecte", "conception", "contrôle", "correction",
+    "documentation", "exploration", "facturation", "intégration", "livraison", "migration", "outils", "planification",
+    "préparation", "réalisation", "recherche", "rédaction", "relecture", "revue", "synthèse", "terrain", "test", "tests",
+    "vérification")
+_ID_CONSO = r"[A-Z][A-Z0-9]{1,11}-[0-9]{3}"
+RE_LIBELLE_CONSO = re.compile(rf"^(?:(?P<mot>[a-zàâçéèêîôû]+)(?::(?P<ids>{_ID_CONSO}(?: {_ID_CONSO})*))?|(?P<seuls>{_ID_CONSO}(?: {_ID_CONSO})*))$")
 
 
 # ---------------------------------------------------------------------------

@@ -53,10 +53,13 @@ RE_GIT_COMMIT = re.compile(r"\bgit(?:\s+-[Cc]\s+\S+|\s+--\S+)*\s+(commit|cherry-
 # début de ligne (-F - <<'EOF' puis EGM-031: … ; -m "$(cat <<'EOF' puis EGM-031: …). Seul l'id sort.
 RE_SUJET_COMMANDE = re.compile(r"(?m)(?:^|[\"'])[ \t]*([A-Z][A-Z0-9]{1,11}-[0-9]{3})[ \t]*:")
 FENETRE_EN_COURS = dt.timedelta(minutes=15)
-RE_CHEMIN = re.compile(r"(?<![\w.])(?:~|[A-Za-z]:)?[/\\][^\s,;]*")
-RE_COURRIEL = re.compile(r"\S+@\S+\.\S+")
-# Jetons d'accès : préfixes connus, ou suite de 24 caractères ou plus mêlant lettres et chiffres.
-RE_JETON = re.compile(r"\b(?:sk|pk|rk|ghp|gho|ghs|github_pat|xox[abprs]|AKIA|AIza)[-_A-Za-z0-9]{8,}|\b(?=[-_A-Za-z0-9]*[0-9])(?=[-_A-Za-z0-9]*[A-Za-z])[-_A-Za-z0-9]{24,}\b")
+# Seuls mots écrits dans libelle et phase, CONTRAT.md section 15.1 : jamais de texte libre, qui peut
+# porter un nom, un client ou un contenu. Clé sans accent ni majuscule, valeur écrite.
+MOTS_LIBELLE = {mot.translate(str.maketrans("éèêàâîôûç", "eeeaaiouc")): mot for mot in (
+    "analyse", "bilan", "cadrage", "chantiers", "chiffrage", "collecte", "conception", "contrôle", "correction",
+    "documentation", "exploration", "facturation", "intégration", "livraison", "migration", "outils", "planification",
+    "préparation", "réalisation", "recherche", "rédaction", "relecture", "revue", "synthèse", "terrain", "test", "tests",
+    "vérification")}
 CLES_JETONS = ("entree", "sortie", "lecture_cache", "ecriture_cache")
 CLES_COMPTEURS = CLES_JETONS + ("ecriture_cache_1h", "recherches_web")
 ORDRE_CLES = ("version", "session", "session_distante", "agent_id", "type", "run", "phase", "libelle", "debut", "fin",
@@ -123,18 +126,20 @@ def repertoire_commun(chemin: Path | str) -> Path | None:
     return _COMMUNS[cle]
 
 
-def nettoyer(texte, longueur: int) -> str | None:
-    """Libellé sans caractère de contrôle, sans chemin ni courriel, espaces réduits, longueur plafonnée."""
+def mot_connu(texte) -> str | None:
+    """Premier mot du texte, avant tout « : », s'il est dans MOTS_LIBELLE ; sinon None."""
     if not isinstance(texte, str):
         return None
-    texte = "".join(c if c.isprintable() else " " for c in texte)
-    texte = RE_COURRIEL.sub("…", texte)
-    texte = RE_JETON.sub("…", texte)
-    texte = RE_CHEMIN.sub("…", texte)
-    texte = " ".join(texte.split())
-    if len(texte) > longueur:
-        texte = texte[: longueur - 1].rstrip() + "…"
-    return texte or None
+    tete = re.split(r"[\s:/_-]+", texte.split(":", 1)[0].strip(), maxsplit=1)[0].lower()
+    return MOTS_LIBELLE.get(tete.translate(str.maketrans("éèêàâîôûç", "eeeaaiouc")))
+
+
+def libelle_ecrit(libelle, prefixe: str) -> str | None:
+    """Libellé écrit : un mot de MOTS_LIBELLE et les ids du préfixe du dépôt, « terrain:EGM-023 EGM-024 »."""
+    mot = mot_connu(libelle)
+    ids = [i for i in ids_du_texte(libelle if isinstance(libelle, str) else None) if i.split("-")[0] == prefixe]
+    texte = (mot or "") + (":" if mot and ids else "") + " ".join(ids)
+    return texte[:80].rsplit(" ", 1)[0] if len(texte) > 80 else (texte or None)
 
 
 def items_des_commandes(commande: str) -> list[str | None]:
@@ -245,6 +250,7 @@ class Releve:
         self.items: list[dict] = []
         self.lien = "aucun"
         self.commits: list[str] = []
+        self.item_des_commits: dict[str, str] = {}
 
     @property
     def debut(self) -> dt.datetime:
@@ -387,8 +393,9 @@ def lire_session(transcripts: Transcripts) -> list[Releve]:
         libelle, phase, run = libelles.get(brut, (None, None, None))
         if run is None and type_ == "workflow":
             run = chemin.parent.name
-        releve.libelle = nettoyer(libelle, 80)
-        releve.phase = nettoyer(phase, 40)
+        # Texte brut gardé en mémoire pour lire les ids ; seul libelle_ecrit() sort dans le fichier.
+        releve.libelle = libelle if isinstance(libelle, str) else None
+        releve.phase = phase if isinstance(phase, str) else None
         releve.run = run if isinstance(run, str) and RE_RUN.match(run) else None
         releves.append(releve)
     return releves
@@ -550,6 +557,7 @@ def lier(releves: list[Releve], commits: list[Commit]) -> None:
             r.items, r.lien = parts(poids_des_commits(r, attribues[id(r)])), "commits"
             # Le commit en cours n'a pas encore de hash : il fonde le lien sans figurer dans la liste.
             r.commits = [c.empreinte[:7] for c, _ in sorted(attribues[id(r)], key=lambda x: x[0].quand) if c.empreinte][:MAX_COMMITS]
+            r.item_des_commits = {c.empreinte[:7]: c.item for c, _ in attribues[id(r)] if c.empreinte}
     for r in releves:
         if not r.items:
             estimes = repartition_du_run(r, releves)
@@ -577,8 +585,11 @@ def garder_pour_ce_depot(releves: list[Releve], prefixe: str, commun_courant: Pa
 # Lignes du fichier et fusion
 
 
-def ligne(releve: Releve, session: str, session_distante: str | None, horodatage: dt.datetime) -> dict:
+def ligne(releve: Releve, session: str, session_distante: str | None, horodatage: dt.datetime, prefixe: str) -> dict:
+    """Ligne du fichier de ce dépôt : items, commits et ids du libellé de son seul préfixe ; les parts des
+    items d'autres projets manquent à la somme, qui peut rester sous 1."""
     periodes = periodes_actives(releve.horodatages)
+    items = [dict(i) for i in releve.items if i["id"].split("-")[0] == prefixe]
     valeurs = {
         "version": VERSION,
         "session": session,
@@ -586,17 +597,17 @@ def ligne(releve: Releve, session: str, session_distante: str | None, horodatage
         "agent_id": releve.agent_id,
         "type": releve.type,
         "run": releve.run,
-        "phase": releve.phase,
-        "libelle": releve.libelle,
+        "phase": mot_connu(releve.phase),
+        "libelle": libelle_ecrit(releve.libelle, prefixe) if releve.type != "principal" else None,
         "debut": iso(releve.debut),
         "fin": iso(releve.fin),
         "periodes": [[iso(a), iso(b)] for a, b in periodes],
         "minutes_actives": minutes(periodes),
         "messages": len(releve.reponses),
         "modeles": modeles(releve),
-        "items": releve.items,
-        "lien": releve.lien,
-        "commits": releve.commits,
+        "items": items,
+        "lien": releve.lien if items else "aucun",
+        "commits": [h for h in releve.commits if releve.item_des_commits.get(h, "").split("-")[0] == prefixe],
         "releve_le": iso(horodatage),
     }
     return {k: valeurs[k] for k in ORDRE_CLES}
@@ -753,7 +764,7 @@ def capturer(session: str, session_distante: str | None, config: Path, depot: Pa
         return resultat
     fichier = fichier_de_session(depot, session, releves)
     horodatage = maintenant()
-    nouvelles = [ligne(r, session, session_distante, horodatage) for r in gardes]
+    nouvelles = [ligne(r, session, session_distante, horodatage, reglages["prefixe"]) for r in gardes]
     resultat.fichier = fichier
     resultat.lignes = fusionner(lire_lignes(fichier), nouvelles, horodatage)
     if not resultat.lignes:

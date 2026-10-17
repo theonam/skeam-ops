@@ -171,22 +171,48 @@ def cle(ligne: dict) -> tuple:
     return (ligne["session"], ligne["agent_id"] or "", ligne["debut"])
 
 
+def richesse(ligne: dict) -> tuple:
+    return (ligne["messages"], ligne["releve_le"])
+
+
+def reunir(copies: list[dict]) -> dict:
+    """Une ligne lue dans plusieurs dépôts : compteurs de la copie la plus riche en messages, puis la plus
+    récente ; items réunis, chaque préfixe pris dans la copie la plus riche qui le porte, car chaque dépôt
+    n'écrit que les items du sien. Des copies d'âges différents dont les parts dépassent 1 sont ramenées à 1."""
+    ordre = sorted(copies, key=richesse, reverse=True)
+    resultat = dict(ordre[0])
+    items: list[dict] = []
+    prefixes: set[str] = set()
+    lien = None
+    for copie in ordre:
+        nouveaux = {i["id"].split("-")[0] for i in copie["items"]} - prefixes
+        if nouveaux:
+            items.extend(dict(i) for i in copie["items"] if i["id"].split("-")[0] in nouveaux)
+            prefixes |= nouveaux
+            lien = lien or copie["lien"]
+    total = sum(i["part"] for i in items)
+    if total > 1:
+        items = [dict(i, part=i["part"] / total) for i in items]
+    resultat["items"] = sorted(items, key=lambda i: i["id"])
+    resultat["lien"] = resultat["lien"] if ordre[0]["items"] else (lien or "aucun")
+    return resultat
+
+
 def dedoublonner(lignes: Iterable[tuple[dict, str]]) -> list[Releve]:
-    """Une ligne par clé : la plus riche en messages, puis la plus récente ; les dépôts où elle est trouvée sont gardés."""
-    par_cle: dict[tuple, Releve] = {}
+    """Une ligne par clé, réunie par reunir() ; les dépôts où elle est trouvée sont gardés, le premier lu en tête."""
+    copies: dict[tuple, list[dict]] = {}
+    depots: dict[tuple, list[str]] = {}
     for ligne, depot in lignes:
         k = cle(ligne)
-        actuel = par_cle.get(k)
-        if actuel is None:
-            par_cle[k] = Releve(ligne, depot)
-            continue
-        if depot not in actuel.depots:
-            actuel.depots.append(depot)
-        if (ligne["messages"], ligne["releve_le"]) > (actuel.ligne["messages"], actuel.ligne["releve_le"]):
-            depots = actuel.depots
-            par_cle[k] = Releve(ligne, depots[0])
-            par_cle[k].depots = depots
-    return sorted(par_cle.values(), key=lambda r: (r.ligne["debut"], r.ligne["agent_id"] or ""))
+        copies.setdefault(k, []).append(ligne)
+        if depot not in depots.setdefault(k, []):
+            depots[k].append(depot)
+    releves = []
+    for k, liste in copies.items():
+        releve = Releve(liste[0] if len(liste) == 1 else reunir(liste), depots[k][0])
+        releve.depots = depots[k]
+        releves.append(releve)
+    return sorted(releves, key=lambda r: (r.ligne["debut"], r.ligne["agent_id"] or ""))
 
 
 # ---------------------------------------------------------------------------
@@ -443,7 +469,8 @@ def ventiler(releves: list[Releve], prefixes: dict[str, str], items_par_projet: 
     """Ventile chaque ligne entre projets, items et hors item, au prorata de ses parts.
 
     Un item d'un préfixe inconnu, ou une ligne sans item, revient au hors item du premier dépôt où la
-    ligne a été trouvée, dépôts pris dans l'ordre du registre, skeam-ops en dernier.
+    ligne a été trouvée, dépôts pris dans l'ordre du registre, skeam-ops en dernier. La part qui manque
+    à une ligne dont les parts font moins de 1, items d'un dépôt non lu, ne compte qu'au total global.
     """
     projets = {slug: ConsoProjet(slug, items) for slug, items in items_par_projet.items()}
     resultat = Consommation(projets, releves, tarifs, lundi)

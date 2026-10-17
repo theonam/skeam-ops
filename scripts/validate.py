@@ -794,8 +794,15 @@ def verifier_ligne_conso(rapport: Rapport, chemin: Any, numero: int, ligne: Any,
     ids = [i["id"] for i in ligne["items"]]
     if len(set(ids)) != len(ids):
         erreur("items : id en double")
-    if ligne["items"] and abs(sum(i["part"] for i in ligne["items"]) - 1) > 0.001:
-        erreur(f"items : parts de somme {round(sum(i['part'] for i in ligne['items']), 4)}, attendu 1")
+    if ligne["items"] and sum(i["part"] for i in ligne["items"]) > 1.001:
+        erreur(f"items : parts de somme {round(sum(i['part'] for i in ligne['items']), 4)}, attendu 1 au plus")
+    if len({i.split("-")[0] for i in ids}) > 1:
+        erreur("items : ids de plusieurs préfixes, un dépôt n'écrit que ceux du sien")
+    libelle = contrat.RE_LIBELLE_CONSO.match(ligne["libelle"] or "") if ligne["libelle"] is not None else True
+    if not libelle or (libelle is not True and libelle.group("mot") and libelle.group("mot") not in contrat.MOTS_LIBELLE_CONSO):
+        erreur("libelle : un mot de la liste du contrat et des ids d'items seulement, jamais de texte libre")
+    if ligne["phase"] is not None and ligne["phase"] not in contrat.MOTS_LIBELLE_CONSO:
+        erreur("phase : un mot de la liste du contrat seulement, jamais de texte libre")
     if (ligne["lien"] == "aucun") != (not ligne["items"]):
         erreur("lien vaut aucun si et seulement si items est vide")
     return valide
