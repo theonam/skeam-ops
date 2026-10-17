@@ -585,7 +585,7 @@ def main(argv: list[str] | None = None) -> int:
         total.ajouter(r, 1.0, cout(r.ligne, tarifs)[0], jetons_de(r.ligne))
     resume = total.court()
     print(f"{len(releves)} lignes, {len({r.ligne['session'] for r in releves})} sessions, {resume['heures_machine']} h machine, "
-          f"{resume['heures_reelles']} h réelles, {resume['jetons_total']} jetons, coût au tarif API {resume['cout_usd']} USD")
+          f"{heures(union_minutes(total.periodes))} h réelles, {resume['jetons_total']} jetons, coût au tarif API {resume['cout_usd']} USD")
     return 0
 
 

@@ -421,6 +421,13 @@ class TestConso(unittest.TestCase):
         self.assertEqual((beta.sortie()["heures_machine"], beta.sortie()["heures_reelles"]), (0.4, 0.0))
         self.assertEqual(resultat.globale()["heures_reelles"], 1.0)
 
+    def test_resume_en_ligne_de_commande(self):
+        sortie, erreurs = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(sortie), contextlib.redirect_stderr(erreurs):
+            code = conso.main([str(DONNEES / "racine" / "beta-app"), "--tarifs", str(TARIFS_TEST)])
+        self.assertEqual(code, 0)
+        self.assertIn("h réelles", sortie.getvalue())
+
     def test_copies_de_depots_differents_reunies(self):
         """Chaque dépôt n'écrit que les items de son préfixe : la même ligne lue dans deux dépôts les réunit."""
         base = {"version": 1, "session": "s-partagee-02", "session_distante": None, "agent_id": None, "type": "principal",
