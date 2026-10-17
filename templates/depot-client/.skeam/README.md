@@ -17,7 +17,7 @@ Jamais : contenu de conversation, consigne, chemin, nom de branche, secret, donn
 
 ## Fonctionnement
 
-- Le crochet Git est activé par `.claude/settings.json`, crochet `SessionStart`, quand la session s'ouvre à la racine du dépôt ; sinon, lancer une fois `python3 .skeam/conso.py installer`.
+- Le crochet Git est activé dans chaque clone : en session cloud, par le script d'installation de l'environnement de SKEAM, `templates/environnement/setup-cloud.sh` de skeam-ops ; sur un poste, par `.claude/settings.json`, crochet `SessionStart`, quand la session s'ouvre à la racine du dépôt ; sinon, lancer une fois `python3 .skeam/conso.py installer`. Avant le premier commit d'une session, `python3 .skeam/conso.py verifier` doit répondre « actif ».
 - À chaque commit fait depuis une session Claude Code, le crochet réécrit le fichier de la session et l'ajoute au commit en cours, dont le message commence comme toujours par l'id de l'item.
 - Hors d'une session Claude Code, le crochet ne fait rien.
 - Les branches se fusionnent sans conflit grâce à la ligne `merge=union` de `.gitattributes`.

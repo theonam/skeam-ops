@@ -473,6 +473,51 @@ class TestCrochet(BaseTemp):
         self.assertEqual(git(self.depot, "config", "--get", "core.hooksPath").stdout.strip(), ".husky")
 
 
+class TestEnvironnementCloud(BaseTemp):
+    """templates/environnement/setup-cloud.sh active le relevé quand la session s'ouvre hors des dépôts."""
+
+    SETUP = contrat.RACINE_OPS / "templates" / "environnement" / "setup-cloud.sh"
+
+    def lancer(self, *commande, **env):
+        return subprocess.run(list(commande), capture_output=True, text=True, timeout=60,
+                              env={**os.environ, **ENV_GIT, "HOME": str(self.tmp / "home"), **env})
+
+    def test_activation_par_l_environnement(self):
+        racine = self.tmp / "racine"
+        depot = nouveau_depot(racine / "egm-app")
+        modele = racine / "skeam-ops" / "templates" / "depot-client" / ".skeam"
+        modele.mkdir(parents=True)
+        shutil.copy(SCRIPT, modele / "conso.py")
+        git(racine / "skeam-ops", "init", "-q")
+        env = {"SKEAM_BIN": str(self.tmp / "bin"), "SKEAM_RACINES": str(racine)}
+        for _ in range(2):
+            sortie = self.lancer("sh", str(self.SETUP), **env)
+            self.assertEqual((sortie.returncode, sortie.stdout, sortie.stderr), (0, "", ""))
+        self.assertEqual(git(depot, "config", "--get", "core.hooksPath").stdout.strip(), ".skeam/githooks")
+        # Le gabarit rangé ailleurs que dans <dépôt>/.skeam n'active rien.
+        self.assertEqual(git(racine / "skeam-ops", "config", "--get", "core.hooksPath", check=False).stdout.strip(), "")
+        reglages = json.loads((self.tmp / "home" / ".claude" / "settings.json").read_text(encoding="utf-8"))
+        self.assertEqual({k: len(v) for k, v in reglages["hooks"].items()}, {"SessionStart": 1, "UserPromptSubmit": 1})
+        # Un dépôt cloné en cours de session, session ouverte au-dessus des dépôts : activé par le crochet utilisateur.
+        nouveau = nouveau_depot(racine / "autre-app", prefixe="ZED")
+        commande = reglages["hooks"]["UserPromptSubmit"][0]["hooks"][0]["command"]
+        sortie = self.lancer("sh", "-c", commande, CLAUDE_PROJECT_DIR=str(racine))
+        self.assertEqual((sortie.returncode, sortie.stdout), (0, ""))
+        self.assertEqual(git(nouveau, "config", "--get", "core.hooksPath").stdout.strip(), ".skeam/githooks")
+        # Sans le programme d'activation, conteneur neuf sans script d'installation : la commande ne fait rien et sort en 0.
+        shutil.rmtree(self.tmp / "bin")
+        self.assertEqual(self.lancer("sh", "-c", commande).returncode, 0)
+
+    def test_reglages_existants_gardes(self):
+        (self.tmp / "home" / ".claude").mkdir(parents=True)
+        existant = {"permissions": {"allow": ["Bash(ls)"]}, "hooks": {"Stop": [{"hooks": [{"type": "command", "command": "x"}]}]}}
+        (self.tmp / "home" / ".claude" / "settings.json").write_text(json.dumps(existant), encoding="utf-8")
+        self.lancer("sh", str(self.SETUP), SKEAM_BIN=str(self.tmp / "bin"), SKEAM_RACINES=str(self.tmp / "vide"))
+        reglages = json.loads((self.tmp / "home" / ".claude" / "settings.json").read_text(encoding="utf-8"))
+        self.assertEqual((reglages["permissions"], reglages["hooks"]["Stop"]), (existant["permissions"], existant["hooks"]["Stop"]))
+        self.assertIn("SessionStart", reglages["hooks"])
+
+
 class TestFusionGit(BaseTemp):
     def test_union_sans_conflit(self):
         depot = nouveau_depot(self.tmp / "egm-app")

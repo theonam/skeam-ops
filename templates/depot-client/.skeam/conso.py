@@ -761,6 +761,9 @@ def installer(silencieux: bool) -> int:
         if depot is None:
             dire("conso.py : pas dans un dépôt Git, rien installé")
             return 0
+        if (depot / ".skeam" / "conso.py").resolve() != Path(__file__).resolve():
+            dire("conso.py : script hors de <dépôt>/.skeam, gabarit par exemple, rien installé")
+            return 0
         crochet = depot / CHEMIN_HOOKS / "pre-commit"
         if crochet.is_file() and not os.access(crochet, os.X_OK):
             os.chmod(crochet, crochet.stat().st_mode | 0o111)

@@ -19,6 +19,7 @@ Système de pilotage des projets clients de SKEAM, SASU de chef de projet IT fre
 | `scripts/` | `contrat.py` lecture commune, `validate.py`, `nouveau_dossier.py`, `installer_conso.py`, tests | Théo |
 | `templates/dossier-client/` | gabarit du dossier `projet/` d'un client, avec `CLAUDE-projet.md` | Théo |
 | `templates/depot-client/` | gabarit des fichiers à la racine d'un dépôt client : relevé de la consommation des agents, `.skeam/` et crochet `SessionStart` | Théo |
+| `templates/environnement/` | `setup-cloud.sh`, script d'installation de l'environnement cloud Claude Code : active le relevé dans tous les dépôts clonés | Théo |
 | `templates/claude-agents/` | agents types à copier dans `.claude/agents/` d'un dépôt client, chacun avec son modèle imposé | Théo |
 | `exemples/` | client fictif complet, registre et catalogue d'exemple : jeu de test commun | Théo |
 | `clients.yaml` | registre des clients | Théo |
@@ -52,6 +53,8 @@ Installer le relevé automatique du temps et de la consommation des agents dans 
 ```sh
 python scripts/installer_conso.py <racine du dépôt client> --prefixe EGM
 ```
+
+Une seule fois pour toutes les sessions cloud : coller le contenu de `templates/environnement/setup-cloud.sh` dans le script d'installation de l'environnement cloud de claude.ai (menu de l'environnement dans la barre de titre d'une session, Modifier, « Setup script »). Les sessions cloud s'ouvrent dans `/home/user`, au-dessus des dépôts : le crochet `SessionStart` d'un dépôt ne s'y déclenche pas, et l'activation du crochet Git d'un clone disparaît avec son conteneur. Ce script, conservé d'un conteneur à l'autre, active le relevé dans chaque dépôt cloné à l'ouverture de la session et à chaque message, pour les dépôts ajoutés en cours de route. Vérifier dans une session neuve : `python3 .skeam/conso.py verifier` dans le dépôt doit répondre « actif ».
 
 Le relevé `.skeam/conso/` part ensuite avec chaque commit fait depuis une session Claude Code ; le dashboard en tire, en vue interne seulement, le temps machine, la durée réelle et le coût des agents par projet, lot et item, au tarif de `dashboard/tarifs-modeles.yaml`.
 
