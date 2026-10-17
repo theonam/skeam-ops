@@ -18,6 +18,7 @@ Système de pilotage des projets clients de SKEAM, SASU de chef de projet IT fre
 | `schemas/` | un JSON Schema par format | Théo |
 | `scripts/` | `contrat.py` lecture commune, `validate.py`, `nouveau_dossier.py`, tests | Théo |
 | `templates/dossier-client/` | gabarit du dossier `projet/` d'un client, avec `CLAUDE-projet.md` | Théo |
+| `templates/claude-agents/` | agents types à copier dans `.claude/agents/` d'un dépôt client, chacun avec son modèle imposé | Théo |
 | `exemples/` | client fictif complet, registre et catalogue d'exemple : jeu de test commun | Théo |
 | `clients.yaml` | registre des clients | Théo |
 | `projet/` | pilotage de skeam-ops, slug `ops` | Théo ; chaque chantier y tient son backlog et son temps |
