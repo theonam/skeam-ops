@@ -1,6 +1,6 @@
 ---
 name: skeam-dashboard
-description: Produit et publie le tableau de bord SKEAM de tous les projets clients actifs, pour l'audience demandée, interne par défaut, commercial pour l'associé commercial, ou client pour un client donné. Clone skeam-ops et les dépôts actifs, lance dashboard/scripts/agreger.py, injecte la vue dans le gabarit et republie l'artefact au même lien. Invoquer avec /skeam-dashboard [interne|commercial|client <slug>|toutes], ou dès que Théo demande où en sont ses clients, ce qui bloque, ce qui dérape, ce qu'il doit faire, ou de mettre à jour le dashboard.
+description: Produit et publie le tableau de bord SKEAM de tous les projets clients actifs, pour l'audience demandée, interne par défaut, commercial pour l'associé commercial, ou client pour un client donné. Clone skeam-ops et les dépôts actifs, lance dashboard/scripts/agreger.py, injecte la vue dans le gabarit et republie l'artefact au même lien. Invoquer avec /skeam-dashboard [interne|commercial|client slug-du-client|toutes], ou dès que Théo demande où en sont ses clients, ce qui bloque, ce qui dérape, ce qu'il doit faire, ou de mettre à jour le dashboard.
 ---
 
 # /skeam-dashboard
