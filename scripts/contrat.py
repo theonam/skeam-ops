@@ -43,6 +43,8 @@ RE_FICHIER_BACKLOG = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*\.yaml$")
 RE_FICHIER_CHIFFRAGE = re.compile(r"^chiffrage-(?P<date>[0-9]{4}-[0-9]{2}-[0-9]{2})\.(?P<ext>md|json)$")
 RE_ID_ITEM = re.compile(r"^(?P<prefixe>[A-Z][A-Z0-9]{1,11})-(?P<numero>[0-9]{3})$")
 RE_ID_ACTION = re.compile(r"^ACT-(?P<prefixe>[A-Z][A-Z0-9]{1,11})-(?P<numero>[0-9]{3})$")
+# Relevé de consommation des agents, hors de projet/ : <racine du dépôt>/.skeam/conso/, section 15.
+RE_FICHIER_CONSO = re.compile(r"^(?P<date>[0-9]{4}-[0-9]{2}-[0-9]{2})-(?P<session>[A-Za-z0-9_-]{8,64})\.jsonl$")
 
 
 # ---------------------------------------------------------------------------
@@ -283,3 +285,8 @@ def lire_temps(chemin_projet: Path | str) -> list[dict]:
     for fichier in sorted((Path(chemin_projet) / "temps").glob("*.jsonl")):
         lignes.extend(objet for _, objet in lire_jsonl(fichier))
     return lignes
+
+
+def lire_conso(fichier: Path | str) -> list[dict]:
+    """Lignes d'un fichier .skeam/conso/AAAA-MM-JJ-<session>.jsonl, sans validation."""
+    return [objet for _, objet in lire_jsonl(fichier)]

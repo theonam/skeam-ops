@@ -320,3 +320,61 @@ items:
     commit: 0ff1be6
     maj: 2026-10-16
     notes: "Demandes de Théo du 2026-10-16 au soir : une skill qui reprend l'historique d'une conversation pour mettre à jour l'avancement et le temps passé ; toutes les skills commencent par /skeam. Vérifié le 2026-10-16 : 14 tests de bilan_temps.py au vert, essai sur l'historique de cette session, 220 minutes actives, 40 commits, seul le temps non journalisé proposé ; la skill n'est pas encore installée dans les réglages de claude.ai."
+  - id: OPS-420
+    titre: Relevé automatique du temps et de la consommation des agents dans les dépôts
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: en_cours
+    taille: M
+    estimation_h: 6
+    dependances: []
+    criteres_acceptation:
+      - Le crochet Git ajoute au commit .skeam/conso/AAAA-MM-JJ-<session>.jsonl, une ligne par agent de la session, workflows compris, sans aucun contenu, chemin ni secret.
+      - Deux relevés de suite donnent le même fichier et un commit n'échoue jamais à cause du relevé.
+      - CONTRAT.md section 15, schemas/conso.schema.json et validate.py --conso décrivent et vérifient le format.
+      - templates/depot-client/ et scripts/installer_conso.py installent le relevé dans un dépôt.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-17
+    notes: Demande de Théo du 2026-10-17 au soir, temps et coût des agents suivis dans les dashboards et rattachés aux items, lots et projets.
+  - id: OPS-421
+    titre: Temps machine, durée réelle et coût des agents dans la vue interne du dashboard
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: en_cours
+    taille: M
+    estimation_h: 5
+    dependances:
+      - OPS-420
+    criteres_acceptation:
+      - Par projet, lot et item, la vue interne montre les heures machine, la durée réelle, les jetons et le coût en USD au tarif de l'API, à côté du temps passé validé et des heures vendues sans s'y ajouter.
+      - Les vues commercial et client n'en contiennent rien.
+      - Les tarifs sont datés dans dashboard/tarifs-modeles.yaml, avec les prix à confirmer signalés.
+      - Gabarit en version 6 et tests à jour.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-17
+  - id: OPS-422
+    titre: Relevé installé chez E G M et dans skeam-ops, session du 17/10 rattrapée
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_faire
+    taille: S
+    estimation_h: 2
+    dependances:
+      - OPS-420
+      - OPS-421
+    criteres_acceptation:
+      - La branche wip/conso d'egm-app porte le crochet, la consigne de CLAUDE.md section 11 et le relevé de la session du 17/10, validé par validate.py --conso.
+      - skeam-ops porte le même relevé avec le préfixe OPS.
+      - La vue interne affiche la soirée du 17/10 rattachée aux items EGM.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-17
+    notes: "Suite pour le chantier socle : socle/scripts/init_app.sh devra appeler scripts/installer_conso.py."

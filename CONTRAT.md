@@ -9,7 +9,7 @@ Les exemples marqués `<!-- exemple: ... -->` sont vérifiés par `python script
 ## 1. Principes
 
 - Le dépôt Git est la source de vérité. Documents publiés, dashboard, Todoist et devis Dougs sont des vues ou des sorties générées depuis le dépôt.
-- Tout se déclenche par une commande manuelle. Aucun script n'envoie quoi que ce soit à un client : un devis Dougs reste à l'état de brouillon tant que Théo ne l'envoie pas lui-même.
+- Tout se déclenche par une commande manuelle, sauf le relevé de consommation des agents, écrit par un crochet Git au moment des commits, section 15. Aucun script n'envoie quoi que ce soit à un client : un devis Dougs reste à l'état de brouillon tant que Théo ne l'envoie pas lui-même.
 - Documents en français. Clés techniques, noms de fichiers et valeurs énumérées en français sans accents ou en anglais, exactement comme écrits ici.
 
 ## 2. Conventions générales
@@ -84,6 +84,8 @@ Règles de nommage :
 - Dossiers vides conservés par un fichier `.gitkeep`.
 
 Le gabarit `templates/dossier-client/` est un dossier projet valide ; `scripts/nouveau_dossier.py` le copie.
+
+Hors de `projet/`, le dépôt porte `.skeam/`, relevé de consommation des agents, section 15 ; son gabarit est `templates/depot-client/`.
 
 ## 4. client.yaml
 
@@ -559,6 +561,8 @@ Trois niveaux emboîtés : ce que voit `client`, `commercial` le voit ; ce que v
 | `transcripts/`, `decisions.md`, `actions.yaml`, `temps/`, `devis/`, `design/`, `CLAUDE-projet.md` | oui | non | non |
 | Catalogue : modules, heures, tarifs | oui | non | non |
 | `interne/` | jamais lu par un script, jamais publié | non | non |
+| `.skeam/conso/` : temps machine, durée réelle, jetons et coût des agents | oui | non | non |
+| `dashboard/tarifs-modeles.yaml` | oui | non | non |
 
 Avancement d'un lot pour les audiences commercial et client : nombre d'items `fait` divisé par le nombre d'items du lot hors `abandonne`, toutes audiences confondues, en pourcentage entier arrondi à l'inférieur. Il ne révèle aucune estimation.
 
@@ -570,7 +574,7 @@ Règles communes à tous les scripts :
 - code de sortie 0 en cas de succès, 1 pour une erreur de données ou de validation, 2 pour un usage incorrect ;
 - messages d'erreur sur la sortie d'erreur, en français ;
 - dépendances Python communes dans `requirements.txt` ; un chantier qui a besoin d'une dépendance de plus la déclare dans `<son dossier>/requirements.txt` ;
-- lecture des fichiers du contrat par `scripts/contrat.py` : `charger_yaml`, `lire_client`, `lire_items`, `lire_actions`, `lire_temps`, `separer_entete`, `chemin_clone` ;
+- lecture des fichiers du contrat par `scripts/contrat.py` : `charger_yaml`, `lire_client`, `lire_items`, `lire_actions`, `lire_temps`, `lire_conso`, `separer_entete`, `chemin_clone` ;
 - un script qui lit un dossier projet commence par le valider et s'arrête avec le code 1 s'il est invalide ;
 - jamais de lecture de `projet/interne/`, jamais d'envoi à un client.
 
@@ -581,10 +585,11 @@ python scripts/validate.py <chemin_projet> [<chemin_projet> ...]
 python scripts/validate.py --clients clients.yaml --racine <dossier des clones>
 python scripts/validate.py --catalogue catalogue/
 python scripts/validate.py --contrat CONTRAT.md
+python scripts/validate.py --conso <racine du dépôt> --tarifs-modeles dashboard/tarifs-modeles.yaml
 python -m unittest discover -s scripts -p "test_*.py"
 ```
 
-Les options se combinent. `<chemin_projet>` est le dossier `projet/` ou la racine d'un dépôt qui le contient. Avec `--racine`, chaque client du registre est validé dans son clone, et `slug`, `statut` et `liens.depot` doivent concorder avec le registre ; un client actif sans clone est une erreur. Sans `--catalogue`, les codes de module sont comparés à `catalogue/modules.yaml` s'il existe. Sortie : une ligne `ERREUR <chemin>: <message>` ou `AVERTISSEMENT <chemin>: <message>` par écart, puis une ligne `Bilan`.
+Les options se combinent. `<chemin_projet>` est le dossier `projet/` ou la racine d'un dépôt qui le contient. Avec `--racine`, chaque client du registre est validé dans son clone, et `slug`, `statut` et `liens.depot` doivent concorder avec le registre ; un client actif sans clone est une erreur. Sans `--catalogue`, les codes de module sont comparés à `catalogue/modules.yaml` s'il existe. `--conso` accepte la racine d'un dépôt, son dossier `.skeam/conso` ou un fichier, et se répète. Sortie : une ligne `ERREUR <chemin>: <message>` ou `AVERTISSEMENT <chemin>: <message>` par écart, puis une ligne `Bilan`.
 
 ### 11.2 Nouveau dossier, chantier commun
 
@@ -652,7 +657,7 @@ Réécrit entièrement la liste `mesures` de chaque module de `catalogue/modules
 python dashboard/scripts/agreger.py --clients clients.yaml --racine <dossier des clones> --audience interne|commercial|client --sortie dashboard/out/<audience>.json
 ```
 
-Lit chaque client `actif` du registre dans son clone et écrit un seul fichier JSON UTF-8 qui ne contient que ce que l'audience peut voir, section 10. Enveloppe minimale : `audience`, `genere_le` en date et heure ISO 8601 avec décalage, `projets` liste. Le reste du format appartient au chantier dashboard et se documente dans `dashboard/README.md`. `dashboard/out/` n'est pas versionné.
+Lit chaque client `actif` du registre dans son clone et écrit un seul fichier JSON UTF-8 qui ne contient que ce que l'audience peut voir, section 10. Enveloppe minimale : `audience`, `genere_le` en date et heure ISO 8601 avec décalage, `projets` liste. Le reste du format appartient au chantier dashboard et se documente dans `dashboard/README.md`. `dashboard/out/` n'est pas versionné. En vue interne seulement, il lit aussi la consommation des agents, section 15.4, chiffrée avec `dashboard/tarifs-modeles.yaml`, option `--tarifs`.
 
 ### 11.6 Initialisation d'application, chantier socle
 
@@ -677,6 +682,14 @@ Chaque commande est une skill : un dossier `<nom>/SKILL.md` portant le nom de la
 | `/skeam-dashboard` | dashboard, `dashboard/skills/skeam-dashboard/` | `agreger.py` pour les trois audiences, puis rendu |
 | `/skeam-calibrer` | dashboard, `dashboard/skills/skeam-calibrer/` | `calibrer.py` |
 | `/skeam-bilan` | dashboard, `dashboard/skills/skeam-bilan/` | `bilan_temps.py` sur l'historique d'une session, puis statuts d'items, besoins découverts et lignes de temps proposés à Théo |
+
+### 11.8 Installation du relevé de consommation, chantier commun
+
+```sh
+python scripts/installer_conso.py <racine du dépôt> --prefixe <PREFIXE> [--sans-crochet] [--remplacer]
+```
+
+Copie `templates/depot-client/` à la racine du dépôt sans écraser un fichier différent, code 1 avec la liste, sauf `--remplacer` qui met à jour `conso.py`, le crochet et le README ; écrit `.skeam/conso.json` avec le préfixe ; ajoute le crochet `SessionStart` à `.claude/settings.json` sans rien en retirer ; ajoute la ligne `merge=union` à `.gitattributes` ; active le crochet Git, sauf avec `--sans-crochet`. Ne touche rien dans `projet/`, ne commite rien, idempotent.
 
 ## 12. Registre clients.yaml
 
@@ -708,6 +721,7 @@ Le texte de référence est `templates/dossier-client/CLAUDE-projet.md`, copié 
 - chaque message de commit commence par l'id de l'item : `EGM-012: ...` ;
 - passer l'item `en_cours` au début, `a_recetter` à la fin, avec `commit` et `maj` ; l'agent passe l'item à `fait` après avoir vérifié lui-même chaque critère d'acceptation ; seul Théo passe un item à `abandonne` ;
 - une ligne de temps par session dans `projet/temps/AAAA-MM-<agent>.jsonl` ;
+- le relevé `.skeam/conso/` est écrit par le crochet Git et part avec les commits de travail ; ne jamais le modifier, le supprimer ni le commiter à part, section 15.2 ;
 - tout besoin découvert devient un nouvel item, `a_valider: false`, `audience` selon ce que voit le client : `client` pour une fonction de l'application, `interne` pour un travail technique ;
 - ne jamais modifier `projet/interne/` ni `decisions.md` sans instruction explicite.
 
@@ -723,3 +737,73 @@ Un chantier qui a besoin d'un changement l'écrit dans `<son dossier>/PROPOSITIO
 - **Hypothèse retenue en attendant** : ce que le chantier fait d'ici la décision.
 - **Impact** : fichiers et chantiers concernés.
 ```
+
+## 15. Consommation des agents
+
+Décision de Théo du 2026-10-17. Le temps et la consommation des agents Claude sont relevés automatiquement, pour la conversation principale et chaque agent d'une session, sous-agents et agents de workflow compris. Le relevé vit dans le dépôt de chaque projet ; le coût est calculé par skeam-ops seul. Ce relevé ne remplace pas le journal de temps de la section 6, validé par Théo, et ne s'y mélange jamais.
+
+### 15.1 Fichier de consommation
+
+`.skeam/conso/AAAA-MM-JJ-<session>.jsonl` à la racine du dépôt, sur toute branche de développement, hors du dossier `projet/`. Un fichier par session Claude Code : `<session>` est l'identifiant local de la session, la date celle, à Paris, du début le plus ancien de ses lignes lors de la première écriture. Fichier JSON Lines, une ligne par agent, clés dans l'ordre ci-dessous, lignes triées par début. Schéma : `schemas/conso.schema.json`, vérifié par `python scripts/validate.py --conso <racine du dépôt>`.
+
+| Clé | Type et valeurs |
+|---|---|
+| `version` | `1` |
+| `session` | identifiant de la session, celui du nom de fichier |
+| `session_distante` | `session_…` de la ligne `Claude-Session` des commits de la session, ou null |
+| `agent_id` | identifiant de l'agent, ou null pour la conversation principale |
+| `type` | `principal`, `sous_agent`, `workflow` |
+| `run`, `phase` | run et phase du workflow, ou null |
+| `libelle` | libellé de l'agent dans le workflow ou description de l'agent, sans chemin ni courriel, 80 caractères au plus, ou null |
+| `debut`, `fin` | premier et dernier message de l'agent, date et heure ISO 8601 avec décalage, à la seconde |
+| `periodes` | liste des périodes actives `[debut, fin]` : un silence de plus de 15 minutes clôt une période |
+| `minutes_actives` | somme des périodes, une décimale |
+| `messages` | nombre de réponses du modèle, au moins 1 ; une réponse répétée par le streaming compte une fois |
+| `modeles` | par identifiant de modèle : `entree`, `sortie`, `lecture_cache`, `ecriture_cache`, `ecriture_cache_1h` compris dans `ecriture_cache`, `recherches_web`, entiers ; facultatif `au_dela_100k` : les quatre premiers compteurs pour les réponses dont le prompt dépasse 100 000 jetons |
+| `items` | liste de `id` d'item et `part`, parts de somme 1 à quatre décimales, ou liste vide |
+| `lien` | `libelle`, `commits`, `session` ou `aucun`, section 15.2 ; `aucun` si et seulement si `items` est vide |
+| `commits` | hash courts des commits qui fondent le lien, 50 au plus |
+| `releve_le` | date et heure de la dernière modification de la ligne |
+
+Une ligne par `session`, `agent_id` et `debut`. Une ligne n'est écrite que si l'agent a reçu au moins une réponse du modèle. Le fichier ne contient jamais de contenu de conversation, de consigne, de chemin, de nom de branche, de secret, de donnée personnelle ni de coût.
+
+<!-- exemple: conso -->
+```json
+{"version":1,"session":"9b5538f3-98f4-55a3-9adb-0c77ee210ef8","session_distante":"session_01JwUXdWyP6WQoxX6FpKxFKQ","agent_id":"a111e266422014cf6","type":"workflow","run":"wf_4c91e173-b72","phase":"Chantiers","libelle":"terrain:EGM-023 et EGM-024","debut":"2026-10-17T19:13:33+02:00","fin":"2026-10-17T20:06:23+02:00","periodes":[["2026-10-17T19:13:33+02:00","2026-10-17T20:06:23+02:00"]],"minutes_actives":52.8,"messages":169,"modeles":{"claude-opus-5-5":{"entree":338,"sortie":155257,"lecture_cache":59550504,"ecriture_cache":964810,"ecriture_cache_1h":0,"recherches_web":0,"au_dela_100k":{"entree":330,"sortie":154698,"lecture_cache":59256096,"ecriture_cache":913640}}},"items":[{"id":"EGM-023","part":0.5},{"id":"EGM-024","part":0.5}],"lien":"libelle","commits":[],"releve_le":"2026-10-17T23:46:44+02:00"}
+```
+
+### 15.2 Relevé et rattachement
+
+- Le relevé est écrit par `.skeam/conso.py`, copié de `templates/depot-client/`, appelé par le crochet Git `.skeam/githooks/pre-commit` à chaque commit fait depuis une session Claude Code, variable `CLAUDE_CODE_SESSION_ID` présente : il relit tout l'historique de la session, réécrit le fichier et l'ajoute au commit en cours. Il ne bloque jamais un commit et ne fait rien pendant un rebase ou un cherry-pick. Le crochet est activé par le crochet `SessionStart` de `.claude/settings.json`, ou à la main par `python3 .skeam/conso.py installer`.
+- Le fichier part avec les commits de travail, dont le message commence par l'id de l'item comme d'habitude. Il ne se modifie, ne se supprime ni ne se commite jamais à part, sauf rattrapage d'une session terminée sans commit, commité avec l'id de l'item principal de la session.
+- Réécriture idempotente : une réponse du modèle compte une fois ; une ligne déjà écrite qu'on ne peut plus recalculer est conservée ; une ligne ne perd jamais de messages ; `releve_le` ne change que si la ligne change. Les branches se fusionnent sans conflit par `merge=union` déclaré dans `.gitattributes` ; une clé en double se résout à la lecture en gardant la ligne qui a le plus de messages, puis la plus récente.
+- Rattachement d'un agent aux items, dans l'ordre : les ids cités dans son libellé ; sinon les ids des commits de la session faits pendant son activité, datés à l'auteur ; sinon la répartition de la session, au prorata des minutes des agents rattachés ; sinon aucun item. Un commit revient d'abord à l'agent qui a lancé la commande `git` juste avant lui, puis à l'agent actif dont le libellé cite son item, puis à parts égales aux agents actifs sans id dans leur libellé, sinon à la conversation principale. Seuls comptent les commits dont la ligne `Claude-Session` cite la session, quand elle est connue.
+- Un dépôt ne reçoit que les lignes qui citent un item de son préfixe, lu dans `.skeam/conso.json`, ou sans item et actives dans ce dépôt ou hors de tout dépôt.
+
+### 15.3 Tarifs des modèles
+
+`dashboard/tarifs-modeles.yaml`, schéma `schemas/tarifs-modeles.schema.json`. Clé `devise` : `USD`. Clé `tarifs` : liste d'entrées `modele`, `depuis` date d'effet, prix en USD par million de jetons `entree`, `sortie`, `lecture_cache`, `ecriture_cache_5m`, `ecriture_cache_1h`, `recherche_web_mille` en USD pour 1 000 recherches, `au_dela_100k` null ou les cinq prix de jetons applicables au-delà de 100 000 jetons de prompt, `a_confirmer` liste des champs non vérifiés, `source` texte. Un couple `modele` et `depuis` est unique. Une ligne de consommation prend, pour chaque modèle, l'entrée de plus grande `depuis` antérieure ou égale à son début, à défaut la plus ancienne. Un modèle sans tarif donne un coût inconnu, jamais nul. Le coût est un coût au tarif de l'API : il ne vaut pas facture d'abonnement.
+
+<!-- exemple: tarifs-modeles -->
+```yaml
+devise: USD
+tarifs:
+  - modele: claude-opus-5-5
+    depuis: 2026-10-06
+    entree: 4.00
+    sortie: 20.00
+    lecture_cache: 0.20
+    ecriture_cache_5m: 5.00
+    ecriture_cache_1h: 8.00
+    recherche_web_mille: 10.00
+    au_dela_100k: null
+    a_confirmer:
+      - ecriture_cache_1h
+    source: Documentation de l'API Claude du 2026-10-06, recoupée avec le coût calculé par Claude Code.
+```
+
+Coût d'une ligne pour un modèle : écriture du cache au prix 5 minutes, plus la part 1 heure au supplément du prix 1 heure ; jetons des réponses au-delà de 100 000 jetons de prompt aux prix `au_dela_100k` s'ils existent, sinon aux prix de base ; recherches web au prix pour mille.
+
+### 15.4 Agrégation
+
+`agreger.py` lit les fichiers de consommation de toutes les branches de chaque clone et de skeam-ops, pour la vue interne seulement, et rattache chaque item à son lot par le backlog et à son projet par son préfixe. Il distingue le temps machine, somme des minutes actives des agents au prorata de leurs parts, et la durée réelle, réunion de leurs périodes actives. Une ligne invalide est ignorée avec un avertissement. Ces chiffres s'affichent à côté du temps passé validé et des heures vendues, sans jamais s'y ajouter. Format : `dashboard/README.md`.

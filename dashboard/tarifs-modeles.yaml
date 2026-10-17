@@ -1,0 +1,53 @@
+# Tarifs des modèles Claude pour chiffrer la consommation des agents. Format : CONTRAT.md section 15.3.
+# USD par million de jetons, hors taxes, tarif de l'API Anthropic en direct, recherche web en USD pour 1 000 recherches.
+# Les champs listés dans a_confirmer ne sont pas vérifiés : le dashboard affiche alors « tarifs à confirmer ».
+# À vérifier sur https://platform.claude.com/docs/en/about-claude/pricing avant toute décision fondée sur le coût.
+# Une nouvelle grille s'ajoute en nouvelle entrée datée, sans modifier les anciennes.
+devise: USD
+tarifs:
+  - modele: claude-opus-5-5
+    depuis: 2026-10-06
+    entree: 4.00
+    sortie: 20.00
+    lecture_cache: 0.20
+    ecriture_cache_5m: 5.00
+    ecriture_cache_1h: 8.00
+    recherche_web_mille: 10.00
+    au_dela_100k: null
+    a_confirmer:
+      - ecriture_cache_1h
+    source: "Documentation de l'API Claude, cache du 2026-10-06, pour l'entrée, la sortie et la lecture du cache ; écriture 5 minutes recoupée le 2026-10-17 avec le coût calculé par Claude Code ; écriture 1 heure au multiplicateur usuel de 2, non recoupée."
+  - modele: claude-sonnet-5-5
+    depuis: 2026-10-06
+    entree: 2.00
+    sortie: 10.00
+    lecture_cache: 0.20
+    ecriture_cache_5m: 2.50
+    ecriture_cache_1h: 4.00
+    recherche_web_mille: 10.00
+    au_dela_100k: null
+    a_confirmer:
+      - ecriture_cache_5m
+      - ecriture_cache_1h
+      - recherche_web_mille
+    source: "Documentation de l'API Claude, cache du 2026-10-06, pour l'entrée, la sortie et la lecture du cache ; écritures déduites des multiplicateurs usuels 1,25 et 2, non recoupées."
+  - modele: claude-haiku-5-5
+    depuis: 2026-10-06
+    entree: 0.10
+    sortie: 0.50
+    lecture_cache: 0.01
+    ecriture_cache_5m: 0.125
+    ecriture_cache_1h: 0.20
+    recherche_web_mille: 10.00
+    au_dela_100k:
+      entree: 0.50
+      sortie: 2.50
+      lecture_cache: 0.05
+      ecriture_cache_5m: 0.625
+      ecriture_cache_1h: 1.00
+    a_confirmer:
+      - lecture_cache
+      - ecriture_cache_5m
+      - ecriture_cache_1h
+      - au_dela_100k
+    source: "Documentation de l'API Claude, cache du 2026-10-06 : 0,10 et 0,50 jusqu'à 100 000 jetons de prompt, 0,50 et 2,50 au-delà ; entrée, sortie et recherche web recoupées le 2026-10-17 avec le coût calculé par Claude Code ; cache déduit des multiplicateurs usuels, lecture à 0,1 fois l'entrée, non publié."

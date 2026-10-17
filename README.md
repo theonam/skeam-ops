@@ -16,8 +16,9 @@ Système de pilotage des projets clients de SKEAM, SASU de chef de projet IT fre
 |---|---|---|
 | `CONTRAT.md` | formats, audiences et interfaces entre chantiers | Théo |
 | `schemas/` | un JSON Schema par format | Théo |
-| `scripts/` | `contrat.py` lecture commune, `validate.py`, `nouveau_dossier.py`, tests | Théo |
+| `scripts/` | `contrat.py` lecture commune, `validate.py`, `nouveau_dossier.py`, `installer_conso.py`, tests | Théo |
 | `templates/dossier-client/` | gabarit du dossier `projet/` d'un client, avec `CLAUDE-projet.md` | Théo |
+| `templates/depot-client/` | gabarit des fichiers à la racine d'un dépôt client : relevé de la consommation des agents, `.skeam/` et crochet `SessionStart` | Théo |
 | `templates/claude-agents/` | agents types à copier dans `.claude/agents/` d'un dépôt client, chacun avec son modèle imposé | Théo |
 | `exemples/` | client fictif complet, registre et catalogue d'exemple : jeu de test commun | Théo |
 | `clients.yaml` | registre des clients | Théo |
@@ -36,6 +37,7 @@ pip install -r requirements.txt
 python scripts/validate.py templates/dossier-client projet
 python scripts/validate.py --clients exemples/clients.yaml --racine exemples/racine --catalogue exemples/catalogue
 python scripts/validate.py --contrat CONTRAT.md
+python scripts/validate.py --conso . --tarifs-modeles dashboard/tarifs-modeles.yaml
 python -m unittest discover -s scripts -p "test_*.py"
 ```
 
@@ -44,6 +46,14 @@ Créer le dossier projet d'un nouveau client :
 ```sh
 python scripts/nouveau_dossier.py <slug> "<nom>" <racine du dépôt client> --depot theonam/<depot>
 ```
+
+Installer le relevé automatique du temps et de la consommation des agents dans un dépôt, CONTRAT.md section 15 :
+
+```sh
+python scripts/installer_conso.py <racine du dépôt client> --prefixe EGM
+```
+
+Le relevé `.skeam/conso/` part ensuite avec chaque commit fait depuis une session Claude Code ; le dashboard en tire, en vue interne seulement, le temps machine, la durée réelle et le coût des agents par projet, lot et item, au tarif de `dashboard/tarifs-modeles.yaml`.
 
 Les clones des dépôts clients se placent tous dans un même dossier racine : le dépôt `theonam/egm-app` est attendu dans `<racine>/egm-app`. Cette racine est l'argument `--racine` de `validate.py`, `calibrer.py` et `agreger.py`.
 

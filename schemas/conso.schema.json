@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/theonam/skeam-ops/schemas/conso.schema.json",
+  "title": "Ligne de consommation d'un agent, .skeam/conso/AAAA-MM-JJ-<session>.jsonl",
+  "description": "Schéma d'UNE ligne : un agent, ou la conversation principale, d'une session Claude Code. CONTRAT.md section 15.1.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "session", "session_distante", "agent_id", "type", "run", "phase", "libelle", "debut", "fin", "periodes", "minutes_actives", "messages", "modeles", "items", "lien", "commits", "releve_le"],
+  "$defs": {
+    "instant": {
+      "description": "Date et heure ISO 8601 à la seconde, avec décalage.",
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(Z|[+-][0-9]{2}:[0-9]{2})$"
+    },
+    "entier": {"type": "integer", "minimum": 0},
+    "jetons": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entree", "sortie", "lecture_cache", "ecriture_cache"],
+      "properties": {
+        "entree": {"$ref": "#/$defs/entier"},
+        "sortie": {"$ref": "#/$defs/entier"},
+        "lecture_cache": {"$ref": "#/$defs/entier"},
+        "ecriture_cache": {"$ref": "#/$defs/entier"}
+      }
+    }
+  },
+  "properties": {
+    "version": {"const": 1},
+    "session": {"type": "string", "pattern": "^[A-Za-z0-9_-]{8,64}$"},
+    "session_distante": {"anyOf": [{"type": "null"}, {"type": "string", "pattern": "^session_[A-Za-z0-9]{8,64}$"}]},
+    "agent_id": {"anyOf": [{"type": "null"}, {"type": "string", "pattern": "^[a-z0-9]{6,40}$"}]},
+    "type": {"enum": ["principal", "sous_agent", "workflow"]},
+    "run": {"anyOf": [{"type": "null"}, {"type": "string", "pattern": "^[A-Za-z0-9_-]{3,64}$"}]},
+    "phase": {"anyOf": [{"type": "null"}, {"type": "string", "minLength": 1, "maxLength": 40}]},
+    "libelle": {"anyOf": [{"type": "null"}, {"type": "string", "minLength": 1, "maxLength": 80}]},
+    "debut": {"$ref": "#/$defs/instant"},
+    "fin": {"$ref": "#/$defs/instant"},
+    "periodes": {
+      "type": "array",
+      "items": {"type": "array", "prefixItems": [{"$ref": "#/$defs/instant"}, {"$ref": "#/$defs/instant"}], "minItems": 2, "maxItems": 2}
+    },
+    "minutes_actives": {"type": "number", "minimum": 0},
+    "messages": {"type": "integer", "minimum": 1},
+    "modeles": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {"pattern": "^[a-z0-9][a-z0-9.-]{2,63}$"},
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["entree", "sortie", "lecture_cache", "ecriture_cache", "ecriture_cache_1h", "recherches_web"],
+        "properties": {
+          "entree": {"$ref": "#/$defs/entier"},
+          "sortie": {"$ref": "#/$defs/entier"},
+          "lecture_cache": {"$ref": "#/$defs/entier"},
+          "ecriture_cache": {"$ref": "#/$defs/entier"},
+          "ecriture_cache_1h": {"$ref": "#/$defs/entier"},
+          "recherches_web": {"$ref": "#/$defs/entier"},
+          "au_dela_100k": {"$ref": "#/$defs/jetons"}
+        }
+      }
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "part"],
+        "properties": {
+          "id": {"$ref": "commun.schema.json#/$defs/id_item"},
+          "part": {"type": "number", "exclusiveMinimum": 0, "maximum": 1}
+        }
+      }
+    },
+    "lien": {"enum": ["libelle", "commits", "session", "aucun"]},
+    "commits": {"type": "array", "maxItems": 50, "items": {"type": "string", "pattern": "^[0-9a-f]{7,40}$"}},
+    "releve_le": {"$ref": "#/$defs/instant"}
+  }
+}

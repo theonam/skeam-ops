@@ -45,6 +45,10 @@ Une ligne par session, ajoutée en fin de fichier `projet/temps/AAAA-MM-<agent>.
 - `item` est l'item principal de la session.
 - `valide` vaut toujours `false` : Théo le passe à `true` quand il relit la semaine.
 
+## Consommation des agents
+
+- **Consommation des agents** : `.skeam/conso/AAAA-MM-JJ-<session>.jsonl` relève automatiquement, pour la conversation et chaque agent de la session, le temps actif, les jetons par modèle et les items travaillés. Le crochet Git `.skeam/githooks/pre-commit` le réécrit à chaque commit et l'ajoute au commit de travail : ne jamais le modifier, le supprimer ni le commiter à part. Si la session n'a pas été ouverte à la racine du dépôt, lancer une fois `python3 .skeam/conso.py installer` avant le premier commit ; `python3 .skeam/conso.py verifier` dit si le relevé est actif. Le fichier ne contient ni contenu de conversation, ni chemin, ni secret, ni coût.
+
 ## Dosage des modèles et consignes
 
 Chaque agent lancé, sous-agent, étape de workflow ou session parallèle, reçoit le modèle le moins cher qui fait le travail sans risque. Celui qui lance l'agent choisit ; Théo n'a rien à trancher.
