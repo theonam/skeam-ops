@@ -280,8 +280,8 @@ details.projet > summary h3 { font-size: 1.1rem; }
   var fmtUsd = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "USD", currencyDisplay: "narrowSymbol", maximumFractionDigits: 2 });
   /** Coût des agents au tarif de l'API, en dollars ; inconnu si un modèle n'a pas de tarif. */
   function usd(v) { return v == null ? '<span class="manquant">coût inconnu</span>' : '<span class="num">' + esc(fmtUsd.format(v)) + "</span>"; }
-  /** Ligne courte des agents : temps machine, durée réelle et coût ; jamais ajoutée au temps passé. */
-  function agentsCourt(c) { return c ? "Agents · " + h(c.heures_machine) + " machine" + estimees(c) + " · " + h(c.heures_reelles) + " réelles · " + usd(c.cout_usd) : ""; }
+  /** Ligne courte des agents d'un lot : temps machine et coût ; la durée réelle ne se donne que par projet. Jamais ajoutée au temps passé. */
+  function agentsCourt(c) { return c ? "Agents · " + h(c.heures_machine) + " machine" + estimees(c) + " · " + usd(c.cout_usd) : ""; }
   /** Part rattachée par estimation, d'après les autres agents du même run de workflow : toujours montrée à part. */
   function estimees(c) { return c && c.heures_machine_estimees ? ' <span class="discret">dont ' + h(c.heures_machine_estimees) + " estimées</span>" : ""; }
   function date(iso) {
@@ -479,7 +479,7 @@ details.projet > summary h3 { font-size: 1.1rem; }
     if (!c) return tete + '<span class="discret">Aucun relevé de consommation.</span></div></div>';
     var lignes = [
       ["Temps machine", h(c.heures_machine) + ' <span class="discret">somme des agents, ' + esc(c.agents) + " agents, " + esc(c.sessions) + " sessions</span>"],
-      ["Durée réelle", h(c.heures_reelles) + ' <span class="discret">agents en parallèle comptés une fois</span>'],
+      ["Durée réelle", h(c.heures_reelles) + ' <span class="discret">agents en parallèle comptés une fois, sessions surtout consacrées au projet</span>'],
       ["Coût au tarif API", usd(c.cout_usd) + (c.tarifs_a_confirmer ? ' <span class="manquant">tarifs à confirmer</span>' : "") + (c.modeles_sans_tarif.length ? ' <span class="manquant">sans tarif : ' + esc(c.modeles_sans_tarif.join(", ")) + "</span>" : "")],
       ["Cette semaine", h(c.semaine_heures_machine) + " machine · " + h(c.semaine_heures_reelles) + " réelles · " + usd(c.semaine_cout_usd)],
     ];

@@ -163,7 +163,6 @@
         "cout_usd",
         "heures_machine",
         "heures_machine_estimees",
-        "heures_reelles",
         "jetons_total"
       ],
       "conso_global": [

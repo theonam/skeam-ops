@@ -11,7 +11,9 @@ workflow : sa part est comptée et aussi montrée à part, marquée estimée.
 
 Deux mesures, jamais mélangées : le temps machine, somme des minutes actives des agents au prorata
 de leurs parts, quatre agents pendant une heure font quatre heures ; la durée réelle, réunion de
-leurs périodes actives, quatre agents pendant une heure font une heure.
+leurs périodes actives, quatre agents pendant une heure font une heure. La durée réelle ne se donne
+qu'au global et par projet, où une ligne compte si sa part dans le projet atteint 0,5 : une ligne
+partagée n'a pas de durée propre à chaque item, et l'y compter en entier la gonflerait.
 
 Usage en ligne de commande, pour contrôle :
     python dashboard/scripts/conso.py <racine d'un dépôt> [...] [--tarifs dashboard/tarifs-modeles.yaml]
@@ -298,12 +300,14 @@ class Cumul:
         self.cout_inconnu = False
         self.cles: set = set()
 
-    def ajouter(self, releve: Releve, part: float, valeur: float | None, jetons: dict) -> None:
+    def ajouter(self, releve: Releve, part: float, valeur: float | None, jetons: dict, reel: bool = True) -> None:
+        """reel : les périodes de la ligne comptent dans la durée réelle de l'ensemble."""
         self.minutes += releve.ligne["minutes_actives"] * part
         if releve.ligne["lien"] == "session":
             self.minutes_estimees += releve.ligne["minutes_actives"] * part
             self.cout_estime += (valeur or 0.0) * part
-        self.periodes.extend(releve.periodes)
+        if reel:
+            self.periodes.extend(releve.periodes)
         self.cles.add(releve.cle)
         for k in CLES_JETONS:
             self.jetons[k] += jetons[k] * part
@@ -317,10 +321,10 @@ class Cumul:
         return None if self.cout_inconnu else dollars(self.cout)
 
     def court(self) -> dict:
+        """Lot ou item : temps machine pondéré seulement, jamais de durée réelle."""
         return {
             "heures_machine": heures(self.minutes),
             "heures_machine_estimees": heures(self.minutes_estimees),
-            "heures_reelles": heures(union_minutes(self.periodes)),
             "jetons_total": round(sum(self.jetons.values())),
             "cout_usd": self.cout_usd,
         }
@@ -464,17 +468,26 @@ def ventiler(releves: list[Releve], prefixes: dict[str, str], items_par_projet: 
         if not parts:
             parts[(origine, None)] = 1.0
         modele = modele_principal(ligne)
+        part_projet: dict[str, float] = {}
+        for (slug, _), part in parts.items():
+            part_projet[slug] = part_projet.get(slug, 0.0) + part
+        for slug, part in part_projet.items():
+            # Durée réelle d'un projet : les lignes dont il porte au moins la moitié, comptées une fois.
+            if slug in projets and part >= 0.5:
+                projets[slug].total.periodes.extend(releve.periodes)
+                if dans_semaine:
+                    projets[slug].semaine.periodes.extend(releve.periodes)
         for (slug, ident), part in parts.items():
             projet = projets.get(slug)
             if projet is None:
                 continue
-            projet.total.ajouter(releve, part, valeur, jetons)
+            projet.total.ajouter(releve, part, valeur, jetons, reel=False)
             if dans_semaine:
-                projet.semaine.ajouter(releve, part, valeur, jetons)
+                projet.semaine.ajouter(releve, part, valeur, jetons, reel=False)
             if ident is None:
-                projet.hors_item.ajouter(releve, part, valeur, jetons)
+                projet.hors_item.ajouter(releve, part, valeur, jetons, reel=False)
             else:
-                projet.items.setdefault(ident, Cumul()).ajouter(releve, part, valeur, jetons)
+                projet.items.setdefault(ident, Cumul()).ajouter(releve, part, valeur, jetons, reel=False)
             for nom, compteurs in ligne["modeles"].items():
                 cumul = projet.modeles.setdefault(nom, Cumul())
                 valeur_modele = None
