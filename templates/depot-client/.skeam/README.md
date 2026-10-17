@@ -18,7 +18,8 @@ Jamais : contenu de conversation, consigne, chemin, nom de branche, secret, donn
 ## Fonctionnement
 
 - Le crochet Git est activé dans chaque clone : en session cloud, par le script d'installation de l'environnement de SKEAM, `templates/environnement/setup-cloud.sh` de skeam-ops ; sur un poste, par `.claude/settings.json`, crochet `SessionStart`, quand la session s'ouvre à la racine du dépôt ; sinon, lancer une fois `python3 .skeam/conso.py installer`. Avant le premier commit d'une session, `python3 .skeam/conso.py verifier` doit répondre « actif ».
-- À chaque commit fait depuis une session Claude Code, le crochet réécrit le fichier de la session et l'ajoute au commit en cours, dont le message commence comme toujours par l'id de l'item.
+- À chaque commit fait depuis une session Claude Code, le crochet réécrit le fichier de la session et l'ajoute au commit en cours, dont le message commence comme toujours par l'id de l'item ; ce commit est déjà rattaché, d'après l'id lu en tête du message de la commande `git commit`.
+- L'activité qui suit le dernier commit de travail part avec le commit de `/skeam-bilan`, qui fait le relevé final.
 - Hors d'une session Claude Code, le crochet ne fait rien.
 - Les branches se fusionnent sans conflit grâce à la ligne `merge=union` de `.gitattributes`.
 
@@ -28,6 +29,7 @@ Jamais : contenu de conversation, consigne, chemin, nom de branche, secret, donn
 python3 .skeam/conso.py verifier                 # le relevé est-il actif ?
 python3 .skeam/conso.py installer                # active le crochet Git de ce clone
 python3 .skeam/conso.py capturer                 # relevé à la main, par exemple pour une session sans commit
+python3 .skeam/conso.py capturer --prefixe EGM   # sur une branche sans .skeam/conso.json, relevé final du bilan
 ```
 
 Ne jamais modifier, supprimer ni commiter à part un fichier de `conso/` ; seule exception, le rattrapage d'une session terminée sans commit, commité avec l'id de l'item principal de la session.

@@ -397,6 +397,58 @@ class TestCapture(BaseTemp):
         self.preparer()
         (self.depot / ".skeam" / "conso.json").unlink()
         self.assertIsNone(self.capturer().fichier)
+        # Rattrapage par le bilan sur une branche sans .skeam : le préfixe est donné.
+        resultat = conso.capturer(SID, None, self.config.racine, self.depot, prefixe="EGM")
+        self.assertTrue(resultat.ecrit)
+        self.assertIsNone(conso.capturer(SID, None, self.config.racine, self.depot, prefixe="egm").fichier)
+
+
+class TestCommitEnCours(BaseTemp):
+    """Le commit que le crochet pre-commit est en train de créer n'est pas encore dans git log."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.depot = nouveau_depot(self.tmp / "egm-app")
+        self.cwd = str(self.depot)
+
+    def capturer(self, en_cours):
+        return conso.capturer(SID, None, self.config.racine, self.depot, en_cours=en_cours)
+
+    def test_un_seul_commit_rattache(self):
+        self.config.principal([utilisateur(0, self.cwd), reponse(1, "p1", cwd=self.cwd),
+                               reponse(30, "p2", cwd=self.cwd, commande=f"git -C {self.cwd} commit -q -F - <<'EOF'\nEGM-031: fiche\n\nCorps EGM-099: rien\nEOF")])
+        ligne = next(l for l in conso.lire_lignes(self.capturer(t(30.2)).fichier) if l["agent_id"] is None)
+        self.assertEqual((ligne["lien"], ligne["items"], ligne["commits"]), ("commits", [{"id": "EGM-031", "part": 1.0}], []))
+
+    def test_commande_ancienne_ou_absente_ignoree(self):
+        self.config.principal([utilisateur(0, self.cwd), reponse(1, "p1", cwd=self.cwd, commande='git commit -m "EGM-031: x"'),
+                               reponse(30, "p2", cwd=self.cwd)])
+        ligne = next(l for l in conso.lire_lignes(self.capturer(t(30)).fichier) if l["agent_id"] is None)
+        self.assertEqual(ligne["lien"], "aucun")
+
+    def test_commits_enchaines_et_dernier_commit_suivant(self):
+        commande = 'git commit -m "EGM-031: a" && git commit -m "EGM-032: b"'
+        self.config.principal([utilisateur(0, self.cwd), reponse(1, "p1", cwd=self.cwd), reponse(30, "p2", cwd=self.cwd, commande=commande)])
+        empreinte = commit(self.depot, "EGM-031: a", 30.1)
+        ligne = next(l for l in conso.lire_lignes(self.capturer(t(30.2)).fichier) if l["agent_id"] is None)
+        self.assertEqual(({i["id"] for i in ligne["items"]}, ligne["commits"]), ({"EGM-031", "EGM-032"}, [empreinte[:7]]))
+        # Les deux commits faits, plus rien n'est en cours.
+        commit(self.depot, "EGM-032: b", 30.2)
+        releves = self.releves()
+        commits = conso.lire_commits([self.depot], t(0), t(31), None)
+        self.assertIsNone(conso.commit_en_cours(releves, commits, t(30.3)))
+
+    def test_lecture_des_commandes(self):
+        cas = {
+            'git commit -m "EGM-031: x"': ["EGM-031"],
+            "git add . && git commit -m \"$(cat <<'EOF'\nEGM-032: y\nEOF\n)\"": ["EGM-032"],
+            "git commit --amend --no-edit": [None],
+            "git merge x && git commit -m 'OPS-420: a'": [None, "OPS-420"],
+            "echo EGM-001: x": [],
+        }
+        for commande, attendu in cas.items():
+            with self.subTest(commande):
+                self.assertEqual(conso.items_des_commandes(commande), attendu)
 
 
 class TestCrochet(BaseTemp):
@@ -452,6 +504,21 @@ class TestCrochet(BaseTemp):
         (self.depot / "a.txt").write_text("z", encoding="utf-8")
         self.assertEqual(git(self.depot, "commit", "-q", "-m", "EGM-003: chemin", "a.txt", env=self.env, check=False).returncode, 0)
         self.assertEqual(self.fichiers_du_dernier_commit(), {"a.txt", self.fichier})
+
+    def test_commit_en_cours_rattache_par_le_crochet(self):
+        # Historique daté de maintenant : le commit lancé il y a une minute est celui que crée le crochet.
+        git(self.depot, "commit", "-q", "--amend", "--no-edit", "--no-verify", "--date", horodatage(-600))
+        maintenant = dt.datetime.now(dt.timezone.utc)
+        heure = lambda minutes: (maintenant + dt.timedelta(minutes=minutes)).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+        principal = [utilisateur(0), reponse(1, "p1"), reponse(2, "p2", commande='git commit -q -m "EGM-003: travail"')]
+        for ligne, minutes in zip(principal, (-3, -2, -1)):
+            ligne["timestamp"] = heure(minutes)
+        chemin = self.config.principal(principal)
+        self.assertEqual(self.commiter(env=self.env).returncode, 0)
+        fichier = next(f for f in self.fichiers_du_dernier_commit() if f.startswith(".skeam/conso/2"))
+        ligne = json.loads(git(self.depot, "show", f"HEAD:{fichier}").stdout.splitlines()[0])
+        self.assertEqual((ligne["lien"], ligne["items"]), ("commits", [{"id": "EGM-003", "part": 1.0}]))
+        self.assertTrue(chemin.exists())
 
     def test_cherry_pick_sans_releve(self):
         git(self.depot, "checkout", "-q", "-b", "autre")

@@ -12,7 +12,7 @@ de secret, de donnée personnelle ni de coût.
 
     python3 .skeam/conso.py pre-commit      appelé par .skeam/githooks/pre-commit ; sort toujours en 0, muet
     python3 .skeam/conso.py capturer [--session SID] [--session-distante session_X]
-                                     [--config-claude DIR] [--depot DIR] [--sans-ajout]
+                                     [--config-claude DIR] [--depot DIR] [--sans-ajout] [--prefixe EGM]
     python3 .skeam/conso.py installer [--silencieux]
     python3 .skeam/conso.py verifier
 
@@ -48,7 +48,11 @@ RE_MODELE = re.compile(r"^[a-z0-9][a-z0-9.-]{2,63}$")
 RE_AGENT = re.compile(r"^[a-z0-9]{6,40}$")
 RE_RUN = re.compile(r"^[A-Za-z0-9_-]{3,64}$")
 # Commandes Git qui créent un commit : le commit revient à l'agent qui les a lancées.
-RE_GIT_COMMIT = re.compile(r"\bgit(?:\s+-[Cc]\s+\S+|\s+--\S+)*\s+(?:commit|cherry-pick|merge|rebase|am|revert)\b")
+RE_GIT_COMMIT = re.compile(r"\bgit(?:\s+-[Cc]\s+\S+|\s+--\S+)*\s+(commit|cherry-pick|merge|rebase|am|revert)\b")
+# Id d'item en tête du message d'une commande git commit : après un guillemet (-m "EGM-031: …") ou en
+# début de ligne (-F - <<'EOF' puis EGM-031: … ; -m "$(cat <<'EOF' puis EGM-031: …). Seul l'id sort.
+RE_SUJET_COMMANDE = re.compile(r"(?m)(?:^|[\"'])[ \t]*([A-Z][A-Z0-9]{1,11}-[0-9]{3})[ \t]*:")
+FENETRE_EN_COURS = dt.timedelta(minutes=15)
 RE_CHEMIN = re.compile(r"(?<![\w.])(?:~|[A-Za-z]:)?[/\\][^\s,;]*")
 RE_COURRIEL = re.compile(r"\S+@\S+\.\S+")
 # Jetons d'accès : préfixes connus, ou suite de 24 caractères ou plus mêlant lettres et chiffres.
@@ -131,6 +135,17 @@ def nettoyer(texte, longueur: int) -> str | None:
     if len(texte) > longueur:
         texte = texte[: longueur - 1].rstrip() + "…"
     return texte or None
+
+
+def items_des_commandes(commande: str) -> list[str | None]:
+    """Pour chaque commande git qui crée un commit, l'id en tête de son message s'il se lit, sinon None."""
+    trouves = list(RE_GIT_COMMIT.finditer(commande))
+    resultat: list[str | None] = []
+    for rang, trouve in enumerate(trouves):
+        fin = trouves[rang + 1].start() if rang + 1 < len(trouves) else len(commande)
+        sujet = RE_SUJET_COMMANDE.search(commande, trouve.end(), fin) if trouve.group(1) == "commit" else None
+        resultat.append(sujet.group(1) if sujet else None)
+    return resultat
 
 
 def ids_du_texte(texte: str | None) -> list[str]:
@@ -224,6 +239,8 @@ class Releve:
         self.cwds: Counter = Counter()
         self.reponses: dict[str, tuple[str, dict]] = {}
         self.commandes_commit: list[dt.datetime] = []
+        # Instant et id lu dans le message de chaque commit lancé, pour le commit en cours ; jamais écrit.
+        self.sujets_commit: list[tuple[dt.datetime, str | None]] = []
         # Rempli par lier().
         self.items: list[dict] = []
         self.lien = "aucun"
@@ -290,8 +307,11 @@ def lire_transcript(chemin: Path, agent_id: str | None = None, type_: str = "pri
             if isinstance(contenu, list):
                 for bloc in contenu:
                     if (isinstance(bloc, dict) and bloc.get("type") == "tool_use" and bloc.get("name") == "Bash"
-                            and isinstance(bloc.get("input"), dict) and RE_GIT_COMMIT.search(str(bloc["input"].get("command") or ""))):
-                        releve.commandes_commit.append(quand)
+                            and isinstance(bloc.get("input"), dict)):
+                        items = items_des_commandes(str(bloc["input"].get("command") or ""))
+                        if items:
+                            releve.commandes_commit.append(quand)
+                            releve.sujets_commit.extend((quand, item) for item in items)
             modele = message.get("model")
             usage = message.get("usage")
             if (not isinstance(modele, str) or not RE_MODELE.match(modele) or objet.get("isApiErrorMessage")
@@ -307,6 +327,7 @@ def lire_transcript(chemin: Path, agent_id: str | None = None, type_: str = "pri
         return None
     releve.horodatages.sort()
     releve.commandes_commit.sort()
+    releve.sujets_commit.sort(key=lambda x: x[0])
     return releve
 
 
@@ -415,6 +436,23 @@ def lire_commits(depots: list[Path], debut: dt.datetime, fin: dt.datetime, marqu
     return sorted(vus.values(), key=lambda c: (c.quand, c.empreinte))
 
 
+def commit_en_cours(releves: list[Releve], commits: list[Commit], quand: dt.datetime) -> Commit | None:
+    """Le commit que le crochet pre-commit est en train de créer, absent de git log : son item est lu
+    dans la dernière commande git commit de la session, lancée au plus 15 minutes plus tôt. Une commande
+    qui enchaîne plusieurs commits donne le premier de ses commits que git log ne montre pas encore."""
+    lancees = sorted((u, item) for r in releves for u, item in r.sujets_commit if quand - FENETRE_EN_COURS <= u <= quand + dt.timedelta(minutes=1))
+    if not lancees:
+        return None
+    derniere = lancees[-1][0]
+    recents = [c.item for c in commits if c.quand >= derniere - dt.timedelta(seconds=30)]
+    for item in (item for u, item in lancees if u == derniere):
+        if item is not None and item in recents:
+            recents.remove(item)  # déjà dans git log : commit précédent de la même commande
+            continue
+        return Commit("", max(quand, derniere), item) if item is not None else None
+    return None
+
+
 def depots_de_la_session(releves: list[Releve], depot_courant: Path) -> list[Path]:
     """Le dépôt courant et les autres dépôts où la session a travaillé, d'après les cwd ; en mémoire seulement."""
     depots: list[Path] = []
@@ -470,7 +508,8 @@ def lier(releves: list[Releve], commits: list[Commit]) -> None:
             for commit, poids_commit in attribues[id(r)]:
                 poids[commit.item] = poids.get(commit.item, 0) + poids_commit
             r.items, r.lien = parts(poids), "commits"
-            r.commits = [c.empreinte[:7] for c, _ in sorted(attribues[id(r)], key=lambda x: x[0].quand)][:MAX_COMMITS]
+            # Le commit en cours n'a pas encore de hash : il fonde le lien sans figurer dans la liste.
+            r.commits = [c.empreinte[:7] for c, _ in sorted(attribues[id(r)], key=lambda x: x[0].quand) if c.empreinte][:MAX_COMMITS]
         if r.items:
             duree = minutes(periodes_actives(r.horodatages)) or 0.1
             for item in r.items:
@@ -637,16 +676,23 @@ class Resultat:
         self.raison = ""
 
 
-def capturer(session: str, session_distante: str | None, config: Path, depot: Path, debut_chrono: float | None = None) -> Resultat:
-    """Relit toute la session, rattache, filtre pour ce dépôt et réécrit son fichier si le contenu change."""
+def capturer(session: str, session_distante: str | None, config: Path, depot: Path, debut_chrono: float | None = None,
+             en_cours: dt.datetime | None = None, prefixe: str | None = None) -> Resultat:
+    """Relit toute la session, rattache, filtre pour ce dépôt et réécrit son fichier si le contenu change.
+
+    en_cours : instant du commit que le crochet pre-commit est en train de créer, rattaché d'après la
+    dernière commande git commit de la session. prefixe : à défaut de .skeam/conso.json, rattrapage
+    sur une branche qui ne porte pas le relevé, celle du dossier projet/ par exemple."""
     resultat = Resultat()
     debut_chrono = debut_chrono if debut_chrono is not None else time.monotonic()
     if not RE_SESSION.match(session or ""):
         resultat.raison = "identifiant de session absent ou invalide"
         return resultat
     reglages = lire_config(depot)
+    if reglages is None and prefixe and re.match(r"^[A-Z][A-Z0-9]{1,11}$", prefixe):
+        reglages = {"version": VERSION, "prefixe": prefixe}
     if reglages is None:
-        resultat.raison = ".skeam/conso.json absent ou invalide"
+        resultat.raison = ".skeam/conso.json absent ou invalide, préciser --prefixe"
         return resultat
     transcripts = trouver_transcripts(config, session)
     if not transcripts:
@@ -659,6 +705,10 @@ def capturer(session: str, session_distante: str | None, config: Path, depot: Pa
     debut = min(r.debut for r in releves)
     fin = max(r.fin for r in releves)
     commits = lire_commits(depots_de_la_session(releves, depot), debut, fin, session_distante)
+    if en_cours is not None:
+        courant = commit_en_cours(releves, commits, en_cours)
+        if courant is not None:
+            commits.append(courant)
     lier(releves, commits)
     gardes = garder_pour_ce_depot(releves, reglages["prefixe"], repertoire_commun(depot))
     if time.monotonic() - debut_chrono > BUDGET_SECONDES:
@@ -694,7 +744,7 @@ def pre_commit() -> int:
         depot = racine_depot(Path.cwd())
         if depot is None or operation_en_cours(depot):
             return 0
-        resultat = capturer(session, session_distante_de_env(), config_claude_par_defaut(), depot, chrono)
+        resultat = capturer(session, session_distante_de_env(), config_claude_par_defaut(), depot, chrono, en_cours=maintenant())
         if resultat.ecrit and resultat.fichier is not None:
             subprocess.run(["git", "add", "--", str(resultat.fichier.relative_to(depot))], cwd=depot,
                            capture_output=True, timeout=15, check=False)
@@ -724,7 +774,7 @@ def commande_capturer(args) -> int:
         print("conso.py : erreur : --session-distante attendue au format session_…", file=sys.stderr)
         return 2
     config = Path(args.config_claude) if args.config_claude else config_claude_par_defaut()
-    resultat = capturer(session, distante, config, depot)
+    resultat = capturer(session, distante, config, depot, prefixe=args.prefixe)
     if resultat.fichier is None or not resultat.lignes:
         print(f"conso.py : rien à écrire : {resultat.raison}", file=sys.stderr)
         return 1
@@ -811,6 +861,7 @@ def main(argv: list[str] | None = None) -> int:
     capture.add_argument("--config-claude", help="dossier de configuration de Claude Code ; défaut ~/.claude")
     capture.add_argument("--depot", help="racine du dépôt ; défaut le dépôt du répertoire courant")
     capture.add_argument("--sans-ajout", action="store_true", help="ne pas passer le fichier à git add")
+    capture.add_argument("--prefixe", help="préfixe des items si .skeam/conso.json manque, par exemple EGM sur la branche projet/skeam-ops")
     install = sous.add_parser("installer", help="active le crochet Git du dépôt")
     install.add_argument("--silencieux", action="store_true")
     sous.add_parser("verifier", help="dit si le relevé est actif")
