@@ -1,6 +1,6 @@
 {
-  "version": 6,
-  "description": "Format figé de la sortie d'agreger.py et blocs du gabarit, version 6 du 2026-10-17, temps machine, durée réelle et coût des agents dans la vue interne. Toute évolution passe par Théo, incrémente la version ici et dans template.html, et met à jour dashboard/README.md.",
+  "version": 7,
+  "description": "Format figé de la sortie d'agreger.py et blocs du gabarit, version 7 du 2026-10-17, temps machine, durée réelle et coût des agents dans la vue interne, part estimée montrée à part. Toute évolution passe par Théo, incrémente la version ici et dans template.html, et met à jour dashboard/README.md.",
   "audiences": {
     "interne": {
       "enveloppe": [
@@ -145,6 +145,7 @@
         "agents",
         "cout_usd",
         "depuis",
+        "estime",
         "heures_machine",
         "heures_reelles",
         "hors_item",
@@ -161,6 +162,7 @@
       "conso_lot": [
         "cout_usd",
         "heures_machine",
+        "heures_machine_estimees",
         "heures_reelles",
         "jetons_total"
       ],

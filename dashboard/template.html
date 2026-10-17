@@ -2,7 +2,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="claude:viewport-fit-sides" content="cover">
 <title>Pilotage SKEAM</title>
-<meta name="skeam:gabarit" content="6">
+<meta name="skeam:gabarit" content="7">
 <!--
 Gabarit du dashboard SKEAM, chantier dashboard. Page autonome : dashboard/scripts/rendre.py remplace
 le contenu null de script#donnees par la vue JSON d'agreger.py et, en vue interne, celui de script#todoist
@@ -281,7 +281,9 @@ details.projet > summary h3 { font-size: 1.1rem; }
   /** Coût des agents au tarif de l'API, en dollars ; inconnu si un modèle n'a pas de tarif. */
   function usd(v) { return v == null ? '<span class="manquant">coût inconnu</span>' : '<span class="num">' + esc(fmtUsd.format(v)) + "</span>"; }
   /** Ligne courte des agents : temps machine, durée réelle et coût ; jamais ajoutée au temps passé. */
-  function agentsCourt(c) { return c ? "Agents · " + h(c.heures_machine) + " machine · " + h(c.heures_reelles) + " réelles · " + usd(c.cout_usd) : ""; }
+  function agentsCourt(c) { return c ? "Agents · " + h(c.heures_machine) + " machine" + estimees(c) + " · " + h(c.heures_reelles) + " réelles · " + usd(c.cout_usd) : ""; }
+  /** Part rattachée par estimation, d'après les autres agents du même run de workflow : toujours montrée à part. */
+  function estimees(c) { return c && c.heures_machine_estimees ? ' <span class="discret">dont ' + h(c.heures_machine_estimees) + " estimées</span>" : ""; }
   function date(iso) {
     if (!iso) return "";
     var p = iso.slice(0, 10).split("-");
@@ -484,6 +486,7 @@ details.projet > summary h3 { font-size: 1.1rem; }
     var r = tete + lignes.map(function (l) { return '<div class="ligne-conso"><span class="nom">' + l[0] + "</span><span>" + l[1] + "</span></div>"; }).join("");
     if (c.par_modele.length) r += '<div class="note-budget">Par modèle : ' + c.par_modele.map(function (m) { return esc(m.modele) + " " + h(m.heures_machine) + " · " + usd(m.cout_usd); }).join(" ; ") + "</div>";
     var hors = [];
+    if (c.estime.heures_machine) hors.push("dont estimé d'après les autres agents du même workflow " + h(c.estime.heures_machine) + " · " + usd(c.estime.cout_usd));
     if (c.hors_item.heures_machine) hors.push("hors item " + h(c.hors_item.heures_machine) + " · " + usd(c.hors_item.cout_usd));
     if (c.items_hors_backlog.length) hors.push("items absents du backlog : " + c.items_hors_backlog.map(function (i) { return '<span class="id">' + esc(i.id) + "</span> " + h(i.heures_machine); }).join(", "));
     if (hors.length) r += '<div class="note-budget">' + hors.join(" ; ") + "</div>";
@@ -665,7 +668,7 @@ details.projet > summary h3 { font-size: 1.1rem; }
       if (interne) {
         var depasse = i.heures_reelles != null && i.estimation_h && i.heures_reelles > i.estimation_h * 1.2;
         reel = i.heures_reelles == null ? '<span class="discret">n. j.</span>' : i.heures_reelles ? (depasse ? pastille(fmtNombre.format(i.heures_reelles) + " h", "p-critique") : h(i.heures_reelles)) : '<span class="discret">-</span>';
-        if (i.conso) reel += '<br><span class="discret agents-item">agents ' + h(i.conso.heures_machine) + " · " + usd(i.conso.cout_usd) + "</span>";
+        if (i.conso) reel += '<br><span class="discret agents-item">agents ' + h(i.conso.heures_machine) + estimees(i.conso) + " · " + usd(i.conso.cout_usd) + "</span>";
       }
       corps += "<tr>" + (client ? "" : '<td class="id">' + esc(i.id) + "</td>") + "<td>" + esc(i.titre) + marques + "</td><td>" + statutItem(i.statut) + "</td>" +
         (interne ? '<td class="droite">' + h(i.estimation_h) + '</td><td class="droite">' + reel + "</td>" : "") +

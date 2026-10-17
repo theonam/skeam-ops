@@ -469,8 +469,52 @@ def depots_de_la_session(releves: list[Releve], depot_courant: Path) -> list[Pat
     return depots
 
 
+def minutes_entre(periodes: list[tuple[dt.datetime, dt.datetime]], debut: dt.datetime | None, fin: dt.datetime | None) -> float:
+    """Minutes actives des périodes comprises entre debut et fin, bornes absentes ouvertes."""
+    total = 0.0
+    for a, b in periodes:
+        a = a if debut is None else max(a, debut)
+        b = b if fin is None else min(b, fin)
+        if b > a:
+            total += (b - a).total_seconds() / 60
+    return total
+
+
+def poids_des_commits(releve: Releve, attribues: list[tuple[Commit, float]]) -> dict[str, float]:
+    """Poids de chaque item d'après le temps actif passé avant chacun de ses commits.
+
+    Le temps actif entre deux commits revient au second ; celui d'avant le premier commit revient au
+    premier, celui d'après le dernier au dernier. Un commit sans temps propre garde un poids minime,
+    pour figurer dans les items."""
+    periodes = periodes_actives(releve.horodatages)
+    ordre = sorted(attribues, key=lambda x: (x[0].quand, x[0].empreinte))
+    poids: dict[str, float] = {}
+    for rang, (commit, part) in enumerate(ordre):
+        debut = ordre[rang - 1][0].quand if rang else None
+        fin = commit.quand if rang + 1 < len(ordre) else None
+        poids[commit.item] = poids.get(commit.item, 0.0) + part * max(minutes_entre(periodes, debut, fin), 0.1)
+    return poids
+
+
+def repartition_du_run(releve: Releve, releves: list[Releve]) -> list[dict]:
+    """Items des autres agents rattachés du même run de workflow, au prorata de leurs minutes, s'ils
+    sont tous du même préfixe ; sinon aucun. Jamais de répartition hors du run ni entre projets."""
+    if releve.run is None:
+        return []
+    poids: dict[str, float] = {}
+    for autre in releves:
+        if autre is releve or autre.run != releve.run or not autre.items or autre.lien == "session":
+            continue
+        duree = minutes(periodes_actives(autre.horodatages)) or 0.1
+        for item in autre.items:
+            poids[item["id"]] = poids.get(item["id"], 0.0) + duree * item["part"]
+    if len({i.split("-")[0] for i in poids}) != 1:
+        return []
+    return parts(poids)
+
+
 def lier(releves: list[Releve], commits: list[Commit]) -> None:
-    """Items de chaque relevé : libellé, sinon commits de son activité, sinon répartition de la session."""
+    """Items de chaque relevé : libellé, sinon commits de son activité, sinon estimation par son run."""
     principal = next((r for r in releves if r.type == "principal"), None)
     attribues: dict[int, list[tuple[Commit, float]]] = {id(r): [] for r in releves}
     for commit in commits:
@@ -497,27 +541,20 @@ def lier(releves: list[Releve], commits: list[Commit]) -> None:
         if principal is not None:
             attribues[id(principal)].append((commit, 1.0))
 
-    session: dict[str, float] = {}
     for r in releves:
         r.items, r.lien, r.commits = [], "aucun", []
         ids = r.ids_libelle()
         if ids:
             r.items, r.lien = parts({i: 1.0 for i in ids}), "libelle"
         elif attribues[id(r)]:
-            poids: dict[str, float] = {}
-            for commit, poids_commit in attribues[id(r)]:
-                poids[commit.item] = poids.get(commit.item, 0) + poids_commit
-            r.items, r.lien = parts(poids), "commits"
+            r.items, r.lien = parts(poids_des_commits(r, attribues[id(r)])), "commits"
             # Le commit en cours n'a pas encore de hash : il fonde le lien sans figurer dans la liste.
             r.commits = [c.empreinte[:7] for c, _ in sorted(attribues[id(r)], key=lambda x: x[0].quand) if c.empreinte][:MAX_COMMITS]
-        if r.items:
-            duree = minutes(periodes_actives(r.horodatages)) or 0.1
-            for item in r.items:
-                session[item["id"]] = session.get(item["id"], 0) + duree * item["part"]
-    repartition = parts(session)
     for r in releves:
-        if not r.items and repartition:
-            r.items, r.lien = [dict(i) for i in repartition], "session"
+        if not r.items:
+            estimes = repartition_du_run(r, releves)
+            if estimes:
+                r.items, r.lien = estimes, "session"
 
 
 def garder_pour_ce_depot(releves: list[Releve], prefixe: str, commun_courant: Path | None) -> list[Releve]:

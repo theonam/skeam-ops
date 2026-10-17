@@ -244,8 +244,10 @@ class TestLien(BaseTemp):
         self.config.workflow("wf_run1", "a22222222222", [utilisateur(10, cwd), reponse(60, "w3", cwd=cwd)], "facturation:EGM-029")
         # Un agent sans id dans son libellé, sans commande git, actif de 70 à 80 : R6.
         self.config.workflow("wf_run1", "a33333333333", [utilisateur(70, cwd), reponse(80, "w4", cwd=cwd)], "facturation:R6")
-        # Un relecteur sans id ni commit.
+        # Un relecteur sans id ni commit, hors de tout workflow.
         self.config.sous_agent("a44444444444", [utilisateur(85, cwd), reponse(95, "s1", cwd=cwd)], "relecture adverse")
+        # Un relecteur du run, sans id, actif après les commits.
+        self.config.workflow("wf_run1", "a55555555555", [utilisateur(121, cwd), reponse(125, "w5", cwd=cwd)], "relecture")
         self.marque = "session_01AbCdEfGh"
         self.c023 = commit(self.depot, "EGM-023: bon d'intervention", 30, marque=self.marque)
         self.c059 = commit(self.depot, "EGM-059: relecture R6", 75, committeur=110, marque=self.marque)
@@ -268,11 +270,29 @@ class TestLien(BaseTemp):
                          ("commits", [{"id": "EGM-059", "part": 1.0}], [self.c059[:7]]))
         # La conversation principale a lancé git commit juste avant EGM-078.
         self.assertEqual((agents[None].lien, agents[None].items), ("commits", [{"id": "EGM-078", "part": 1.0}]))
-        # Le relecteur prend la répartition de la session, au prorata des minutes.
-        relecteur = agents["a44444444444"]
+        # Le relecteur du run prend la répartition des agents rattachés de son run, au prorata des minutes,
+        # jamais celle de la conversation principale.
+        relecteur = agents["a55555555555"]
         self.assertEqual(relecteur.lien, "session")
-        self.assertEqual({i["id"] for i in relecteur.items}, {"EGM-023", "EGM-029", "EGM-059", "EGM-078"})
+        self.assertEqual({i["id"] for i in relecteur.items}, {"EGM-023", "EGM-029", "EGM-059"})
         self.assertAlmostEqual(sum(i["part"] for i in relecteur.items), 1.0, places=6)
+        # Hors de tout workflow : aucun item, plutôt qu'une répartition de toute la session.
+        self.assertEqual((agents["a44444444444"].lien, agents["a44444444444"].items), ("aucun", []))
+
+    def test_run_de_plusieurs_projets_sans_repartition(self):
+        cwd = str(self.depot)
+        self.config.workflow("wf_run1", "a66666666666", [utilisateur(10, cwd), reponse(20, "w6", cwd=cwd)], "outils:OPS-420")
+        agents = self.lies()
+        self.assertEqual((agents["a55555555555"].lien, agents["a55555555555"].items), ("aucun", []))
+
+    def test_commits_ponderes_par_le_temps(self):
+        principal = conso.Releve(None, "principal")
+        principal.horodatages = [t(m) for m in range(0, 121, 5)]
+        a, b = conso.Commit("a" * 40, t(10), "EGM-001"), conso.Commit("b" * 40, t(100), "EGM-002")
+        poids = conso.poids_des_commits(principal, [(a, 1.0), (b, 1.0)])
+        # 10 minutes avant le premier commit, 90 entre les deux et 20 après le dernier.
+        self.assertEqual({k: round(v, 1) for k, v in poids.items()}, {"EGM-001": 10.0, "EGM-002": 110.0})
+        self.assertEqual(conso.parts(poids), [{"id": "EGM-001", "part": 0.0833}, {"id": "EGM-002", "part": 0.9167}])
 
     def test_marque_de_session(self):
         commits = conso.lire_commits([self.depot], t(0), t(120), self.marque)

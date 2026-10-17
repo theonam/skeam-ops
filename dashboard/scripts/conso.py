@@ -6,6 +6,9 @@ dashboard/tarifs-modeles.yaml et les ventile par projet, lot et item d'après le
 ligne. Importé par agreger.py pour la vue interne seulement ; jamais lu pour les vues commercial et
 client.
 
+Une ligne liée par « session » est rattachée par estimation, d'après les autres agents de son run de
+workflow : sa part est comptée et aussi montrée à part, marquée estimée.
+
 Deux mesures, jamais mélangées : le temps machine, somme des minutes actives des agents au prorata
 de leurs parts, quatre agents pendant une heure font quatre heures ; la durée réelle, réunion de
 leurs périodes actives, quatre agents pendant une heure font une heure.
@@ -287,6 +290,8 @@ class Cumul:
 
     def __init__(self) -> None:
         self.minutes = 0.0
+        self.minutes_estimees = 0.0
+        self.cout_estime = 0.0
         self.periodes: list = []
         self.jetons = {k: 0.0 for k in CLES_JETONS}
         self.cout = 0.0
@@ -295,6 +300,9 @@ class Cumul:
 
     def ajouter(self, releve: Releve, part: float, valeur: float | None, jetons: dict) -> None:
         self.minutes += releve.ligne["minutes_actives"] * part
+        if releve.ligne["lien"] == "session":
+            self.minutes_estimees += releve.ligne["minutes_actives"] * part
+            self.cout_estime += (valeur or 0.0) * part
         self.periodes.extend(releve.periodes)
         self.cles.add(releve.cle)
         for k in CLES_JETONS:
@@ -311,6 +319,7 @@ class Cumul:
     def court(self) -> dict:
         return {
             "heures_machine": heures(self.minutes),
+            "heures_machine_estimees": heures(self.minutes_estimees),
             "heures_reelles": heures(union_minutes(self.periodes)),
             "jetons_total": round(sum(self.jetons.values())),
             "cout_usd": self.cout_usd,
@@ -321,6 +330,8 @@ def fusion(cumuls: Iterable[Cumul]) -> Cumul:
     resultat = Cumul()
     for c in cumuls:
         resultat.minutes += c.minutes
+        resultat.minutes_estimees += c.minutes_estimees
+        resultat.cout_estime += c.cout_estime
         resultat.periodes.extend(c.periodes)
         resultat.cles |= c.cles
         resultat.cout += c.cout
@@ -378,6 +389,8 @@ class ConsoProjet:
                 for m, c in sorted(self.modeles.items(), key=lambda x: (-x[1].minutes, x[0]))
             ],
             "hors_item": {"heures_machine": heures(self.hors_item.minutes), "cout_usd": self.hors_item.cout_usd},
+            "estime": {"heures_machine": heures(self.total.minutes_estimees),
+                       "cout_usd": None if self.total.cout_inconnu else dollars(self.total.cout_estime)},
             "items_hors_backlog": [
                 {"id": i, "heures_machine": heures(self.items[i].minutes), "cout_usd": self.items[i].cout_usd} for i in hors_backlog
             ],

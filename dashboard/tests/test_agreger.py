@@ -96,7 +96,7 @@ class TestVueInterne(unittest.TestCase):
         self.assertEqual(lot0, {"lot": 0, "titre": "Démo", "description": "Connexion et catalogue des menuiseries.", "nb_items": 2,
                                 "a_faire": 0, "en_cours": 0, "developpe": 2, "termine": 2, "pct_developpe": 100, "pourcentage": 100, "heures_estimees": 7, "heures_reelles": 8.5,
                                 "ecart_pct": 21, "depassement": True,
-                                "conso": {"heures_machine": 2.0, "heures_reelles": 2.0, "jetons_total": 121_000, "cout_usd": 0.23}})
+                                "conso": {"heures_machine": 2.0, "heures_machine_estimees": 1.0, "heures_reelles": 2.0, "jetons_total": 121_000, "cout_usd": 0.23}})
         # En interne, ALPHA-006 à valider compte et se signale ; le pourcentage du contrat l'exclut toujours.
         self.assertEqual((lot1["pourcentage"], lot1["pct_developpe"], lot1["nb_items"], lot1["developpe"], lot1["termine"]), (20, 40, 5, 2, 1))
         self.assertEqual((lot1["a_faire"], lot1["en_cours"]), (2, 1))
@@ -346,18 +346,20 @@ class TestConso(unittest.TestCase):
         self.assertTrue(c["tarifs_a_confirmer"])
         self.assertEqual(c["modeles_sans_tarif"], [])
         self.assertEqual(c["hors_item"], {"heures_machine": 0.5, "cout_usd": 0.03})
+        # La ligne du 7 liée par session est comptée et montrée à part, estimée.
+        self.assertEqual(c["estime"]["heures_machine"], 1.0)
         self.assertEqual(c["items_hors_backlog"], [{"id": "ALPHA-099", "heures_machine": 0.17, "cout_usd": 0.0}])
         self.assertEqual([(m["modele"], m["heures_machine"]) for m in c["par_modele"]], [("claude-opus-5-5", 2.5), ("claude-haiku-5-5", 1.17)])
         self.assertEqual(c["jetons"], {"entree": 53_100, "sortie": 14_600, "lecture_cache": 1_060_000, "ecriture_cache": 100_000})
 
     def test_lots_et_items(self):
         lots = {l["lot"]: l["conso"] for l in self.alpha["lots"]}
-        self.assertEqual(lots[1], {"heures_machine": 1.0, "heures_reelles": 1.0, "jetons_total": 1_103_000, "cout_usd": 0.91})
+        self.assertEqual(lots[1], {"heures_machine": 1.0, "heures_machine_estimees": 0.0, "heures_reelles": 1.0, "jetons_total": 1_103_000, "cout_usd": 0.91})
         self.assertEqual(lots[0]["heures_machine"], 2.0)
         self.assertEqual(lots[0]["cout_usd"], 0.23)
         self.assertIsNone(lots[2])
         items = {i["id"]: i["conso"] for i in self.alpha["items"]}
-        self.assertEqual(items["ALPHA-003"], {"heures_machine": 0.5, "heures_reelles": 1.0, "jetons_total": 551_500, "cout_usd": 0.46})
+        self.assertEqual(items["ALPHA-003"], {"heures_machine": 0.5, "heures_machine_estimees": 0.0, "heures_reelles": 1.0, "jetons_total": 551_500, "cout_usd": 0.46})
         self.assertIsNone(items["ALPHA-005"])
         # À côté du temps passé validé, jamais ajouté : les heures réelles des items restent celles du journal.
         self.assertEqual(self.alpha["lots"][1]["heures_reelles"], 4.5)

@@ -83,6 +83,7 @@ Date de référence : date du jour à Paris. Semaine : du lundi au dimanche qui 
 | Dernière synthèse | fichier de `syntheses/` au nom le plus récent : date, titre de niveau 1 et texte de la section Résumé exécutif |
 | Charge de la semaine | lignes de temps datées de la semaine, par projet, séparées entre `theo` et les agents |
 | Temps machine des agents | vue interne : somme des `minutes_actives` des lignes de `.skeam/conso/`, multipliées par la part de chaque item ; quatre agents pendant une heure font quatre heures. Par projet, lot et item ; la semaine retient les lignes qui commencent dans la semaine |
+| Part estimée des agents | vue interne : temps machine et coût des lignes liées par `session`, rattachées d'après les autres agents de leur run de workflow, CONTRAT.md section 15.2 ; comptés dans le temps machine et montrés à part, « dont … estimées » |
 | Durée réelle des agents | vue interne : longueur de la réunion des périodes actives des lignes qui touchent le projet, le lot ou l'item ; quatre agents en parallèle pendant une heure font une heure |
 | Coût des agents | vue interne : jetons de chaque modèle au tarif de `tarifs-modeles.yaml` en vigueur au début de la ligne, écriture du cache au prix 5 minutes plus le supplément 1 heure pour sa part 1 heure, prix au-delà de 100 000 jetons de prompt quand ils existent, recherches web ; coût au tarif de l'API, pas une facture d'abonnement. Un modèle sans tarif rend le coût inconnu, jamais nul ; « tarifs à confirmer » si un prix listé dans `a_confirmer` a servi |
 | Rattachement des agents | items de chaque ligne, CONTRAT.md section 15.2 ; un item rejoint son lot par le backlog et son projet par son préfixe ; un id absent du backlog va dans `items_hors_backlog`, une ligne sans item ou d'un préfixe inconnu dans `hors_item` du premier dépôt où elle est trouvée. Une ligne lue dans plusieurs dépôts ou branches compte une fois. Ces chiffres ne s'ajoutent jamais au temps passé validé ni aux heures vendues |
@@ -131,12 +132,13 @@ projets[]
                                   semaine_heures_machine, semaine_heures_reelles, semaine_cout_usd,
                                   jetons : entree, sortie, lecture_cache, ecriture_cache ; cout_usd ou null,
                                   tarifs_a_confirmer, modeles_sans_tarif[], par_modele[] : modele, heures_machine, jetons_total, cout_usd,
-                                  hors_item : heures_machine, cout_usd ; items_hors_backlog[] : id, heures_machine, cout_usd
+                                  hors_item : heures_machine, cout_usd ; estime : heures_machine, cout_usd, part liée par session ;
+                                  items_hors_backlog[] : id, heures_machine, cout_usd
   items[]                         id, titre, lot, statut, priorite, maj, module, taille, estimation_h,
                                   heures_reelles, audience, dependances_externes[], conso
 ```
 
-`lots[].conso` et `items[].conso` : null, ou `heures_machine`, `heures_reelles`, `jetons_total`, `cout_usd`. `global.conso` : null, ou `heures_machine`, `heures_reelles`, `cout_usd`, `semaine_heures_machine`, `semaine_heures_reelles`, `semaine_cout_usd`, `tarifs_du`, date d'effet la plus récente utilisée, `tarifs_a_confirmer`. Coûts en USD à deux décimales.
+`lots[].conso` et `items[].conso` : null, ou `heures_machine`, `heures_machine_estimees`, part de `heures_machine` liée par `session`, `heures_reelles`, `jetons_total`, `cout_usd`. `global.conso` : null, ou `heures_machine`, `heures_reelles`, `cout_usd`, `semaine_heures_machine`, `semaine_heures_reelles`, `semaine_cout_usd`, `tarifs_du`, date d'effet la plus récente utilisée, `tarifs_a_confirmer`. Coûts en USD à deux décimales.
 
 `prochaine_echeance` vaut null ou `date`, `libelle`, `source` id d'action ou `client.yaml`, `en_retard`, `dans_jours`.
 
@@ -190,6 +192,7 @@ Décision de Théo du 2026-10-16 : le gabarit est gravé. `format.json` fixe la 
 - Version 3, 2026-10-16, demandes de Théo : bloc Devis et lots, clés `devis[].perimetre`, `devis[].factures`, `hors_devis` ; sous chaque lot, le temps passé seul.
 - Version 4, 2026-10-16, demandes de Théo : vue commerciale minimaliste, réduite à la facturation, l'avancement, la satisfaction du client et ce qui peut se vendre ; prochaine étape de chaque devis ; statuts de devis et de facture en couleur dans toutes les vues ; clé `ids` des parties de lot, pour nommer les fonctionnalités.
 - Version 6, 2026-10-17, demande de Théo : temps et consommation des agents ; clés `conso` du projet, des lots, des items et du global, vue interne seulement ; bloc « Agents : temps machine et coût » après Heures et budget, ligne Agents sous chaque lot, temps machine et coût des agents dans la liste des items, tuile « Agents cette semaine ».
+- Version 7, 2026-10-17, relecture du relevé : part estimée des agents montrée à part, clés `conso.estime` du projet et `heures_machine_estimees` des lots et des items.
 - Version 5, 2026-10-16, demande de Théo : dans la vue commerciale, « Fonctionnalités supplémentaires facturables » remplace le devis en brouillon et la liste des fonctionnalités hors devis : chacune avec son prix de vente, champ `prix_vente_ht` du backlog, et le total ; clé `facturables` ; la date de cadrage s'affiche « onboarding ».
 
 Blocs, dans l'ordre d'affichage :
