@@ -2,7 +2,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="claude:viewport-fit-sides" content="cover">
 <title>Pilotage SKEAM</title>
-<meta name="skeam:gabarit" content="5">
+<meta name="skeam:gabarit" content="6">
 <!--
 Gabarit du dashboard SKEAM, chantier dashboard. Page autonome : dashboard/scripts/rendre.py remplace
 le contenu null de script#donnees par la vue JSON d'agreger.py et, en vue interne, celui de script#todoist
@@ -209,6 +209,9 @@ details.bloc > summary { cursor: pointer; min-height: 44px; display: list-item; 
 .barre-charge .agents { background: var(--agents); }
 .legende { display: flex; gap: 16px; flex-wrap: wrap; font-size: .78rem; color: var(--discret); }
 .note-budget { font-size: .8rem; color: var(--discret); }
+.ligne-conso { display: grid; grid-template-columns: minmax(90px, 160px) 1fr; gap: 10px; align-items: baseline; font-size: .88rem; }
+.agents-lot { margin-top: 4px; font-size: .8125rem; }
+.agents-item { font-size: .78rem; white-space: nowrap; }
 .legende i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
 
 /* Détail */
@@ -256,7 +259,7 @@ details.projet > summary h3 { font-size: 1.1rem; }
   var CLASSE_ITEM = { a_faire: "", en_cours: "p-accent", a_recetter: "p-attention", fait: "p-ok", abandonne: "" };
   var APPORTEURS = { theo: "Théo", jonathan: "Jonathan", autre: "Autre" };
   var DEVIS = { brouillon: "brouillon", envoye: "envoyé", accepte: "accepté", refuse: "refusé" };
-  var TYPES_ALERTE = { depassement_lot: "Dépassement", depassement_item: "Dépassement", bloque_externe: "Bloqué", en_cours_ancien: "Enlisé", registre_desynchronise: "Registre" };
+  var TYPES_ALERTE = { depassement_lot: "Dépassement", depassement_item: "Dépassement", bloque_externe: "Bloqué", en_cours_ancien: "Enlisé", registre_desynchronise: "Registre", conso_tarif_manquant: "Tarif", conso_sessions_sans_releve: "Relevé" };
   var LIENS = { demo: "Démo", prod: "Production", docs_client: "Docs client", docs_commercial: "Docs commercial", docs_interne: "Docs interne" };
   var NON_JOURNALISE = '<span class="manquant">temps non journalisé</span>';
   var DEVIS_NON_SAISI = '<span class="manquant">devis non saisi</span>';
@@ -274,6 +277,11 @@ details.projet > summary h3 { font-size: 1.1rem; }
   var fmtNombre = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 2 });
   function euro(v) { return '<span class="num">' + esc(fmtEuro.format(v || 0)) + "</span>"; }
   function h(v) { return '<span class="num">' + esc(fmtNombre.format(v || 0)) + " h</span>"; }
+  var fmtUsd = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "USD", currencyDisplay: "narrowSymbol", maximumFractionDigits: 2 });
+  /** Coût des agents au tarif de l'API, en dollars ; inconnu si un modèle n'a pas de tarif. */
+  function usd(v) { return v == null ? '<span class="manquant">coût inconnu</span>' : '<span class="num">' + esc(fmtUsd.format(v)) + "</span>"; }
+  /** Ligne courte des agents : temps machine, durée réelle et coût ; jamais ajoutée au temps passé. */
+  function agentsCourt(c) { return c ? "Agents · " + h(c.heures_machine) + " machine · " + h(c.heures_reelles) + " réelles · " + usd(c.cout_usd) : ""; }
   function date(iso) {
     if (!iso) return "";
     var p = iso.slice(0, 10).split("-");
@@ -389,6 +397,8 @@ details.projet > summary h3 { font-size: 1.1rem; }
     }
     if (interne && G.charge_semaine) {
       var nonJ = G.charge_semaine.par_projet.filter(function (c) { return !c.journalise; });
+      if (G.conso) chiffres.push(["Agents cette semaine", h(G.conso.semaine_heures_machine),
+        "temps machine · " + h(G.conso.semaine_heures_reelles) + " réelles · " + usd(G.conso.semaine_cout_usd) + " au tarif API" + (G.conso.tarifs_a_confirmer ? ' <span class="manquant">tarifs à confirmer</span>' : "")]);
       chiffres.push(["Charge de la semaine", h(G.charge_semaine.total_h), nonJ.length ? '<span class="manquant">hors ' + esc(nonJ.map(function (c) { return c.nom; }).join(", ")) + ", temps non journalisé</span>" : ""]);
     }
     html.push('<div class="chiffres" data-bloc="chiffres">' + chiffres.map(function (c) { return '<div class="chiffre"><span class="etiquette">' + c[0] + '</span><span class="valeur">' + c[1] + "</span>" + (c[2] ? '<span class="note">' + c[2] + "</span>" : "") + "</div>"; }).join("") + "</div>");
@@ -437,6 +447,7 @@ details.projet > summary h3 { font-size: 1.1rem; }
   function lotInterne(lot, temps) {
     var r = '<div class="lot-etapes"><span class="num">Lot ' + esc(lot.lot) + "</span><div>" + (lot.titre ? '<span class="titre-lot">' + esc(lot.titre) + "</span>" : "") + etapes(lot) + chiffresLot(lot);
     r += '<div class="heures"><span class="libelle-heures">Temps passé</span><span>' + (temps.journalise ? '<span class="num">' + esc(fmtNombre.format(lot.heures_reelles)) + " h</span>" : NON_JOURNALISE) + "</span></div>";
+    if (lot.conso) r += '<div class="agents-lot discret">' + agentsCourt(lot.conso) + "</div>";
     return r + "</div></div>";
   }
   function blocBudget(p) {
@@ -458,6 +469,26 @@ details.projet > summary h3 { font-size: 1.1rem; }
       lignes.map(function (l) {
         return '<div class="barre-charge"><span class="nom">' + l[0] + '</span><div class="pile"><span class="' + (l[0] === "Réel" ? "theo" : "agents") + '" style="width:' + ((l[1] || 0) / max * 100) + '%"></span></div><span class="droite">' + l[2] + "</span></div>";
       }).join("") + (note.length ? '<div class="note-budget">' + note.join(" · ") + "</div>" : "") + "</div></div>";
+  }
+  /** Bloc des agents, vue interne : temps machine, durée réelle et coût, à côté des heures et du budget, sans s'y ajouter. */
+  function blocConso(p) {
+    var c = p.conso;
+    var tete = '<div class="bloc" data-bloc="conso"><span class="etiquette">Agents : temps machine et coût</span><div class="charge">';
+    if (!c) return tete + '<span class="discret">Aucun relevé de consommation.</span></div></div>';
+    var lignes = [
+      ["Temps machine", h(c.heures_machine) + ' <span class="discret">somme des agents, ' + esc(c.agents) + " agents, " + esc(c.sessions) + " sessions</span>"],
+      ["Durée réelle", h(c.heures_reelles) + ' <span class="discret">agents en parallèle comptés une fois</span>'],
+      ["Coût au tarif API", usd(c.cout_usd) + (c.tarifs_a_confirmer ? ' <span class="manquant">tarifs à confirmer</span>' : "") + (c.modeles_sans_tarif.length ? ' <span class="manquant">sans tarif : ' + esc(c.modeles_sans_tarif.join(", ")) + "</span>" : "")],
+      ["Cette semaine", h(c.semaine_heures_machine) + " machine · " + h(c.semaine_heures_reelles) + " réelles · " + usd(c.semaine_cout_usd)],
+    ];
+    var r = tete + lignes.map(function (l) { return '<div class="ligne-conso"><span class="nom">' + l[0] + "</span><span>" + l[1] + "</span></div>"; }).join("");
+    if (c.par_modele.length) r += '<div class="note-budget">Par modèle : ' + c.par_modele.map(function (m) { return esc(m.modele) + " " + h(m.heures_machine) + " · " + usd(m.cout_usd); }).join(" ; ") + "</div>";
+    var hors = [];
+    if (c.hors_item.heures_machine) hors.push("hors item " + h(c.hors_item.heures_machine) + " · " + usd(c.hors_item.cout_usd));
+    if (c.items_hors_backlog.length) hors.push("items absents du backlog : " + c.items_hors_backlog.map(function (i) { return '<span class="id">' + esc(i.id) + "</span> " + h(i.heures_machine); }).join(", "));
+    if (hors.length) r += '<div class="note-budget">' + hors.join(" ; ") + "</div>";
+    r += '<div class="note-budget">Mesuré automatiquement sur l\'historique des sessions depuis le ' + date(c.depuis) + " ; distinct du temps passé validé et des heures vendues.</div>";
+    return r + "</div></div>";
   }
   var FACTURE = { brouillon: "à envoyer", envoyee: "envoyée, en attente de paiement", payee: "payée", annulee: "annulée" };
   // Couleurs : orange à faire de notre côté, bleu en attente du client, vert acquis, rouge en retard ou refusé.
@@ -577,6 +608,7 @@ details.projet > summary h3 { font-size: 1.1rem; }
     /* Lots */
     if (interne) {
       r.push(blocBudget(p));
+      r.push(blocConso(p));
       r.push(blocDevis(p));
       r.push('<div class="bloc" data-bloc="lots"><span class="etiquette">Avancement par lot · temps passé' + (p.temps.depuis ? ", noté depuis le " + date(p.temps.depuis) : "") + '</span><div>' + p.lots.map(function (lot) { return lotInterne(lot, p.temps); }).join("") + "</div></div>");
     } else if (commercial) {
@@ -633,6 +665,7 @@ details.projet > summary h3 { font-size: 1.1rem; }
       if (interne) {
         var depasse = i.heures_reelles != null && i.estimation_h && i.heures_reelles > i.estimation_h * 1.2;
         reel = i.heures_reelles == null ? '<span class="discret">n. j.</span>' : i.heures_reelles ? (depasse ? pastille(fmtNombre.format(i.heures_reelles) + " h", "p-critique") : h(i.heures_reelles)) : '<span class="discret">-</span>';
+        if (i.conso) reel += '<br><span class="discret agents-item">agents ' + h(i.conso.heures_machine) + " · " + usd(i.conso.cout_usd) + "</span>";
       }
       corps += "<tr>" + (client ? "" : '<td class="id">' + esc(i.id) + "</td>") + "<td>" + esc(i.titre) + marques + "</td><td>" + statutItem(i.statut) + "</td>" +
         (interne ? '<td class="droite">' + h(i.estimation_h) + '</td><td class="droite">' + reel + "</td>" : "") +
