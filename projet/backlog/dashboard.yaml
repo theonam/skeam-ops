@@ -336,9 +336,9 @@ items:
       - templates/depot-client/ et scripts/installer_conso.py installent le relevé dans un dépôt.
     audience: interne
     a_valider: false
-    commit: 53bbc99
+    commit: 6f785c0
     maj: 2026-10-17
-    notes: "Demande de Théo du 2026-10-17 au soir, temps et coût des agents suivis dans les dashboards et rattachés aux items, lots et projets. Vérifié le 2026-10-17 : 38 tests de scripts/test_conso.py, crochet réel sur l'historique de cette session en 0,6 s, aucun chemin ni contenu dans le fichier. Non vérifié : le crochet SessionStart dans une session cloud neuve ouverte à la racine d'un dépôt client, et CLAUDE_CODE_SESSION_ID en local sur le poste de Théo."
+    notes: "Demande de Théo du 2026-10-17 au soir, temps et coût des agents suivis dans les dashboards et rattachés aux items, lots et projets. Vérifié le 2026-10-17 : 38 tests de scripts/test_conso.py, crochet réel sur l'historique de cette session en 0,6 s, aucun chemin ni contenu dans le fichier. Corrigé après relecture le 2026-10-17 : activation par le script d'installation de l'environnement cloud, templates/environnement/setup-cloud.sh, les sessions cloud s'ouvrant dans /home/user ; commit en cours rattaché d'après la commande git commit ; relevé final par /skeam-bilan sur la branche du dossier projet ; estimation limitée au run de workflow, d'un seul préfixe ; commits pondérés par le temps ; libellé et phase en liste blanche, items filtrés par préfixe ; 52 tests au vert. Non vérifié : une vraie session cloud neuve avec setup-cloud.sh collé dans l'environnement par Théo, son maintien après la reprise d'une session dans un nouveau conteneur, et CLAUDE_CODE_SESSION_ID en local sur le poste de Théo."
   - id: OPS-421
     titre: Temps machine, durée réelle et coût des agents dans la vue interne du dashboard
     module: null
@@ -356,9 +356,9 @@ items:
       - Gabarit en version 6 et tests à jour.
     audience: interne
     a_valider: false
-    commit: "5655846"
+    commit: e5b703a
     maj: 2026-10-17
-    notes: "Vérifié le 2026-10-17 : tests du dashboard, page interne rendue à 390 et 1 440 px sans défilement horizontal. Non vérifié : la vue publiée avec les vrais clones, qui attend le relevé d'egm-app, OPS-422."
+    notes: "Vérifié le 2026-10-17 : tests du dashboard, page interne rendue à 390 et 1 440 px sans défilement horizontal. Corrigé après relecture le 2026-10-17, gabarit version 7 : durée réelle des agents au global et par projet seulement, une ligne comptant dans un projet si sa part atteint 0,5 ; part estimée montrée à part ; copies d'une ligne dans plusieurs dépôts réunies ; 64 tests au vert. Non vérifié : la page version 7 rendue aux quatre largeurs, et la vue publiée avec les vrais clones, qui attend le relevé d'egm-app, OPS-422."
   - id: OPS-422
     titre: Relevé installé chez E G M et dans skeam-ops, session du 17/10 rattrapée
     module: null
