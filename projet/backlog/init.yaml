@@ -20,3 +20,21 @@ items:
     a_valider: false
     commit: e6b1ca9
     maj: 2026-10-15
+  - id: OPS-002
+    titre: Dosage des modèles et consignes serrées pour les agents des dépôts clients
+    module: null
+    lot: 1
+    priorite: souhaitable
+    statut: a_recetter
+    taille: S
+    estimation_h: 1
+    dependances: []
+    criteres_acceptation:
+      - templates/dossier-client/CLAUDE-projet.md dit quel modèle utiliser selon la tâche et comment serrer une demande à un agent.
+      - templates/claude-agents/ contient trois agents types, chercheur, relecteur-ecrans et relecteur-critique, chacun avec son modèle imposé.
+      - templates/dossier-client et projet passent la validation sans erreur.
+    audience: interne
+    a_valider: false
+    commit: f39fd09
+    maj: 2026-10-17
+    notes: Demande de Théo du 2026-10-17, après la session du lot 1 E G M où tout tournait sur le modèle le plus cher. Instruction explicite de Théo pour modifier templates/ et README.md.

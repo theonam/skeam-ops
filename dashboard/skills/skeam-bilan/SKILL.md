@@ -94,7 +94,7 @@ Dans chaque dépôt, sur la branche qui porte `projet/` :
 2. Temps : relancer la commande de l'étape 3 avec `--ecrire`, ou ajouter à la main les lignes corrigées par Théo.
 3. `decisions.md` et `actions.yaml` : seulement ce que Théo a validé.
 4. `python <skeam-ops>/scripts/validate.py projet` : corriger toute erreur avant de continuer.
-5. Commiter, message commençant par l'id de l'item principal, `EGM-040: bilan de session, statuts et temps`, et pousser sur cette branche, jamais sur une autre.
+5. Commiter, message commençant par l'id de l'item principal, `EGM-040: bilan de session, statuts et temps`, et pousser sur cette branche, jamais sur une autre. Avant ce commit, si le dépôt relève la consommation des agents, `.skeam/conso.json` sur une de ses branches, lancer depuis sa racine `python3 <skeam-ops>/templates/depot-client/.skeam/conso.py capturer --depot . --prefixe <PREFIXE>`, avec `--session <identifiant local>` si la session relue n'est pas la session en cours : la copie de skeam-ops fonctionne sur la branche qui porte `projet/`, qui n'a pas `.skeam/`, et le commit du bilan emporte le relevé final de la session, activité après le dernier commit de travail comprise, CONTRAT.md section 15.2. Ce relevé reste distinct des lignes de temps : ne jamais en tirer une ligne de `temps/` sans l'accord de Théo.
 
 ### 7. Conclure
 

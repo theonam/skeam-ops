@@ -32,9 +32,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
 import contrat  # noqa: E402
 import validate  # noqa: E402
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import conso as conso_agents  # noqa: E402
+
 AUDIENCES = ("interne", "commercial", "client")
 CHEMIN_OPS = Path("projet")
 TARIFS = Path(__file__).resolve().parents[2] / "catalogue" / "tarifs.yaml"
+TARIFS_MODELES = conso_agents.TARIFS_MODELES
 SEUIL_DEPASSEMENT = 0.20
 DEVELOPPES = ("a_recetter", "fait")
 JOURS_EN_COURS_MAX = 7
@@ -46,11 +50,14 @@ CLES_INTERNES = {
     "actions", "a_valider", "audience", "charge_semaine", "commit", "compteurs", "devis_a_envoyer",
     "dependances", "dependances_externes", "depot", "docs_interne", "ecart_pct", "estimation_h",
     "budget", "items_bloques", "minutes", "notes", "taille", "temps", "todoist",
+    # Consommation des agents, CONTRAT.md section 15 ; les clés heures* sont couvertes par leur préfixe.
+    "conso", "cout_usd", "jetons", "jetons_total", "tarifs_a_confirmer", "tarifs_du", "modeles_sans_tarif",
+    "par_modele", "hors_item", "items_hors_backlog", "semaine_cout_usd",
 }
 
 
 class ErreurDonnees(Exception):
-    """Registre ou dossier projet invalide : code de sortie 1."""
+    """Registre, dossier projet ou tarifs des modèles invalides : code de sortie 1."""
 
 
 # ---------------------------------------------------------------------------
@@ -213,6 +220,8 @@ class Calculs:
         self.temps = projet["temps"]
         self.synthese = projet["synthese"]
         self.lots_cadrage = projet.get("lots_cadrage") or {}
+        # Consommation des agents du projet, vue interne seulement : conso.ConsoProjet ou None.
+        self.conso = None
         self.aujourd_hui = aujourd_hui
         self.lundi = aujourd_hui - dt.timedelta(days=aujourd_hui.weekday())
         self.minutes_item: dict[str, int] = {}
@@ -261,6 +270,7 @@ class Calculs:
                     "heures_reelles": reel,
                     "ecart_pct": None if reel is None else ecart(reel, estime),
                     "depassement": reel is not None and depasse(reel, estime),
+                    "conso": self.conso.lot(item["id"] for item in du_lot) if self.conso else None,
                 }
             resultat.append(entree)
         return resultat
@@ -451,6 +461,7 @@ def items_vus(calculs: Calculs, audience: str) -> list[dict]:
                 "heures_reelles": calculs.heures_item(item),
                 "audience": item["audience"],
                 "dependances_externes": externes(item),
+                "conso": calculs.conso.item(item["id"]) if calculs.conso else None,
             }
         resultat.append(entree)
     return sorted(resultat, key=lambda i: (i["lot"], i["id"]))
@@ -512,6 +523,7 @@ def projet_interne(calculs: Calculs, interne: bool) -> dict:
         "hors_devis": calculs.devis("interne")[1],
         "facturables": calculs.facturables("interne"),
         "items": items_vus(calculs, "interne"),
+        "conso": calculs.conso.sortie() if calculs.conso else None,
     }
     resultat["compteurs"] = {"devis_a_envoyer": len(resultat["devis_a_envoyer"])}
     return resultat
@@ -580,6 +592,18 @@ def alertes_internes(projet: dict, statut_registre: str | None) -> list[dict]:
             f"{item['id']} {item['titre']} : attend {' ; '.join(item['dependances_externes'])}",
         ))
     resultat.extend(alertes_en_cours(projet))
+    conso = projet.get("conso")
+    if conso and conso["modeles_sans_tarif"]:
+        resultat.append(alerte(
+            "basse", "conso_tarif_manquant", projet, "dashboard/tarifs-modeles.yaml",
+            f"coût des agents inconnu : pas de tarif pour {', '.join(conso['modeles_sans_tarif'])}",
+        ))
+    if projet.get("_sessions_sans_releve"):
+        n = projet["_sessions_sans_releve"]
+        resultat.append(alerte(
+            "basse", "conso_sessions_sans_releve", projet, ".skeam/conso",
+            f"{n} session{'s' if n > 1 else ''} avec des commits sans relevé de consommation depuis l'installation : crochet Git inactif ?",
+        ))
     if statut_registre is not None and statut_registre != projet["statut"]:
         resultat.append(alerte(
             "basse", "registre_desynchronise", projet, "clients.yaml",
@@ -610,7 +634,22 @@ def maintenant_paris() -> dt.datetime:
     return dt.datetime.now(ZoneInfo(contrat.FUSEAU)).replace(microsecond=0)
 
 
-def agreger(chemin_clients: Path, racine: Path, audience: str, maintenant: dt.datetime | None = None) -> dict:
+def charger_conso(calculs: list[Calculs], dossiers: list[Path], lundi: dt.date, chemin_tarifs: Path) -> conso_agents.Consommation:
+    """Consommation des agents de tous les dépôts lus, rattachée à chaque projet ; vue interne seulement."""
+    depots = [(c.slug, dossier.parent) for c, dossier in zip(calculs, dossiers)]
+    prefixes = {contrat.prefixe(c.slug): c.slug for c in calculs}
+    items = {c.slug: {item["id"]: item["lot"] for item in c.items} for c in calculs}
+    try:
+        consommation = conso_agents.charger(depots, prefixes, items, chemin_tarifs, lundi)
+    except conso_agents.ErreurDonnees as exc:
+        raise ErreurDonnees(str(exc)) from exc
+    for c in calculs:
+        c.conso = consommation.projet(c.slug)
+    return consommation
+
+
+def agreger(chemin_clients: Path, racine: Path, audience: str, maintenant: dt.datetime | None = None,
+            tarifs_modeles: Path | None = None) -> dict:
     if audience not in AUDIENCES:
         raise ValueError(f"audience inconnue : {audience}")
     maintenant = maintenant or maintenant_paris()
@@ -637,7 +676,10 @@ def agreger(chemin_clients: Path, racine: Path, audience: str, maintenant: dt.da
         resultat["projets"] = projets
         return resultat
 
+    consommation = charger_conso(calculs, dossiers, lundi, tarifs_modeles or TARIFS_MODELES)
     projets = sorted((projet_interne(c, c.slug == "ops") for c in calculs), key=cle_tri)
+    sans_releve = {c.slug: c.conso.sessions_sans_releve for c in calculs if c.conso}
+    alertes = trier_alertes([a for p in projets for a in alertes_internes(p | {"_sessions_sans_releve": sans_releve.get(p["slug"], 0)}, registre.get(p["slug"]))])
     charge = sorted(
         ({"slug": p["slug"], "nom": p["nom"], "heures": p["temps"]["semaine_h"], "heures_theo": p["temps"]["semaine_theo_h"],
           "heures_agents": p["temps"]["semaine_agents_h"], "heures_semaine_precedente": p["temps"]["semaine_precedente_h"],
@@ -655,7 +697,8 @@ def agreger(chemin_clients: Path, racine: Path, audience: str, maintenant: dt.da
                 "total_agents_h": round(sum(c["heures_agents"] for c in charge), 2),
                 "par_projet": charge,
             },
-            "alertes": trier_alertes([a for p in projets for a in alertes_internes(p, registre.get(p["slug"]))]),
+            "alertes": alertes,
+            "conso": consommation.globale(),
         },
         "projets": projets,
     }
@@ -697,13 +740,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--racine", type=Path, required=True, help="dossier des clones des dépôts clients")
     parser.add_argument("--audience", required=True, choices=AUDIENCES, help="niveau de la vue, CONTRAT.md section 10")
     parser.add_argument("--sortie", type=Path, required=True, help="fichier JSON à écrire, en principe dashboard/out/<audience>.json")
+    parser.add_argument("--tarifs", type=Path, default=TARIFS_MODELES, help="tarifs des modèles Claude, vue interne, CONTRAT.md section 15.3")
     args = parser.parse_args(argv)
-    for chemin in (args.clients, args.racine):
+    for chemin in (args.clients, args.racine, args.tarifs):
         if not chemin.exists():
             print(f"agreger.py: erreur : {chemin} introuvable", file=sys.stderr)
             return 2
     try:
-        donnees = agreger(args.clients, args.racine, args.audience)
+        donnees = agreger(args.clients, args.racine, args.audience, tarifs_modeles=args.tarifs)
         verifier_filtrage(donnees)
     except (ErreurDonnees, contrat.ErreurLecture) as exc:
         print(f"agreger.py: erreur : {exc}", file=sys.stderr)

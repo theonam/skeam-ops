@@ -1,0 +1,1 @@
+.skeam/conso/*.jsonl merge=union linguist-generated=true

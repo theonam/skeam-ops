@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/theonam/skeam-ops/schemas/tarifs-modeles.schema.json",
+  "title": "Tarifs des modèles Claude, dashboard/tarifs-modeles.yaml",
+  "description": "USD par million de jetons, hors taxes, tarif de l'API. CONTRAT.md section 15.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["devise", "tarifs"],
+  "$defs": {
+    "prix": {"type": "number", "minimum": 0},
+    "prix_long": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entree", "sortie", "lecture_cache", "ecriture_cache_5m", "ecriture_cache_1h"],
+      "properties": {
+        "entree": {"$ref": "#/$defs/prix"},
+        "sortie": {"$ref": "#/$defs/prix"},
+        "lecture_cache": {"$ref": "#/$defs/prix"},
+        "ecriture_cache_5m": {"$ref": "#/$defs/prix"},
+        "ecriture_cache_1h": {"$ref": "#/$defs/prix"}
+      }
+    }
+  },
+  "properties": {
+    "devise": {"const": "USD"},
+    "tarifs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["modele", "depuis", "entree", "sortie", "lecture_cache", "ecriture_cache_5m", "ecriture_cache_1h", "recherche_web_mille", "au_dela_100k", "a_confirmer", "source"],
+        "properties": {
+          "modele": {"type": "string", "pattern": "^[a-z0-9][a-z0-9.-]{2,63}$"},
+          "depuis": {"$ref": "commun.schema.json#/$defs/date"},
+          "entree": {"$ref": "#/$defs/prix"},
+          "sortie": {"$ref": "#/$defs/prix"},
+          "lecture_cache": {"$ref": "#/$defs/prix"},
+          "ecriture_cache_5m": {"$ref": "#/$defs/prix"},
+          "ecriture_cache_1h": {"$ref": "#/$defs/prix"},
+          "recherche_web_mille": {"$ref": "#/$defs/prix"},
+          "au_dela_100k": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/prix_long"}]},
+          "a_confirmer": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {"enum": ["entree", "sortie", "lecture_cache", "ecriture_cache_5m", "ecriture_cache_1h", "recherche_web_mille", "au_dela_100k"]}
+          },
+          "source": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

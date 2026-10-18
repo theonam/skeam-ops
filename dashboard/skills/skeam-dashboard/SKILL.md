@@ -49,8 +49,10 @@ Lire `clients.yaml` ; pour chaque entrée `actif: true`, cloner `depot` dans `$T
 
 ```sh
 mkdir -p "$TRAVAIL/clones"
-git clone --depth 1 https://github.com/<proprietaire>/<nom> "$TRAVAIL/clones/<nom>"
+git clone --filter=blob:none --no-single-branch https://github.com/<proprietaire>/<nom> "$TRAVAIL/clones/<nom>"
 ```
+
+Toutes les branches sont nécessaires : `agreger.py` lit, pour la vue interne, le relevé de consommation des agents `.skeam/conso/` à la pointe de chaque branche, CONTRAT.md section 15. Si le dossier `projet/` n'est pas sur la branche par défaut, extraire la branche qui le porte, `git -C "$TRAVAIL/clones/<nom>" checkout projet/skeam-ops` pour egm-app.
 
 skeam-ops lui-même n'est pas à cloner une seconde fois : `agreger.py` lit le projet `ops` dans le `projet/` du répertoire courant.
 
@@ -94,7 +96,7 @@ python -c "import json, sys; print(json.load(open(sys.argv[1]))['audience'])" da
 
 Présenter à Théo, depuis le JSON et sans rien inventer :
 
-- vue interne : nombre de projets, alertes de gravité haute une par ligne, les trois premières tâches de la todo Todoist, les compteurs à tester, à valider et devis à envoyer par projet, total signé et charge de la semaine, en signalant « devis non saisi » et « temps non journalisé » là où ils s'appliquent ;
+- vue interne : nombre de projets, temps machine, durée réelle et coût au tarif API des agents de la semaine, `global.conso`, en signalant « tarifs à confirmer », alertes de gravité haute une par ligne, les trois premières tâches de la todo Todoist, les compteurs à tester, à valider et devis à envoyer par projet, total signé et charge de la semaine, en signalant « devis non saisi » et « temps non journalisé » là où ils s'appliquent ;
 - vue commercial : nombre de clients, total signé, points d'attention ;
 - vue client : nom du client et avancement par lot.
 

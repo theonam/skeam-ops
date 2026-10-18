@@ -1,0 +1,12 @@
+#!/bin/sh
+# Relevé de la consommation des agents Claude : .skeam/README.md. Ne bloque jamais un commit.
+racine=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+script="$racine/.skeam/conso.py"
+[ -f "$script" ] || exit 0
+for py in python3 python; do
+  if command -v "$py" >/dev/null 2>&1; then
+    if command -v timeout >/dev/null 2>&1; then timeout 30 "$py" "$script" pre-commit; else "$py" "$script" pre-commit; fi
+    break
+  fi
+done
+exit 0

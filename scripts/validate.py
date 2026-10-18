@@ -6,6 +6,7 @@ Usage :
     python scripts/validate.py --clients clients.yaml [--racine <dossier des clones>]
     python scripts/validate.py --catalogue catalogue/
     python scripts/validate.py --contrat CONTRAT.md
+    python scripts/validate.py --conso <racine du dépôt> [--conso ...] --tarifs-modeles dashboard/tarifs-modeles.yaml
 
 Les options se combinent. <chemin_projet> est le dossier projet/ lui-même ; la
 racine d'un dépôt qui contient projet/ est aussi acceptée.
@@ -17,11 +18,13 @@ incorrect. Les avertissements ne changent pas le code de sortie.
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import re
 import sys
 from collections import Counter
 from pathlib import Path
 from typing import Any, Iterable
+from zoneinfo import ZoneInfo
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
@@ -755,6 +758,113 @@ def valider_catalogue(dossier: Path, rapport: Rapport, projets: dict[str, dict])
 
 
 # ---------------------------------------------------------------------------
+# Consommation des agents, section 15
+
+
+def instant_conso(texte: str) -> dt.datetime:
+    return dt.datetime.fromisoformat(texte.replace("Z", "+00:00"))
+
+
+def verifier_ligne_conso(rapport: Rapport, chemin: Any, numero: int, ligne: Any, session_fichier: str | None = None) -> bool:
+    """Schéma et contrôles croisés d'une ligne de consommation ; False si la ligne est inutilisable."""
+    if valider_schema(rapport, "conso", ligne, chemin, f"ligne {numero}"):
+        return False
+    valide = True
+
+    def erreur(message: str) -> None:
+        nonlocal valide
+        valide = False
+        rapport.erreur(chemin, f"ligne {numero} : {message}")
+
+    if session_fichier is not None and ligne["session"] != session_fichier:
+        erreur(f"session {ligne['session']} différente de celle du nom de fichier, {session_fichier}")
+    debut, fin = instant_conso(ligne["debut"]), instant_conso(ligne["fin"])
+    if fin < debut:
+        erreur("fin antérieure au début")
+    precedente = None
+    for index, (a, b) in enumerate(ligne["periodes"]):
+        pa, pb = instant_conso(a), instant_conso(b)
+        if pb < pa or pa < debut or pb > fin or (precedente is not None and pa < precedente):
+            erreur(f"periodes[{index}] hors de [debut, fin] ou dans le désordre")
+            break
+        precedente = pb
+    for modele, compteurs in ligne["modeles"].items():
+        if compteurs["ecriture_cache_1h"] > compteurs["ecriture_cache"]:
+            erreur(f"modeles.{modele} : ecriture_cache_1h dépasse ecriture_cache, dont elle est une part")
+    ids = [i["id"] for i in ligne["items"]]
+    if len(set(ids)) != len(ids):
+        erreur("items : id en double")
+    if ligne["items"] and sum(i["part"] for i in ligne["items"]) > 1.001:
+        erreur(f"items : parts de somme {round(sum(i['part'] for i in ligne['items']), 4)}, attendu 1 au plus")
+    if len({i.split("-")[0] for i in ids}) > 1:
+        erreur("items : ids de plusieurs préfixes, un dépôt n'écrit que ceux du sien")
+    libelle = contrat.RE_LIBELLE_CONSO.match(ligne["libelle"] or "") if ligne["libelle"] is not None else True
+    if not libelle or (libelle is not True and libelle.group("mot") and libelle.group("mot") not in contrat.MOTS_LIBELLE_CONSO):
+        erreur("libelle : un mot de la liste du contrat et des ids d'items seulement, jamais de texte libre")
+    if ligne["phase"] is not None and ligne["phase"] not in contrat.MOTS_LIBELLE_CONSO:
+        erreur("phase : un mot de la liste du contrat seulement, jamais de texte libre")
+    if (ligne["lien"] == "aucun") != (not ligne["items"]):
+        erreur("lien vaut aucun si et seulement si items est vide")
+    return valide
+
+
+def fichiers_conso(chemin: Path) -> list[Path]:
+    """Accepte la racine d'un dépôt, son dossier .skeam/conso ou un fichier."""
+    if chemin.is_file():
+        return [chemin]
+    dossier = chemin / ".skeam" / "conso" if (chemin / ".skeam").is_dir() else chemin
+    if not dossier.is_dir() or dossier.name != "conso":
+        return []
+    return sorted(p for p in dossier.iterdir() if p.name != ".gitkeep")
+
+
+def valider_conso(chemin: Path, rapport: Rapport) -> int:
+    """Valide les fichiers de consommation ; renvoie le nombre de fichiers lus."""
+    fichiers = fichiers_conso(chemin)
+    for fichier in fichiers:
+        if fichier.is_dir():
+            rapport.erreur(fichier, "sous-dossier non prévu dans .skeam/conso/")
+            continue
+        nom = contrat.RE_FICHIER_CONSO.match(fichier.name)
+        if not nom:
+            rapport.erreur(fichier, "nom de fichier non conforme, attendu AAAA-MM-JJ-<session>.jsonl")
+            continue
+        lignes = charger(rapport, fichier, contrat.lire_jsonl)
+        if lignes is ECHEC:
+            continue
+        vues: Counter = Counter()
+        debuts = []
+        for numero, ligne in lignes:
+            if not verifier_ligne_conso(rapport, fichier, numero, ligne, nom.group("session")):
+                continue
+            cle = (ligne["session"], ligne["agent_id"] or "", ligne["debut"])
+            vues[cle] += 1
+            if vues[cle] == 2:
+                rapport.avertissement(fichier, f"ligne {numero} : clé en double, normal après une fusion union ; le lecteur garde la ligne la plus riche")
+            debuts.append(instant_conso(ligne["debut"]))
+        if debuts:
+            date_paris = min(debuts).astimezone(ZoneInfo(contrat.FUSEAU)).date().isoformat()
+            if date_paris != nom.group("date"):
+                rapport.avertissement(fichier, f"date du nom {nom.group('date')} différente du premier début de la session à Paris, {date_paris}")
+    return len(fichiers)
+
+
+def verifier_tarifs_modeles(rapport: Rapport, chemin: Any, donnees: Any) -> bool:
+    if valider_schema(rapport, "tarifs-modeles", donnees, chemin):
+        return False
+    for (modele, depuis), nombre in Counter((t["modele"], t["depuis"]) for t in donnees["tarifs"]).items():
+        if nombre > 1:
+            rapport.erreur(chemin, f"tarif de {modele} depuis le {depuis} en double")
+    return True
+
+
+def valider_tarifs_modeles(chemin: Path, rapport: Rapport) -> None:
+    contenu = charger(rapport, chemin, contrat.charger_yaml)
+    if contenu is not ECHEC:
+        verifier_tarifs_modeles(rapport, chemin, contenu)
+
+
+# ---------------------------------------------------------------------------
 # Exemples de CONTRAT.md
 
 RE_MARQUEUR_EXEMPLE = re.compile(r"^<!-- exemple: ([a-z-]+) -->\s*$")
@@ -802,6 +912,11 @@ def valider_exemples_contrat(chemin: Path, rapport: Rapport) -> int:
             elif genre == "temps":
                 for numero, ligne_json in enumerate(contenu.strip().split("\n"), start=1):
                     verifier_ligne_temps(rapport, position, numero, contrat.charger_json_texte(ligne_json))
+            elif genre == "conso":
+                for numero, ligne_json in enumerate(contenu.strip().split("\n"), start=1):
+                    verifier_ligne_conso(rapport, position, numero, contrat.charger_json_texte(ligne_json))
+            elif genre == "tarifs-modeles":
+                verifier_tarifs_modeles(rapport, position, contrat.charger_yaml_texte(contenu))
             elif genre == "chiffrage":
                 verifier_chiffrage(rapport, position, contrat.charger_json_texte(contenu))
             elif genre == "transcript":
@@ -831,16 +946,19 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--racine", type=Path, help="dossier des clones ; avec --clients, valide aussi chaque projet du registre")
     parser.add_argument("--catalogue", type=Path, help="dossier du catalogue, qui contient modules.yaml et tarifs.yaml")
     parser.add_argument("--contrat", type=Path, help="CONTRAT.md dont les exemples sont à valider")
+    parser.add_argument("--conso", type=Path, action="append", default=[],
+                        help="relevé de consommation des agents : racine d'un dépôt, son dossier .skeam/conso ou un fichier ; répétable")
+    parser.add_argument("--tarifs-modeles", type=Path, help="tarifs des modèles, dashboard/tarifs-modeles.yaml")
     args = parser.parse_args(argv)
 
-    if not (args.projets or args.clients or args.catalogue or args.contrat):
+    if not (args.projets or args.clients or args.catalogue or args.contrat or args.conso or args.tarifs_modeles):
         parser.print_usage(sys.stderr)
         print("validate.py: erreur : rien à valider", file=sys.stderr)
         return 2
     if args.racine and not args.clients:
         print("validate.py: erreur : --racine s'utilise avec --clients", file=sys.stderr)
         return 2
-    for chemin in [*args.projets, args.clients, args.racine, args.catalogue, args.contrat]:
+    for chemin in [*args.projets, args.clients, args.racine, args.catalogue, args.contrat, *args.conso, args.tarifs_modeles]:
         if chemin is not None and not chemin.exists():
             print(f"validate.py: erreur : {chemin} introuvable", file=sys.stderr)
             return 2
@@ -861,6 +979,11 @@ def main(argv: list[str] | None = None) -> int:
         bilan.append("catalogue")
     if args.contrat:
         bilan.append(pluriel(valider_exemples_contrat(args.contrat, rapport), "exemple") + " du contrat")
+    if args.conso:
+        bilan.append(pluriel(sum(valider_conso(chemin, rapport) for chemin in args.conso), "fichier") + " de consommation")
+    if args.tarifs_modeles:
+        valider_tarifs_modeles(args.tarifs_modeles, rapport)
+        bilan.append("tarifs des modèles")
 
     rapport.imprimer()
     print(f"Bilan : {', '.join(bilan)} ; {pluriel(rapport.nb_erreurs, 'erreur')}, {pluriel(rapport.nb_avertissements, 'avertissement')}.")

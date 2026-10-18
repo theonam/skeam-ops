@@ -1,6 +1,6 @@
 {
-  "version": 5,
-  "description": "Format figé de la sortie d'agreger.py et blocs du gabarit, version 5 du 2026-10-16, fonctionnalités supplémentaires facturables avec leur prix dans la vue commerciale. Toute évolution passe par Théo, incrémente la version ici et dans template.html, et met à jour dashboard/README.md.",
+  "version": 7,
+  "description": "Format figé de la sortie d'agreger.py et blocs du gabarit, version 7 du 2026-10-17, temps machine, durée réelle et coût des agents dans la vue interne, part estimée montrée à part. Toute évolution passe par Théo, incrémente la version ici et dans template.html, et met à jour dashboard/README.md.",
   "audiences": {
     "interne": {
       "enveloppe": [
@@ -16,6 +16,7 @@
         "apporteur",
         "budget",
         "compteurs",
+        "conso",
         "dates",
         "derniere_synthese",
         "devis",
@@ -40,6 +41,7 @@
       ],
       "lot": [
         "a_faire",
+        "conso",
         "depassement",
         "description",
         "developpe",
@@ -56,6 +58,7 @@
       ],
       "item": [
         "audience",
+        "conso",
         "dependances_externes",
         "estimation_h",
         "heures_reelles",
@@ -71,6 +74,7 @@
       "global": [
         "alertes",
         "charge_semaine",
+        "conso",
         "nb_clients",
         "nb_devis_non_saisis",
         "portefeuille",
@@ -136,6 +140,46 @@
         "lot",
         "prix_vente_ht",
         "titre"
+      ],
+      "conso_projet": [
+        "agents",
+        "cout_usd",
+        "depuis",
+        "estime",
+        "heures_machine",
+        "heures_reelles",
+        "hors_item",
+        "items_hors_backlog",
+        "jetons",
+        "modeles_sans_tarif",
+        "par_modele",
+        "semaine_cout_usd",
+        "semaine_heures_machine",
+        "semaine_heures_reelles",
+        "sessions",
+        "tarifs_a_confirmer"
+      ],
+      "conso_lot": [
+        "cout_usd",
+        "heures_machine",
+        "heures_machine_estimees",
+        "jetons_total"
+      ],
+      "conso_global": [
+        "cout_usd",
+        "heures_machine",
+        "heures_reelles",
+        "semaine_cout_usd",
+        "semaine_heures_machine",
+        "semaine_heures_reelles",
+        "tarifs_a_confirmer",
+        "tarifs_du"
+      ],
+      "conso_modele": [
+        "cout_usd",
+        "heures_machine",
+        "jetons_total",
+        "modele"
       ]
     },
     "commercial": {
@@ -275,6 +319,7 @@
       "detail",
       "infos",
       "budget",
+      "conso",
       "devis-lots",
       "lots",
       "pilotage",

@@ -1,0 +1,42 @@
+# Tarifs fictifs des tests du dashboard. Format : CONTRAT.md section 15.3. claude-mystere-1 n'a pas de tarif.
+devise: USD
+tarifs:
+  - modele: claude-opus-5-5
+    depuis: 2026-10-01
+    entree: 4.00
+    sortie: 20.00
+    lecture_cache: 0.20
+    ecriture_cache_5m: 5.00
+    ecriture_cache_1h: 8.00
+    recherche_web_mille: 10.00
+    au_dela_100k: null
+    a_confirmer:
+      - ecriture_cache_1h
+    source: Tarif fictif de test.
+  - modele: claude-opus-5-5
+    depuis: 2026-12-01
+    entree: 400.00
+    sortie: 2000.00
+    lecture_cache: 20.00
+    ecriture_cache_5m: 500.00
+    ecriture_cache_1h: 800.00
+    recherche_web_mille: 1000.00
+    au_dela_100k: null
+    a_confirmer: []
+    source: Tarif futur fictif, jamais appliqué aux lignes d'octobre.
+  - modele: claude-haiku-5-5
+    depuis: 2026-10-01
+    entree: 0.10
+    sortie: 0.50
+    lecture_cache: 0.01
+    ecriture_cache_5m: 0.125
+    ecriture_cache_1h: 0.20
+    recherche_web_mille: 10.00
+    au_dela_100k:
+      entree: 0.50
+      sortie: 2.50
+      lecture_cache: 0.05
+      ecriture_cache_5m: 0.625
+      ecriture_cache_1h: 1.00
+    a_confirmer: []
+    source: Tarif fictif de test.

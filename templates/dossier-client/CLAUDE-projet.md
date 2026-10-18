@@ -45,6 +45,34 @@ Une ligne par session, ajoutée en fin de fichier `projet/temps/AAAA-MM-<agent>.
 - `item` est l'item principal de la session.
 - `valide` vaut toujours `false` : Théo le passe à `true` quand il relit la semaine.
 
+## Consommation des agents
+
+- **Consommation des agents** : `.skeam/conso/AAAA-MM-JJ-<session>.jsonl` relève automatiquement, pour la conversation et chaque agent de la session, le temps actif, les jetons par modèle et les items travaillés. Le crochet Git `.skeam/githooks/pre-commit` le réécrit à chaque commit et l'ajoute au commit de travail : ne jamais le modifier, le supprimer ni le commiter à part. Le crochet est activé par l'environnement cloud de SKEAM ou, sur un poste, à l'ouverture de la session à la racine du dépôt ; avant le premier commit de la session, lancer `python3 .skeam/conso.py verifier` et, s'il répond « inactif », `python3 .skeam/conso.py installer`. Le fichier ne contient ni contenu de conversation, ni chemin, ni secret, ni coût.
+
+## Dosage des modèles et consignes
+
+Chaque agent lancé, sous-agent, étape de workflow ou session parallèle, reçoit le modèle le moins cher qui fait le travail sans risque. Celui qui lance l'agent choisit ; Théo n'a rien à trancher.
+
+| Modèle | Usage | Exemples |
+| --- | --- | --- |
+| Léger, `haiku` | tâche mécanique, sans jugement, résultat facile à vérifier | chercher des fichiers ou des occurrences, résumer un rapport, mettre en forme un document, relever un état : contrôles, statuts, journal de temps |
+| Intermédiaire, `sonnet` | code et vérifications courantes | écran ou formulaire simple, tests de bout en bout, documentation, relecture des écrans, vérification d'un constat important |
+| Le plus puissant, `opus` | une erreur coûte cher ou se rattrape mal | modèle de données et migrations, argent, TVA, facture électronique, droits et sécurité, fusion de branches, conception d'un module, vérification d'un constat bloquant |
+
+- En cas de doute entre deux niveaux : le plus haut pour ce qui touche à l'argent, aux droits ou aux données, le plus bas sinon.
+- Les agents types du dépôt, dans `.claude/agents/`, imposent leur modèle : `chercheur` en haiku, `relecteur-ecrans` en sonnet, `relecteur-critique` en opus. Leurs modèles sont dans `templates/claude-agents/` de skeam-ops.
+- Dans un workflow, chaque appel d'agent porte son `model` selon ce tableau.
+
+Toute demande à un agent est serrée :
+
+1. elle nomme les fichiers ou dossiers à lire, au lieu de laisser l'agent explorer le dépôt ;
+2. elle fixe le périmètre : un diff, un module, une liste d'items ;
+3. elle impose un format de réponse court et plafonné, par exemple quinze constats au plus dans un schéma structuré ;
+4. elle transmet ce qui est déjà établi, résultat d'un agent précédent, décision ou chemin d'un rapport, au lieu de le faire redécouvrir ;
+5. elle interdit ce qui ne sert pas la tâche : ni compilation ni tests de bout en bout pour un relecteur, aucune écriture pour un chercheur.
+
+Après chaque grosse session, relever `/usage` et noter dans le compte rendu la part de chaque modèle.
+
 ## Interdits
 
 - Ne jamais modifier `projet/interne/` ni `projet/decisions.md` sans instruction explicite de Théo.

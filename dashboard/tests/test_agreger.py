@@ -30,6 +30,7 @@ SCRIPTS = RACINE_OPS / "dashboard" / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 
 import agreger  # noqa: E402
+import conso  # noqa: E402
 import rendre  # noqa: E402
 import validate  # noqa: E402
 
@@ -41,9 +42,13 @@ CHAMPS_ITEM = {
 MOTS_INTERDITS = re.compile(r"estimation|heure|temps|minute|taux|tarif|marge|ecart|depassement", re.I)
 
 
-def vue(audience: str, clients: Path = DONNEES / "clients.yaml", racine: Path = DONNEES / "racine", cwd: Path = DONNEES) -> dict:
+TARIFS_TEST = DONNEES / "tarifs-modeles.yaml"
+
+
+def vue(audience: str, clients: Path = DONNEES / "clients.yaml", racine: Path = DONNEES / "racine", cwd: Path = DONNEES,
+        tarifs: Path | None = TARIFS_TEST) -> dict:
     with contextlib.chdir(cwd), contextlib.redirect_stderr(io.StringIO()):
-        return agreger.agreger(clients, racine, audience, MAINTENANT)
+        return agreger.agreger(clients, racine, audience, MAINTENANT, tarifs_modeles=tarifs)
 
 
 def projet(donnees: dict, slug: str) -> dict:
@@ -90,7 +95,8 @@ class TestVueInterne(unittest.TestCase):
         lot0, lot1, lot2 = self.alpha["lots"]
         self.assertEqual(lot0, {"lot": 0, "titre": "Démo", "description": "Connexion et catalogue des menuiseries.", "nb_items": 2,
                                 "a_faire": 0, "en_cours": 0, "developpe": 2, "termine": 2, "pct_developpe": 100, "pourcentage": 100, "heures_estimees": 7, "heures_reelles": 8.5,
-                                "ecart_pct": 21, "depassement": True})
+                                "ecart_pct": 21, "depassement": True,
+                                "conso": {"heures_machine": 2.0, "heures_machine_estimees": 1.0, "jetons_total": 121_000, "cout_usd": 0.23}})
         # En interne, ALPHA-006 à valider compte et se signale ; le pourcentage du contrat l'exclut toujours.
         self.assertEqual((lot1["pourcentage"], lot1["pct_developpe"], lot1["nb_items"], lot1["developpe"], lot1["termine"]), (20, 40, 5, 2, 1))
         self.assertEqual((lot1["a_faire"], lot1["en_cours"]), (2, 1))
@@ -159,6 +165,7 @@ class TestVueInterne(unittest.TestCase):
             ("depassement_lot", "lot 0"),
             ("bloque_externe", "ALPHA-003"),
             ("en_cours_ancien", "ALPHA-003"),
+            ("conso_tarif_manquant", "dashboard/tarifs-modeles.yaml"),
         })
         self.assertEqual(self.vue["global"]["alertes"][0]["gravite"], "haute")
 
@@ -252,7 +259,7 @@ class TestFiltrage(unittest.TestCase):
 
     JEUX = {
         "donnees": dict(clients=DONNEES / "clients.yaml", racine=DONNEES / "racine", cwd=DONNEES),
-        "exemples": dict(clients=RACINE_OPS / "exemples" / "clients.yaml", racine=RACINE_OPS / "exemples" / "racine", cwd=RACINE_OPS),
+        "exemples": dict(clients=RACINE_OPS / "exemples" / "clients.yaml", racine=RACINE_OPS / "exemples" / "racine", cwd=RACINE_OPS, tarifs=None),
     }
     CACHES = {
         "commercial": {"donnees": {"ALPHA-005", "ALPHA-006"}, "exemples": {"DEMO-006"}},
@@ -266,7 +273,7 @@ class TestFiltrage(unittest.TestCase):
         self.assertNotIn('"ops"', texte)
         for ident in self.CACHES[audience][jeu]:
             self.assertNotIn(ident, texte)
-        for mot in ("SECRET-MARGE", "NOTE-INTERNE", "externe", "todoist", "theonam/"):
+        for mot in ("SECRET-MARGE", "NOTE-INTERNE", "externe", "todoist", "theonam/", "conso", "cout_usd", "jetons", "claude-opus", "session_01"):
             self.assertNotIn(mot, texte)
         for cle in agreger.cles({k: v for k, v in donnees.items() if k != "genere_le"}):
             self.assertIsNone(MOTS_INTERDITS.search(cle), cle)
@@ -311,6 +318,180 @@ class TestFiltrage(unittest.TestCase):
             agreger.verifier_filtrage(fuite)
         with self.assertRaises(agreger.ErreurDonnees):
             agreger.verifier_filtrage({"audience": "client", "genere_le": "x", "projets": [{"slug": "a", "apporteur": "theo"}]})
+        for cle in ("conso", "cout_usd", "jetons_total"):
+            with self.subTest(cle=cle), self.assertRaises(agreger.ErreurDonnees):
+                agreger.verifier_filtrage({"audience": "commercial", "genere_le": "x", "projets": [{"slug": "a", "lots": [{cle: 1}]}]})
+
+
+class TestConso(unittest.TestCase):
+    """Temps machine, durée réelle et coût des agents, vue interne : CONTRAT.md section 15.4.
+
+    Données : racine/alpha-app/.skeam/conso et racine/beta-app/.skeam/conso, une session partagée
+    entre alpha et beta, une ligne en double moins riche, une ligne invalide, un modèle sans tarif.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.vue = vue("interne")
+        cls.alpha = projet(cls.vue, "alpha")
+        cls.beta = projet(cls.vue, "beta")
+
+    def test_projet(self):
+        c = self.alpha["conso"]
+        self.assertEqual((c["depuis"], c["sessions"], c["agents"]), ("2026-10-07", 2, 5))
+        # 60 + 60 + 30 + 10 + 60 minutes ; réunion : 90 + 30 + 10 le 14, 60 le 7.
+        self.assertEqual((c["heures_machine"], c["heures_reelles"]), (3.67, 3.17))
+        self.assertEqual((c["semaine_heures_machine"], c["semaine_heures_reelles"], c["semaine_cout_usd"]), (2.67, 2.17, 0.98))
+        self.assertEqual(c["cout_usd"], 1.18)
+        self.assertTrue(c["tarifs_a_confirmer"])
+        self.assertEqual(c["modeles_sans_tarif"], [])
+        self.assertEqual(c["hors_item"], {"heures_machine": 0.5, "cout_usd": 0.03})
+        # La ligne du 7 liée par session est comptée et montrée à part, estimée.
+        self.assertEqual(c["estime"]["heures_machine"], 1.0)
+        self.assertEqual(c["items_hors_backlog"], [{"id": "ALPHA-099", "heures_machine": 0.17, "cout_usd": 0.0}])
+        self.assertEqual([(m["modele"], m["heures_machine"]) for m in c["par_modele"]], [("claude-opus-5-5", 2.5), ("claude-haiku-5-5", 1.17)])
+        self.assertEqual(c["jetons"], {"entree": 53_100, "sortie": 14_600, "lecture_cache": 1_060_000, "ecriture_cache": 100_000})
+
+    def test_lots_et_items(self):
+        lots = {l["lot"]: l["conso"] for l in self.alpha["lots"]}
+        self.assertEqual(lots[1], {"heures_machine": 1.0, "heures_machine_estimees": 0.0, "jetons_total": 1_103_000, "cout_usd": 0.91})
+        self.assertEqual(lots[0]["heures_machine"], 2.0)
+        self.assertEqual(lots[0]["cout_usd"], 0.23)
+        self.assertIsNone(lots[2])
+        items = {i["id"]: i["conso"] for i in self.alpha["items"]}
+        self.assertEqual(items["ALPHA-003"], {"heures_machine": 0.5, "heures_machine_estimees": 0.0, "jetons_total": 551_500, "cout_usd": 0.46})
+        self.assertIsNone(items["ALPHA-005"])
+        # À côté du temps passé validé, jamais ajouté : les heures réelles des items restent celles du journal.
+        self.assertEqual(self.alpha["lots"][1]["heures_reelles"], 4.5)
+
+    def test_partage_entre_projets_et_tarif_manquant(self):
+        b = self.beta["conso"]
+        self.assertEqual(b["heures_machine"], 0.83)
+        self.assertIsNone(b["cout_usd"])
+        self.assertEqual(b["modeles_sans_tarif"], ["claude-mystere-1"])
+        self.assertEqual({i["id"]: i["conso"]["cout_usd"] for i in self.beta["items"] if i["conso"]}, {"BETA-002": 0.01, "BETA-003": None})
+        self.assertIsNone(projet(self.vue, "ops")["conso"])
+        g = self.vue["global"]["conso"]
+        # La ligne de la session partagée, lue dans alpha et beta, compte une fois.
+        self.assertEqual((g["heures_machine"], g["heures_reelles"], g["cout_usd"], g["tarifs_du"]), (4.5, 3.67, None, "2026-10-01"))
+        alertes = [a for a in self.vue["global"]["alertes"] if a["type"].startswith("conso")]
+        self.assertEqual([(a["slug"], a["gravite"]) for a in alertes], [("beta", "basse")])
+
+    def test_formule_de_cout(self):
+        prix = conso.charger_tarifs(TARIFS_TEST)
+        compteurs = {"entree": 1000, "sortie": 2000, "lecture_cache": 1_000_000, "ecriture_cache": 100_000, "ecriture_cache_1h": 50_000, "recherches_web": 2}
+        valeur, confirmer = conso.cout_modele(compteurs, conso.tarif(prix, "claude-opus-5-5", "2026-10-14"))
+        self.assertAlmostEqual(valeur, 0.004 + 0.04 + 0.2 + 0.5 + 0.15 + 0.02)
+        self.assertTrue(confirmer)
+        long = {"entree": 50_000, "sortie": 1000, "lecture_cache": 60_000, "ecriture_cache": 0, "ecriture_cache_1h": 0, "recherches_web": 0,
+                "au_dela_100k": {"entree": 50_000, "sortie": 1000, "lecture_cache": 60_000, "ecriture_cache": 0}}
+        valeur, confirmer = conso.cout_modele(long, conso.tarif(prix, "claude-haiku-5-5", "2026-10-14"))
+        self.assertAlmostEqual(valeur, 0.025 + 0.0025 + 0.003)
+        self.assertFalse(confirmer)
+        # Tarif daté : l'entrée en vigueur au début de la ligne, à défaut la plus ancienne.
+        self.assertEqual(conso.tarif(prix, "claude-opus-5-5", "2026-12-15")["entree"], 400)
+        self.assertEqual(conso.tarif(prix, "claude-opus-5-5", "2026-09-01")["depuis"], "2026-10-01")
+        self.assertIsNone(conso.tarif(prix, "claude-mystere-1", "2026-10-14"))
+
+    def test_ligne_invalide_signalee(self):
+        erreurs = io.StringIO()
+        with contextlib.redirect_stderr(erreurs):
+            lignes = conso.lire_depot(DONNEES / "racine" / "alpha-app")
+        self.assertIn("ligne 7 ignorée", erreurs.getvalue())
+        self.assertEqual(len(lignes), 7)
+        self.assertEqual(len(conso.dedoublonner((l, "alpha") for l in lignes)), 6)
+
+    def test_ligne_partagee_sans_duree_reelle_doublee(self):
+        """Une ligne d'une heure répartie sur deux items et deux projets ne donne jamais plus d'une heure réelle."""
+        ligne = {"version": 1, "session": "s-partagee-01", "session_distante": None, "agent_id": None, "type": "principal",
+                 "run": None, "phase": None, "libelle": None, "debut": "2026-10-14T10:00:00+02:00", "fin": "2026-10-14T11:00:00+02:00",
+                 "periodes": [["2026-10-14T10:00:00+02:00", "2026-10-14T11:00:00+02:00"]], "minutes_actives": 60.0, "messages": 4,
+                 "modeles": {"claude-opus-5-5": {"entree": 10, "sortie": 10, "lecture_cache": 0, "ecriture_cache": 0, "ecriture_cache_1h": 0, "recherches_web": 0}},
+                 "items": [{"id": "ALPHA-001", "part": 0.3}, {"id": "ALPHA-002", "part": 0.3}, {"id": "BETA-001", "part": 0.4}],
+                 "lien": "commits", "commits": [], "releve_le": "2026-10-14T12:00:00+02:00"}
+        resultat = conso.ventiler([conso.Releve(ligne, "alpha")], {"ALPHA": "alpha", "BETA": "beta"},
+                                  {"alpha": {"ALPHA-001": 0, "ALPHA-002": 0}, "beta": {"BETA-001": 0}},
+                                  conso.charger_tarifs(TARIFS_TEST), dt.date(2026, 10, 12))
+        alpha, beta = resultat.projets["alpha"], resultat.projets["beta"]
+        self.assertEqual(alpha.item("ALPHA-001"), {"heures_machine": 0.3, "heures_machine_estimees": 0.0, "jetons_total": 6, "cout_usd": 0.0})
+        self.assertNotIn("heures_reelles", alpha.lot(["ALPHA-001", "ALPHA-002"]))
+        self.assertEqual(alpha.lot(["ALPHA-001", "ALPHA-002"])["heures_machine"], 0.6)
+        # Le projet qui porte 0,6 de la ligne en compte la durée réelle, celui qui en porte 0,4 non ; le global une fois.
+        self.assertEqual((alpha.sortie()["heures_machine"], alpha.sortie()["heures_reelles"]), (0.6, 1.0))
+        self.assertEqual((beta.sortie()["heures_machine"], beta.sortie()["heures_reelles"]), (0.4, 0.0))
+        self.assertEqual(resultat.globale()["heures_reelles"], 1.0)
+
+    def test_resume_en_ligne_de_commande(self):
+        sortie, erreurs = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(sortie), contextlib.redirect_stderr(erreurs):
+            code = conso.main([str(DONNEES / "racine" / "beta-app"), "--tarifs", str(TARIFS_TEST)])
+        self.assertEqual(code, 0)
+        self.assertIn("h réelles", sortie.getvalue())
+
+    def test_copies_de_depots_differents_reunies(self):
+        """Chaque dépôt n'écrit que les items de son préfixe : la même ligne lue dans deux dépôts les réunit."""
+        base = {"version": 1, "session": "s-partagee-02", "session_distante": None, "agent_id": None, "type": "principal",
+                "run": None, "phase": None, "libelle": None, "debut": "2026-10-14T10:00:00+02:00", "fin": "2026-10-14T11:00:00+02:00",
+                "periodes": [["2026-10-14T10:00:00+02:00", "2026-10-14T11:00:00+02:00"]], "minutes_actives": 60.0, "messages": 4,
+                "modeles": {"claude-opus-5-5": {"entree": 10, "sortie": 10, "lecture_cache": 0, "ecriture_cache": 0, "ecriture_cache_1h": 0, "recherches_web": 0}},
+                "lien": "commits", "commits": [], "releve_le": "2026-10-14T12:00:00+02:00"}
+        alpha = dict(base, items=[{"id": "ALPHA-001", "part": 0.6}])
+        beta = dict(base, items=[{"id": "BETA-001", "part": 0.4}], messages=5, releve_le="2026-10-14T13:00:00+02:00")
+        releves = conso.dedoublonner([(alpha, "alpha"), (beta, "beta")])
+        self.assertEqual(len(releves), 1)
+        self.assertEqual((releves[0].ligne["items"], releves[0].ligne["messages"], releves[0].depots),
+                         ([{"id": "ALPHA-001", "part": 0.6}, {"id": "BETA-001", "part": 0.4}], 5, ["alpha", "beta"]))
+        # Lue dans alpha seulement : alpha garde sa part, la part de beta ne compte qu'au global.
+        seule = conso.ventiler(conso.dedoublonner([(alpha, "alpha")]), {"ALPHA": "alpha", "BETA": "beta"},
+                               {"alpha": {"ALPHA-001": 0}, "beta": {}}, conso.charger_tarifs(TARIFS_TEST), dt.date(2026, 10, 12))
+        self.assertEqual((seule.projets["alpha"].sortie()["heures_machine"], seule.projets["alpha"].sortie()["hors_item"]["heures_machine"]), (0.6, 0.0))
+        self.assertEqual(seule.globale()["heures_machine"], 1.0)
+
+    def test_union(self):
+        t = lambda h, m: dt.datetime(2026, 10, 14, h, m, tzinfo=ZoneInfo("Europe/Paris"))
+        self.assertEqual(conso.union_minutes([(t(9, 0), t(10, 0)), (t(9, 30), t(10, 30)), (t(11, 0), t(11, 15))]), 105)
+
+    def test_tarifs_invalides(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            faux = Path(tmp) / "tarifs.yaml"
+            faux.write_text("devise: EUR\ntarifs: []\n", encoding="utf-8")
+            with self.assertRaises(agreger.ErreurDonnees):
+                vue("interne", tarifs=faux)
+            # Les vues commercial et client ne lisent ni les relevés ni les tarifs.
+            self.assertNotIn("conso", json.dumps(vue("commercial", tarifs=faux)))
+
+
+class TestConsoGit(unittest.TestCase):
+    """Lecture dans un vrai clone : toutes les branches, la ligne la plus riche gardée ; sessions sans relevé."""
+
+    ENV = {"GIT_CONFIG_GLOBAL": "/dev/null", "GIT_CONFIG_NOSYSTEM": "1", "GIT_AUTHOR_NAME": "T", "GIT_AUTHOR_EMAIL": "t@example.invalid",
+           "GIT_COMMITTER_NAME": "T", "GIT_COMMITTER_EMAIL": "t@example.invalid"}
+
+    def git(self, depot, *args):
+        import os
+        return subprocess.run(["git", "-C", str(depot), *args], capture_output=True, text=True, check=True, env={**os.environ, **self.ENV})
+
+    def test_branches(self):
+        source = DONNEES / "racine" / "alpha-app" / ".skeam" / "conso" / "2026-10-07-11111111-aaaa-4bbb-8ccc-000000000002.jsonl"
+        ligne = json.loads(source.read_text(encoding="utf-8"))
+        with tempfile.TemporaryDirectory() as tmp:
+            depot = Path(tmp) / "depot"
+            fichier = depot / ".skeam" / "conso" / source.name
+            fichier.parent.mkdir(parents=True)
+            self.git(depot.parent, "init", "-q", "-b", "main", str(depot))
+            fichier.write_text(json.dumps(ligne) + "\n", encoding="utf-8")
+            self.git(depot, "add", "-A")
+            self.git(depot, "commit", "-q", "-m", "ALPHA-002: v1", "-m", "Claude-Session: https://claude.ai/code/session_01Connue0001")
+            self.git(depot, "checkout", "-q", "-b", "wip")
+            fichier.write_text(json.dumps(dict(ligne, messages=9, releve_le="2026-10-08T10:00:00+02:00")) + "\n", encoding="utf-8")
+            self.git(depot, "commit", "-q", "-am", "ALPHA-002: v2", "-m", "Claude-Session: https://claude.ai/code/session_01Inconnue01")
+            self.git(depot, "checkout", "-q", "main")
+            fichier.unlink()
+            lignes = conso.lire_depot(depot)
+            self.assertEqual(sorted(l["messages"] for l in lignes), [6, 9])
+            self.assertEqual([r.ligne["messages"] for r in conso.dedoublonner((l, "alpha") for l in lignes)], [9])
+            self.assertEqual(conso.sessions_sans_releve(depot, "2026-01-01", {"session_01Connue0001"}), 1)
+            self.assertEqual(conso.sessions_sans_releve(DONNEES / "racine" / "alpha-app", "2026-01-01", set()), 0)
 
 
 class TestLigneDeCommande(unittest.TestCase):
@@ -387,7 +568,11 @@ class TestRendu(unittest.TestCase):
                 page = Path(tmp) / f"{audience}.html"
                 resultat = lancer(self.SCRIPT, str(vue_json), "--sortie", str(page))
                 self.assertEqual(resultat.returncode, 0, resultat.stderr)
-                self.assertIn('"audience":"' + audience + '"', page.read_text(encoding="utf-8"))
+                texte = page.read_text(encoding="utf-8")
+                self.assertIn('"audience":"' + audience + '"', texte)
+                donnees_page = json.loads(re.search(r'<script id="donnees" type="application/json">(.*?)</script>', texte, re.S).group(1))
+                # Le bloc des agents n'a de données que dans la vue interne.
+                self.assertEqual("conso" in json.dumps(donnees_page), audience == "interne")
 
     INSTANTANE = {
         "releve_le": "2026-10-15T09:00:00+02:00",
@@ -470,6 +655,15 @@ class TestGabaritFige(unittest.TestCase):
                         for cle in ("budget", "temps"):
                             if cle in attendu:
                                 self.assertEqual(sorted(p[cle]), attendu[cle])
+                        if p.get("conso"):
+                            self.assertEqual(sorted(p["conso"]), attendu["conso_projet"])
+                            for modele in p["conso"]["par_modele"]:
+                                self.assertEqual(sorted(modele), attendu["conso_modele"])
+                        for element in [*p["lots"], *p["items"]]:
+                            if element.get("conso"):
+                                self.assertEqual(sorted(element["conso"]), attendu["conso_lot"])
+                    if donnees.get("global", {}).get("conso"):
+                        self.assertEqual(sorted(donnees["global"]["conso"]), attendu["conso_global"])
                         for devis in p.get("devis", []):
                             self.assertEqual(sorted(devis), attendu["devis"])
                             for partie in devis["perimetre"] or []:
