@@ -597,33 +597,27 @@ class TestEnvironnementCloud(BaseTemp):
         modele.mkdir(parents=True)
         shutil.copy(SCRIPT, modele / "conso.py")
         git(racine / "skeam-ops", "init", "-q")
-        env = {"SKEAM_BIN": str(self.tmp / "bin"), "SKEAM_RACINES": str(racine)}
+        env = {"SKEAM_RACINES": str(racine)}
         for _ in range(2):
             sortie = self.lancer("sh", str(self.SETUP), **env)
             self.assertEqual((sortie.returncode, sortie.stdout, sortie.stderr), (0, "", ""))
         self.assertEqual(git(depot, "config", "--get", "core.hooksPath").stdout.strip(), ".skeam/githooks")
         # Le gabarit rangé ailleurs que dans <dépôt>/.skeam n'active rien.
         self.assertEqual(git(racine / "skeam-ops", "config", "--get", "core.hooksPath", check=False).stdout.strip(), "")
-        reglages = json.loads((self.tmp / "home" / ".claude" / "settings.json").read_text(encoding="utf-8"))
-        self.assertEqual({k: len(v) for k, v in reglages["hooks"].items()}, {"SessionStart": 1, "UserPromptSubmit": 1})
-        # Un dépôt cloné en cours de session, session ouverte au-dessus des dépôts : activé par le crochet utilisateur.
-        nouveau = nouveau_depot(racine / "autre-app", prefixe="ZED")
-        commande = reglages["hooks"]["UserPromptSubmit"][0]["hooks"][0]["command"]
-        sortie = self.lancer("sh", "-c", commande, CLAUDE_PROJECT_DIR=str(racine))
-        self.assertEqual((sortie.returncode, sortie.stdout), (0, ""))
-        self.assertEqual(git(nouveau, "config", "--get", "core.hooksPath").stdout.strip(), ".skeam/githooks")
-        # Sans le programme d'activation, conteneur neuf sans script d'installation : la commande ne fait rien et sort en 0.
-        shutil.rmtree(self.tmp / "bin")
-        self.assertEqual(self.lancer("sh", "-c", commande).returncode, 0)
 
-    def test_reglages_existants_gardes(self):
+    def test_aucun_reglage_utilisateur_touche(self):
+        """Version réduite du 2026-10-18 : ni ~/.claude/settings.json créé ou modifié, ni programme installé."""
         (self.tmp / "home" / ".claude").mkdir(parents=True)
         existant = {"permissions": {"allow": ["Bash(ls)"]}, "hooks": {"Stop": [{"hooks": [{"type": "command", "command": "x"}]}]}}
-        (self.tmp / "home" / ".claude" / "settings.json").write_text(json.dumps(existant), encoding="utf-8")
-        self.lancer("sh", str(self.SETUP), SKEAM_BIN=str(self.tmp / "bin"), SKEAM_RACINES=str(self.tmp / "vide"))
-        reglages = json.loads((self.tmp / "home" / ".claude" / "settings.json").read_text(encoding="utf-8"))
-        self.assertEqual((reglages["permissions"], reglages["hooks"]["Stop"]), (existant["permissions"], existant["hooks"]["Stop"]))
-        self.assertIn("SessionStart", reglages["hooks"])
+        reglages = self.tmp / "home" / ".claude" / "settings.json"
+        reglages.write_text(json.dumps(existant), encoding="utf-8")
+        avant = reglages.read_bytes()
+        sortie = self.lancer("sh", str(self.SETUP), SKEAM_RACINES=str(self.tmp / "vide"))
+        self.assertEqual((sortie.returncode, sortie.stdout, sortie.stderr), (0, "", ""))
+        self.assertEqual(reglages.read_bytes(), avant)
+        texte = self.SETUP.read_text(encoding="utf-8")
+        for interdit in ("settings.json", "UserPromptSubmit", "/usr/local/bin"):
+            self.assertNotIn(interdit, texte)
 
 
 class TestFusionGit(BaseTemp):
