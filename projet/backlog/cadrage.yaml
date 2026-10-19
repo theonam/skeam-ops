@@ -157,3 +157,22 @@ items:
     a_valider: false
     commit: ee5bcc4
     maj: 2026-10-15
+  - id: OPS-310
+    titre: Studio LinkedIn, de la note brouillon au post validé
+    module: null
+    lot: 1
+    priorite: souhaitable
+    statut: en_cours
+    taille: M
+    estimation_h: 6
+    dependances: []
+    criteres_acceptation:
+      - Un artefact Studio LinkedIn garde les idées, les posts et la charte dans sa base, et s'ouvre au téléphone comme à l'ordinateur.
+      - Depuis une idée, « Rédiger » produit deux versions selon la charte et « Relire » applique la grille du client lecteur dans un appel séparé.
+      - Un post suit les statuts idée, brouillon, relu, validé par Théo, validé par Jonathan, programmé, publié, et se copie en un clic pour LinkedIn.
+      - La charte, le lexique et le post de référence sont modifiables dans l'onglet Charte, et leur source est versionnée dans skills/studio-linkedin/.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-19
+    notes: Besoin découvert le 2026-10-19, système validé par Théo avec les propositions par défaut du doc « Système de posts LinkedIn ». Récolte Plaud et outil de publication en phases 2 et 3.

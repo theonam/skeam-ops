@@ -1,0 +1,674 @@
+<title>Studio LinkedIn</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Public+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout : une barre d'onglets collante, puis une colonne de travail ; l'Atelier passe en deux colonnes (liste des posts, fiche du post) au-delà de 960 px. */
+:root {
+  --bg: #f4f6fb;
+  --surface: #ffffff;
+  --surface-2: #eceff8;
+  --fg: #131a30;
+  --muted: #5a6381;
+  --line: #d9deeb;
+  --accent: #2448e6;
+  --accent-ink: #ffffff;
+  --accent-soft: rgba(36, 72, 230, 0.09);
+  --good: #17805a;
+  --good-soft: rgba(23, 128, 90, 0.1);
+  --warn: #a35d00;
+  --warn-soft: rgba(163, 93, 0, 0.1);
+  --bad: #b8332f;
+  --bad-soft: rgba(184, 51, 47, 0.09);
+  --fold: rgba(36, 72, 230, 0.05);
+  --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Public Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --radius: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1120; --surface: #151a2d; --surface-2: #1c2237; --fg: #e7eaf5; --muted: #98a1bf; --line: #2a3150;
+    --accent: #7590ff; --accent-ink: #0d1120; --accent-soft: rgba(117, 144, 255, 0.15);
+    --good: #4cc38a; --good-soft: rgba(76, 195, 138, 0.14); --warn: #f0a640; --warn-soft: rgba(240, 166, 64, 0.14);
+    --bad: #f07272; --bad-soft: rgba(240, 114, 114, 0.14); --fold: rgba(117, 144, 255, 0.08);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1120; --surface: #151a2d; --surface-2: #1c2237; --fg: #e7eaf5; --muted: #98a1bf; --line: #2a3150;
+  --accent: #7590ff; --accent-ink: #0d1120; --accent-soft: rgba(117, 144, 255, 0.15);
+  --good: #4cc38a; --good-soft: rgba(76, 195, 138, 0.14); --warn: #f0a640; --warn-soft: rgba(240, 166, 64, 0.14);
+  --bad: #f07272; --bad-soft: rgba(240, 114, 114, 0.14); --fold: rgba(117, 144, 255, 0.08);
+  color-scheme: dark;
+}
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.5; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+* { box-sizing: border-box; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.15; }
+h2 { font-size: 1.35rem; }
+h3 { font-size: 1.05rem; }
+p { margin: 0; }
+button, input, textarea, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line); }
+.top-inner { max-width: 1240px; margin: 0 auto; padding-block: 10px 0; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 8px; }
+.brand { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.mark { width: 26px; height: 26px; border-radius: 6px; background: var(--accent); display: grid; place-items: center; flex: none; }
+.mark i { width: 10px; height: 10px; background: var(--accent-ink); transform: rotate(45deg); display: block; }
+.brand h1 { font-size: 1.2rem; }
+.brand .sub { color: var(--muted); font-size: 0.85rem; }
+.sync { margin-left: auto; font-size: 0.8rem; color: var(--muted); }
+.tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
+.tab { background: none; border: 0; border-bottom: 2px solid transparent; padding: 10px 14px; cursor: pointer; color: var(--muted); font-weight: 600; white-space: nowrap; min-height: 44px; }
+.tab[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); }
+.tab .n { font-variant-numeric: tabular-nums; font-weight: 500; margin-left: 4px; color: var(--muted); }
+
+main { max-width: 1240px; margin: 0 auto; padding-block: 20px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.view { display: grid; gap: 20px; }
+.lead { color: var(--muted); max-width: 70ch; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; display: grid; gap: 14px; min-width: 0; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.grow { flex: 1 1 auto; }
+.label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.field { display: grid; gap: 6px; min-width: 0; }
+.field input, .field textarea, .field select { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; width: 100%; min-height: 44px; }
+.field textarea { resize: vertical; line-height: 1.5; }
+.hint { font-size: 0.82rem; color: var(--muted); }
+
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 9px 14px; min-height: 44px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.quiet { border-color: transparent; background: none; color: var(--muted); }
+.btn.quiet:hover { color: var(--fg); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-size: 0.8rem; padding: 3px 10px; border-radius: 999px; background: var(--surface-2); color: var(--fg); border: 1px solid transparent; }
+button.chip { cursor: pointer; min-height: 36px; padding: 4px 12px; }
+button.chip[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--fg); }
+.pill { font-size: 0.75rem; font-weight: 600; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+.s-idee { background: var(--surface-2); color: var(--muted); }
+.s-brouillon { background: var(--warn-soft); color: var(--warn); }
+.s-relu { background: var(--accent-soft); color: var(--accent); }
+.s-valide_theo, .s-valide_jonathan { background: var(--good-soft); color: var(--good); }
+.s-programme, .s-publie { background: var(--accent); color: var(--accent-ink); }
+.s-ecarte { background: var(--bad-soft); color: var(--bad); }
+
+.notice { border-radius: 8px; padding: 10px 12px; background: var(--warn-soft); color: var(--fg); border-left: 3px solid var(--warn); font-size: 0.9rem; }
+.notice.info { background: var(--accent-soft); border-left-color: var(--accent); }
+.notice.bad { background: var(--bad-soft); border-left-color: var(--bad); }
+.empty { color: var(--muted); padding: 24px; text-align: center; border: 1px dashed var(--line); border-radius: var(--radius); }
+
+/* Idées */
+.idea-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); }
+.idea { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; display: grid; gap: 10px; align-content: start; }
+.idea p { white-space: pre-wrap; }
+.idea .src { font-size: 0.82rem; color: var(--muted); }
+details.ecartees summary { cursor: pointer; color: var(--muted); font-weight: 600; min-height: 44px; display: flex; align-items: center; }
+
+/* Atelier */
+.atelier { display: grid; gap: 16px; }
+@media (min-width: 960px) { .atelier { grid-template-columns: 300px minmax(0, 1fr); align-items: start; } }
+.list { display: grid; gap: 6px; align-content: start; }
+.item { text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; cursor: pointer; display: grid; gap: 6px; min-height: 44px; }
+.item[aria-current="true"] { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+.item .t { font-weight: 600; line-height: 1.3; }
+.group-title { margin-top: 8px; }
+
+.steps { display: flex; flex-wrap: wrap; gap: 4px; list-style: none; padding: 0; margin: 0; counter-reset: s; }
+.steps li { font-size: 0.78rem; padding: 4px 10px; border-radius: 999px; background: var(--surface-2); color: var(--muted); }
+.steps li.done { background: var(--good-soft); color: var(--good); }
+.steps li.now { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+
+.versions { display: grid; gap: 12px; }
+@media (min-width: 1180px) { .versions { grid-template-columns: 1fr 1fr; } }
+.version { border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; display: grid; gap: 10px; align-content: start; background: var(--bg); min-width: 0; }
+.version.chosen { border-color: var(--accent); }
+.version pre { white-space: pre-wrap; font: inherit; margin: 0; overflow-wrap: anywhere; }
+
+.li-card { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 14px; display: grid; gap: 10px; max-width: 560px; }
+.li-head { display: flex; gap: 10px; align-items: center; }
+.avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-weight: 700; font-family: var(--font-display); flex: none; }
+.li-name { font-weight: 600; line-height: 1.2; }
+.li-role { font-size: 0.8rem; color: var(--muted); }
+.li-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.li-text mark { background: var(--fold); color: inherit; }
+.li-more { color: var(--muted); font-size: 0.85rem; border-top: 1px dashed var(--line); padding-top: 6px; }
+.count { font-variant-numeric: tabular-nums; font-size: 0.85rem; }
+.count.ok { color: var(--good); }
+.count.out { color: var(--warn); }
+
+.review { display: grid; gap: 6px; }
+.check { display: grid; grid-template-columns: 22px 1fr; gap: 8px; font-size: 0.9rem; }
+.check .mk { font-weight: 700; }
+.check.ok .mk { color: var(--good); }
+.check.ko .mk { color: var(--bad); }
+.check .rq { color: var(--muted); }
+
+.thinking { display: flex; gap: 10px; align-items: center; color: var(--muted); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: pulse 1.2s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: 0.25; } }
+@media (prefers-reduced-motion: reduce) { .dot { animation: none; } }
+
+/* Publiés */
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 760px; font-size: 0.9rem; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 600; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+td input { width: 90px; text-align: right; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; font-variant-numeric: tabular-nums; }
+tr:last-child td { border-bottom: 0; }
+.stats { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); }
+.stat .v { font-family: var(--font-display); font-size: 1.6rem; font-variant-numeric: tabular-nums; }
+
+/* Charte */
+.charte { display: grid; gap: 16px; }
+@media (min-width: 960px) { .charte { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .charte .wide { grid-column: 1 / -1; } }
+.charte textarea { min-height: 160px; font-size: 0.92rem; }
+
+#toast { position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; max-width: calc(100% - 32px); z-index: 20; }
+</style>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <span class="mark" aria-hidden="true"><i></i></span>
+      <h1>Studio LinkedIn</h1>
+      <span class="sub">de la note brouillon au post validé</span>
+      <span class="sync" id="sync">Connexion à la base…</span>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Sections du Studio">
+      <button class="tab" role="tab" id="tab-idees" data-tab="idees" aria-selected="true">Idées<span class="n" id="n-idees"></span></button>
+      <button class="tab" role="tab" id="tab-atelier" data-tab="atelier" aria-selected="false">Atelier<span class="n" id="n-atelier"></span></button>
+      <button class="tab" role="tab" id="tab-publies" data-tab="publies" aria-selected="false">Publiés<span class="n" id="n-publies"></span></button>
+      <button class="tab" role="tab" id="tab-charte" data-tab="charte" aria-selected="false">Charte</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="notice bad" id="offline" hidden>La base du Studio ne répond pas sur cette vue. Ouvre le Studio depuis claude.ai, connecté à ton compte, pour retrouver les idées et les posts.</div>
+  <div class="notice" id="readonly" hidden>Tu consultes le Studio en lecture seule. Pour modifier, demande à Théo un accès « Contributeur » ou « Éditeur ».</div>
+
+  <section class="view" id="v-idees" role="tabpanel" aria-labelledby="tab-idees">
+    <form class="panel" id="idea-form">
+      <div>
+        <h2>Nouvelle idée</h2>
+        <p class="lead">Une ou deux phrases brouillon suffisent : ce qui s'est passé, ce que tu en penses. Le Studio s'occupe de la mise en forme.</p>
+      </div>
+      <div class="field">
+        <label class="label" for="f-titre">Titre court</label>
+        <input id="f-titre" required maxlength="120" placeholder="Le dirigeant qui parle d'IA et répond Excel">
+      </div>
+      <div class="field">
+        <label class="label" for="f-situation">Ce qui s'est passé</label>
+        <textarea id="f-situation" rows="3" required placeholder="En rendez-vous, un dirigeant m'a dit…"></textarea>
+      </div>
+      <div class="field">
+        <label class="label" for="f-angle">Ce que j'en pense</label>
+        <textarea id="f-angle" rows="2" placeholder="Ton angle, ta conclusion, même mal dite"></textarea>
+      </div>
+      <div class="field">
+        <span class="label">Ce que le dirigeant y gagne</span>
+        <div class="chips" id="f-benefices"></div>
+      </div>
+      <div class="field">
+        <label class="label" for="f-source">Source</label>
+        <input id="f-source" maxlength="160" placeholder="Rendez-vous du 21/10, note vocale, réunion Plaud…">
+      </div>
+      <div class="row"><button class="btn primary" type="submit" id="f-submit">Ajouter l'idée</button><span class="hint">La récolte automatique depuis Plaud arrive en phase 2.</span></div>
+    </form>
+    <div class="row"><h2 class="grow">Idées en attente</h2></div>
+    <div id="idea-list"></div>
+  </section>
+
+  <section class="view" id="v-atelier" role="tabpanel" aria-labelledby="tab-atelier" hidden>
+    <div class="atelier">
+      <div class="list" id="post-list"></div>
+      <div id="editor"></div>
+    </div>
+  </section>
+
+  <section class="view" id="v-publies" role="tabpanel" aria-labelledby="tab-publies" hidden>
+    <div>
+      <h2>Programmés et publiés</h2>
+      <p class="lead">Note les chiffres sept jours après la publication. Ils servent au bilan du mois et à choisir les prochains angles.</p>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div id="pub-table"></div>
+  </section>
+
+  <section class="view" id="v-charte" role="tabpanel" aria-labelledby="tab-charte" hidden>
+    <div class="row">
+      <div class="grow">
+        <h2>Charte</h2>
+        <p class="lead">Le rédacteur et le relecteur lisent ces six pièces à chaque appel. Ce que tu changes ici change tous les prochains posts.</p>
+      </div>
+      <span class="hint" id="charte-version"></span>
+    </div>
+    <div id="charte-empty" class="empty" hidden>La charte n'est pas encore chargée dans la base. Demande à Claude de la charger, ou colle-la dans les champs ci-dessous puis enregistre.</div>
+    <form class="charte" id="charte-form">
+      <div class="field"><label class="label" for="c-identite">Qui je suis</label><textarea id="c-identite"></textarea></div>
+      <div class="field"><label class="label" for="c-direction">Direction éditoriale</label><textarea id="c-direction"></textarea></div>
+      <div class="field"><label class="label" for="c-lexique">Lexique de la cible</label><textarea id="c-lexique"></textarea></div>
+      <div class="field"><label class="label" for="c-gardefous">Garde-fous et sujets interdits</label><textarea id="c-gardefous"></textarea></div>
+      <div class="field wide"><label class="label" for="c-reference">Posts de référence</label><textarea id="c-reference"></textarea></div>
+      <div class="field wide"><label class="label" for="c-grille">Grille du relecteur</label><textarea id="c-grille"></textarea></div>
+      <div class="row wide"><button class="btn primary" type="submit" id="c-save">Enregistrer la charte</button><span class="hint">Chaque enregistrement garde une copie datée de la version précédente.</span></div>
+    </form>
+  </section>
+</main>
+<div id="toast" role="status" hidden></div>
+
+<script>
+(() => {
+  const BENEFICES = ["Image de marque", "Productivité", "Marge et trésorerie", "Fiabilité", "Confort au quotidien", "Simplicité d'usage", "Bien-être des salariés", "Indépendance"];
+  const STATUTS = {
+    idee: "Idée", brouillon: "Brouillon", relu: "Relu", valide_theo: "Validé par Théo",
+    valide_jonathan: "Validé par Jonathan", programme: "Programmé", publie: "Publié", ecarte: "Écartée"
+  };
+  const CHAINE = ["brouillon", "relu", "valide_theo", "valide_jonathan", "programme", "publie"];
+  const ATELIER = ["brouillon", "relu", "valide_theo", "valide_jonathan"];
+  const CHARTE_CHAMPS = ["identite", "direction", "lexique", "gardefous", "reference", "grille"];
+  const FOLD = 210;
+
+  const state = { posts: [], charte: null, tab: "idees", selected: null, busy: null, ctl: null, canWrite: true, connected: false, chosenBenefices: new Set(), editorDeferred: false };
+  let db = null, sample = null;
+
+  const $ = (s, r = document) => r.querySelector(s);
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const now = () => new Date().toISOString();
+  const frDate = (iso) => { if (!iso) return ""; const d = String(iso).slice(0, 10).split("-"); return d.length === 3 ? `${d[2]}/${d[1]}/${d[0]}` : iso; };
+
+  function toast(msg) {
+    const t = $("#toast"); t.textContent = msg; t.hidden = false;
+    clearTimeout(toast.h); toast.h = setTimeout(() => { t.hidden = true; }, 3200);
+  }
+  function dbMessage(e) {
+    const c = e && e.code;
+    if (c === "quota_exceeded") return "La base du Studio est pleine : supprime d'anciennes idées écartées.";
+    if (c === "invalid_argument") return "Modification refusée : tu n'as pas les droits d'écriture sur ce Studio.";
+    if (c === "resource_exhausted") return "Trop de modifications d'un coup : attends quelques secondes.";
+    return "La base ne répond pas pour l'instant. Réessaie dans un moment.";
+  }
+  function sampleMessage(e) {
+    const c = e && e.code;
+    if (c === "not_granted" || c === "sampling_disabled" || c === "not_declared") return "Claude n'est pas autorisé sur ce Studio. Autorise-le dans le menu Permissions de l'artefact.";
+    if (c === "rate_limited") return "Limite d'utilisation de Claude atteinte : réessaie plus tard.";
+    if (c === "session_expired") return "Ta session a expiré : reconnecte-toi à claude.ai.";
+    if (c === "invalid_json") return "La réponse de Claude était mal formée. Relance l'action.";
+    if (c === "refused") return "Claude a refusé cette demande. Reformule l'idée ou l'angle.";
+    if (c === "prompt_too_large") return "La charte et l'idée sont trop longues pour un seul appel. Raccourcis la charte.";
+    return "Claude n'a pas pu répondre. Relance l'action.";
+  }
+
+  // Écritures : une à la fois par document.
+  const queues = new Map();
+  function writePost(id, data) {
+    if (!db) return Promise.resolve();
+    const prev = queues.get(id) || Promise.resolve();
+    const p = prev.then(() => db.doc("posts/" + id).update({ ...data, maj: now() })).catch((e) => { toast(dbMessage(e)); });
+    queues.set(id, p);
+    return p;
+  }
+  const timers = new Map();
+  function debounced(id, field, value) {
+    const k = id + ":" + field;
+    clearTimeout(timers.get(k));
+    timers.set(k, setTimeout(() => { timers.delete(k); writePost(id, { [field]: value }); }, 700));
+  }
+  function flushTimers() {
+    // Les champs gardent leur valeur dans le DOM ; on écrit ce qui attend.
+    for (const [k, h] of timers) {
+      clearTimeout(h);
+      const [id, field] = k.split(":");
+      const el = document.querySelector(`[data-field="${field}"][data-id="${id}"]`);
+      if (el) writePost(id, { [field]: el.value });
+    }
+    timers.clear();
+  }
+
+  // Onglets
+  function setTab(tab) {
+    state.tab = tab;
+    for (const b of document.querySelectorAll(".tab")) b.setAttribute("aria-selected", String(b.dataset.tab === tab));
+    for (const v of ["idees", "atelier", "publies", "charte"]) $("#v-" + v).hidden = v !== tab;
+    try { localStorage.setItem("studio-tab", tab); } catch (e) {}
+    render();
+  }
+  document.querySelector(".tabs").addEventListener("click", (e) => { const b = e.target.closest(".tab"); if (b) setTab(b.dataset.tab); });
+
+  // Formulaire d'idée
+  function renderBeneficeChips() {
+    $("#f-benefices").innerHTML = BENEFICES.map((b) => `<button type="button" class="chip" data-b="${esc(b)}" aria-pressed="${state.chosenBenefices.has(b)}">${esc(b)}</button>`).join("");
+  }
+  $("#f-benefices").addEventListener("click", (e) => {
+    const c = e.target.closest("[data-b]"); if (!c) return;
+    const b = c.dataset.b; state.chosenBenefices.has(b) ? state.chosenBenefices.delete(b) : state.chosenBenefices.add(b);
+    c.setAttribute("aria-pressed", String(state.chosenBenefices.has(b)));
+  });
+  $("#idea-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!db) { toast("La base du Studio n'est pas disponible sur cette vue."); return; }
+    const btn = $("#f-submit"); btn.disabled = true;
+    try {
+      await db.collection("posts").add({
+        titre: $("#f-titre").value.trim(), situation: $("#f-situation").value.trim(), angle: $("#f-angle").value.trim(),
+        benefices: [...state.chosenBenefices], source: $("#f-source").value.trim(), gardeFou: "",
+        statut: "idee", versions: [], accroches: [], choisie: null, texte: "", relecture: null, bloque: "",
+        datePrevue: "", lien: "", chiffres: {}, cree: now(), maj: now()
+      });
+      e.target.reset(); state.chosenBenefices.clear(); renderBeneficeChips();
+      toast("Idée ajoutée");
+    } catch (err) { toast(dbMessage(err)); }
+    finally { btn.disabled = false; }
+  });
+
+  // Rendu général
+  function counts() {
+    const by = (list) => state.posts.filter((p) => list.includes(p.statut)).length;
+    $("#n-idees").textContent = by(["idee"]) || "";
+    $("#n-atelier").textContent = by(ATELIER) || "";
+    $("#n-publies").textContent = by(["programme", "publie"]) || "";
+  }
+  function render() {
+    counts();
+    if (state.tab === "idees") renderIdeas();
+    if (state.tab === "atelier") renderAtelier();
+    if (state.tab === "publies") renderPublies();
+    if (state.tab === "charte") renderCharte();
+  }
+  const byMaj = (a, b) => String(b.maj || "").localeCompare(String(a.maj || ""));
+  const chipsHtml = (list) => (list || []).length ? `<div class="chips">${list.map((b) => `<span class="chip">${esc(b)}</span>`).join("")}</div>` : "";
+  const pill = (s) => `<span class="pill s-${esc(s)}">${esc(STATUTS[s] || s)}</span>`;
+  const ro = () => (state.canWrite ? "" : "disabled");
+
+  function renderIdeas() {
+    if (!state.connected) { $("#idea-list").innerHTML = `<div class="empty">Chargement des idées…</div>`; return; }
+    const ideas = state.posts.filter((p) => p.statut === "idee").sort(byMaj);
+    const out = state.posts.filter((p) => p.statut === "ecarte").sort(byMaj);
+    let html = ideas.length ? `<div class="idea-grid">${ideas.map((p) => `
+      <article class="idea">
+        <div class="row"><h3 class="grow">${esc(p.titre)}</h3>${pill(p.statut)}</div>
+        <p>${esc(p.situation)}</p>
+        ${p.angle ? `<p class="hint">${esc(p.angle)}</p>` : ""}
+        ${chipsHtml(p.benefices)}
+        ${p.source ? `<span class="src">Source : ${esc(p.source)}</span>` : ""}
+        <div class="row"><button class="btn primary" data-act="to-atelier" data-id="${p.id}" ${ro()}>Passer à l'atelier</button><button class="btn quiet" data-act="ecarter" data-id="${p.id}" ${ro()}>Écarter</button></div>
+      </article>`).join("")}</div>` : `<div class="empty">Aucune idée en attente. Ajoute la première avec le formulaire ci-dessus, ou après ton prochain rendez-vous.</div>`;
+    if (out.length) html += `<details class="ecartees"><summary>Idées écartées (${out.length})</summary><div class="idea-grid">${out.map((p) => `
+      <article class="idea"><div class="row"><h3 class="grow">${esc(p.titre)}</h3>${pill(p.statut)}</div><div class="row"><button class="btn" data-act="restore" data-id="${p.id}" ${ro()}>Remettre en idée</button></div></article>`).join("")}</div></details>`;
+    $("#idea-list").innerHTML = html;
+  }
+
+  function renderAtelier() {
+    const posts = state.posts.filter((p) => ATELIER.includes(p.statut)).sort(byMaj);
+    if (!state.selected || !posts.some((p) => p.id === state.selected)) state.selected = posts[0] ? posts[0].id : null;
+    const groups = [["À rédiger ou relire", ["brouillon"]], ["À valider", ["relu", "valide_theo"]], ["Prêts à programmer", ["valide_jonathan"]]];
+    $("#post-list").innerHTML = !state.connected ? `<div class="empty">Chargement…</div>` : posts.length ? groups.map(([t, ss]) => {
+      const g = posts.filter((p) => ss.includes(p.statut)); if (!g.length) return "";
+      return `<span class="label group-title">${esc(t)}</span>` + g.map((p) => `
+        <button class="item" data-act="select" data-id="${p.id}" aria-current="${p.id === state.selected}">
+          <span class="t">${esc(p.titre)}</span>
+          <span class="row">${pill(p.statut)}${p.bloque ? `<span class="pill s-brouillon">En attente</span>` : ""}</span>
+        </button>`).join("");
+    }).join("") : `<div class="empty">Aucun post en cours. Passe une idée à l'atelier depuis l'onglet Idées.</div>`;
+    const ed = $("#editor");
+    if (ed.contains(document.activeElement) && document.activeElement.matches("textarea, input")) { state.editorDeferred = true; return; }
+    state.editorDeferred = false;
+    const p = posts.find((x) => x.id === state.selected);
+    ed.innerHTML = p ? editorHtml(p) : "";
+  }
+
+  function stepsHtml(s) {
+    const i = CHAINE.indexOf(s);
+    return `<ol class="steps">${CHAINE.map((c, k) => `<li class="${k < i ? "done" : k === i ? "now" : ""}">${esc(STATUTS[c])}</li>`).join("")}</ol>`;
+  }
+  function foldHtml(text) {
+    const t = String(text || "");
+    return `<mark>${esc(t.slice(0, FOLD))}</mark>${esc(t.slice(FOLD))}`;
+  }
+  function countHtml(text) {
+    const n = String(text || "").length;
+    const cls = n >= 800 && n <= 1300 ? "ok" : "out";
+    return `<span class="count ${cls}">${n} caractères · cible 800 à 1 300</span>`;
+  }
+
+  function editorHtml(p) {
+    const busy = state.busy && state.busy.id === p.id ? state.busy.what : null;
+    const hasText = !!(p.texte && p.texte.trim());
+    const versions = Array.isArray(p.versions) ? p.versions : [];
+    const r = p.relecture;
+    const nextBtn = {
+      brouillon: hasText ? `<button class="btn primary" data-act="relire" data-id="${p.id}" ${busy || !sample ? "disabled" : ""} ${ro()}>Relire avec l'œil du client</button>` : "",
+      relu: `<button class="btn primary" data-act="status" data-to="valide_theo" data-id="${p.id}" ${ro()}>Je valide</button>`,
+      valide_theo: `<button class="btn primary" data-act="status" data-to="valide_jonathan" data-id="${p.id}" ${ro()}>Jonathan valide</button>`,
+      valide_jonathan: `<button class="btn primary" data-act="programmer" data-id="${p.id}" ${ro()}>Marquer programmé</button>`
+    }[p.statut] || "";
+    return `
+    <div class="panel">
+      <div class="row"><h2 class="grow">${esc(p.titre)}</h2>${pill(p.statut)}</div>
+      ${stepsHtml(p.statut)}
+      ${p.bloque ? `<div class="notice">${esc(p.bloque)}</div>` : ""}
+      <div class="field"><span class="label">Situation de départ</span><p>${esc(p.situation)}</p></div>
+      ${chipsHtml(p.benefices)}
+      ${p.gardeFou ? `<p class="hint">Garde-fou : ${esc(p.gardeFou)}</p>` : ""}
+      <div class="field">
+        <label class="label" for="angle-${p.id}">Ton angle</label>
+        <textarea id="angle-${p.id}" rows="2" data-field="angle" data-id="${p.id}" ${ro()} placeholder="Ce que tu veux que le dirigeant retienne, en deux lignes">${esc(p.angle)}</textarea>
+      </div>
+      <div class="row">
+        <button class="btn ${versions.length ? "" : "primary"}" data-act="rediger" data-id="${p.id}" ${busy || !sample ? "disabled" : ""} ${ro()}>${versions.length ? "Rédiger deux nouvelles versions" : "Rédiger deux versions"}</button>
+        ${busy ? `<span class="thinking"><span class="dot"></span>${esc(busy)}</span><button class="btn quiet" data-act="stop">Arrêter</button>` : ""}
+        ${!sample && state.connected ? `<span class="hint">Claude n'est pas disponible sur cette vue.</span>` : ""}
+      </div>
+    </div>
+    ${versions.length ? `
+    <div class="panel">
+      <div class="row"><h3 class="grow">Deux versions</h3><span class="hint">Choisis-en une, puis retouche-la dans le texte final.</span></div>
+      <div class="versions">${versions.map((v, i) => `
+        <div class="version ${p.choisie === i ? "chosen" : ""}">
+          <div class="row"><span class="label grow">Version ${esc(v.label || String.fromCharCode(65 + i))}</span>${countHtml(v.texte)}</div>
+          <pre>${esc(v.texte)}</pre>
+          <div class="row"><button class="btn" data-act="choose" data-i="${i}" data-id="${p.id}" ${ro()}>${p.choisie === i ? "Reprendre cette version" : "Choisir cette version"}</button></div>
+        </div>`).join("")}</div>
+      ${(p.accroches || []).length ? `<div class="field"><span class="label">Accroches de rechange</span>${p.accroches.map((a, i) => `<div class="row"><span class="grow">${esc(a)}</span><button class="btn quiet" data-act="copy-hook" data-i="${i}" data-id="${p.id}">Copier</button></div>`).join("")}</div>` : ""}
+    </div>` : ""}
+    ${hasText || versions.length ? `
+    <div class="panel">
+      <div class="row"><h3 class="grow">Texte final</h3>${countHtml(p.texte)}</div>
+      <div class="field"><label class="label" for="texte-${p.id}">Ton texte, retouché à la main</label>
+        <textarea id="texte-${p.id}" rows="14" data-field="texte" data-id="${p.id}" ${ro()}>${esc(p.texte)}</textarea></div>
+      <div class="field"><span class="label">Aperçu, la zone teintée s'affiche avant « voir plus »</span>
+        <div class="li-card">
+          <div class="li-head"><span class="avatar">TN</span><div><div class="li-name">Théo Namor</div><div class="li-role">Fondateur de SKEAM</div></div></div>
+          <div class="li-text" id="preview-${p.id}">${foldHtml(p.texte)}</div>
+          <div class="li-more">Environ ${FOLD} caractères visibles avant « … voir plus » sur téléphone</div>
+        </div></div>
+      <div class="row">${nextBtn}<button class="btn" data-act="copy" data-id="${p.id}" ${hasText ? "" : "disabled"}>Copier pour LinkedIn</button>
+        ${p.statut !== "brouillon" ? `<button class="btn quiet" data-act="status" data-to="brouillon" data-id="${p.id}" ${ro()}>Revenir en brouillon</button>` : ""}
+        <button class="btn quiet" data-act="ecarter" data-id="${p.id}" ${ro()}>Écarter</button></div>
+      ${p.statut === "valide_jonathan" ? `<div class="field"><label class="label" for="date-${p.id}">Date de publication prévue</label><input type="date" id="date-${p.id}" data-field="datePrevue" data-id="${p.id}" value="${esc(p.datePrevue)}" ${ro()}></div>` : ""}
+    </div>` : ""}
+    ${r ? `
+    <div class="panel">
+      <div class="row"><h3 class="grow">Relecture</h3><span class="pill ${r.verdict === "bon" ? "s-valide_theo" : "s-ecarte"}">${r.verdict === "bon" ? "Bon pour validation" : "À corriger"}</span><span class="hint">${esc(frDate(r.date))}</span></div>
+      ${r.resume ? `<p>${esc(r.resume)}</p>` : ""}
+      <div class="review">${(r.points || []).map((pt) => `<div class="check ${pt.ok ? "ok" : "ko"}"><span class="mk">${pt.ok ? "✓" : "✗"}</span><div><div>${esc(pt.question)}</div>${pt.remarque ? `<div class="rq">${esc(pt.remarque)}</div>` : ""}</div></div>`).join("")}</div>
+      ${r.verdict !== "bon" && (r.corrections || []).length ? `<div class="row"><button class="btn primary" data-act="corriger" data-id="${p.id}" ${busy || !sample ? "disabled" : ""} ${ro()}>Appliquer les corrections</button><span class="hint">Une passe, puis relis à nouveau.</span></div>` : ""}
+    </div>` : ""}`;
+  }
+
+  function renderPublies() {
+    const list = state.posts.filter((p) => p.statut === "programme" || p.statut === "publie")
+      .sort((a, b) => String(b.datePrevue || b.maj || "").localeCompare(String(a.datePrevue || a.maj || "")));
+    const pub = list.filter((p) => p.statut === "publie");
+    const imp = pub.map((p) => Number(p.chiffres?.impressions) || 0).filter((n) => n > 0);
+    const moy = imp.length ? Math.round(imp.reduce((a, b) => a + b, 0) / imp.length) : null;
+    const recent = pub.slice(0, 5).flatMap((p) => p.benefices || []);
+    const manque = BENEFICES.filter((b) => !recent.includes(b));
+    $("#stats").innerHTML = `
+      <div class="panel stat"><span class="label">Posts publiés</span><span class="v">${pub.length}</span></div>
+      <div class="panel stat"><span class="label">Impressions moyennes</span><span class="v">${moy === null ? "—" : moy.toLocaleString("fr-FR")}</span></div>
+      <div class="panel stat"><span class="label">Bénéfices absents des cinq derniers</span>${manque.length ? chipsHtml(manque) : `<span class="hint">Tous couverts</span>`}</div>`;
+    $("#pub-table").innerHTML = !list.length ? `<div class="empty">Rien de programmé pour l'instant. Un post validé par Jonathan passe ici quand tu le marques programmé.</div>` : `
+      <div class="table-wrap"><table>
+        <thead><tr><th>Date</th><th>Post</th><th>Statut</th><th class="num">Impressions</th><th class="num">Réactions</th><th class="num">Commentaires</th><th>Lien</th></tr></thead>
+        <tbody>${list.map((p) => `<tr>
+          <td>${esc(frDate(p.datePrevue)) || "—"}</td>
+          <td><strong>${esc(p.titre)}</strong>${chipsHtml(p.benefices)}</td>
+          <td>${pill(p.statut)}${p.statut === "programme" ? `<div><button class="btn quiet" data-act="publier" data-id="${p.id}" ${ro()}>Marquer publié</button></div>` : ""}</td>
+          ${["impressions", "reactions", "commentaires"].map((k) => `<td class="num"><input inputmode="numeric" aria-label="${k}" data-chiffre="${k}" data-id="${p.id}" value="${esc(p.chiffres?.[k] ?? "")}" ${ro()}></td>`).join("")}
+          <td>${p.lien ? `<a href="${esc(p.lien)}" target="_blank" rel="noopener">Ouvrir</a>` : `<input type="url" style="width:160px" placeholder="Lien du post" data-field="lien" data-id="${p.id}" ${ro()}>`}</td>
+        </tr>`).join("")}</tbody></table></div>`;
+  }
+
+  let charteDirty = false;
+  function renderCharte() {
+    const c = state.charte;
+    $("#charte-empty").hidden = !!c || !state.connected;
+    $("#charte-version").textContent = c && c.maj ? `Version du ${frDate(c.maj)}` : "";
+    if (charteDirty || $("#charte-form").contains(document.activeElement)) return;
+    for (const k of CHARTE_CHAMPS) $("#c-" + k).value = c ? (c[k] || "") : "";
+    for (const el of $("#charte-form").querySelectorAll("textarea, button")) el.disabled = !state.canWrite;
+  }
+  $("#charte-form").addEventListener("input", () => { charteDirty = true; });
+  $("#charte-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!db) return toast("La base du Studio n'est pas disponible sur cette vue.");
+    const btn = $("#c-save"); btn.disabled = true;
+    const data = {}; for (const k of CHARTE_CHAMPS) data[k] = $("#c-" + k).value;
+    try {
+      if (state.charte) await db.collection("charte_versions").add({ ...state.charte, archivee: now() });
+      await db.doc("charte/courante").set({ ...data, maj: now() });
+      charteDirty = false; toast("Charte enregistrée");
+    } catch (err) { toast(dbMessage(err)); }
+    finally { btn.disabled = !state.canWrite; }
+  });
+
+  // Claude
+  function charteTexte() {
+    const c = state.charte || {};
+    return `# Qui je suis\n${c.identite || ""}\n\n# Direction éditoriale\n${c.direction || ""}\n\n# Lexique de la cible\n${c.lexique || ""}\n\n# Garde-fous et sujets interdits\n${c.gardefous || ""}\n\n# Posts de référence\n${c.reference || ""}`;
+  }
+  function derniersPosts(exceptId) {
+    return state.posts.filter((p) => (p.statut === "publie" || p.statut === "programme") && p.id !== exceptId).sort(byMaj).slice(0, 10)
+      .map((p) => `- ${p.titre} | bénéfices : ${(p.benefices || []).join(", ")} | début : ${String(p.texte || "").slice(0, 160).replace(/\n/g, " ")}`).join("\n") || "aucun";
+  }
+  function ideeTexte(p) {
+    return `Titre : ${p.titre}\nSituation vécue : ${p.situation}\nAngle de Théo : ${p.angle || "à déduire de la situation"}\nBénéfices visés : ${(p.benefices || []).join(", ") || "à choisir"}\nGarde-fou propre à cette idée : ${p.gardeFou || "aucun"}`;
+  }
+  async function runClaude(p, what, fn) {
+    if (!sample) return;
+    state.ctl = new AbortController();
+    state.busy = { id: p.id, what };
+    renderAtelier();
+    try { await fn(state.ctl.signal); }
+    catch (e) { if (e && e.code !== "cancelled") toast(sampleMessage(e)); }
+    finally { state.busy = null; state.ctl = null; renderAtelier(); }
+  }
+  function rediger(p) {
+    return runClaude(p, "Claude rédige deux versions…", async (signal) => {
+      const prompt = `Tu es le rédacteur des posts LinkedIn de Théo Namor. Respecte strictement la charte ci-dessous, notamment la posture de respect envers les dirigeants, le format, le lexique et les garde-fous. N'invente aucun fait qui ne figure pas dans l'idée.\n\n${charteTexte()}\n\n# Posts déjà publiés, à ne pas répéter\n${derniersPosts(p.id)}\n\n# L'idée à rédiger\n${ideeTexte(p)}\n\n# Ce que tu rends\nRéponds uniquement par un objet JSON : {"versions":[{"label":"A","texte":"..."},{"label":"B","texte":"..."}],"accroches":["...","...","..."],"benefices":["..."]}. Deux versions prêtes à publier, d'accroches différentes, de 800 à 1 300 caractères chacune, avec des sauts de ligne comme sur LinkedIn. Trois accroches de rechange de deux lignes au plus. Les bénéfices nommés, pris dans cette liste : ${BENEFICES.join(", ")}.`;
+      const out = await sample.json(prompt, { modelTier: "complex", signal, cache: false });
+      const versions = Array.isArray(out?.versions) ? out.versions.filter((v) => v && typeof v.texte === "string").slice(0, 2).map((v, i) => ({ label: String(v.label || "AB"[i]), texte: v.texte })) : [];
+      if (!versions.length) throw { code: "invalid_json" };
+      const accroches = Array.isArray(out.accroches) ? out.accroches.map(String).slice(0, 3) : [];
+      const benefices = Array.isArray(out.benefices) ? out.benefices.map(String).filter((b) => BENEFICES.includes(b)) : [];
+      await writePost(p.id, { versions, accroches, choisie: null, ...(benefices.length && !(p.benefices || []).length ? { benefices } : {}) });
+      toast("Deux versions prêtes");
+    });
+  }
+  function relire(p) {
+    return runClaude(p, "Le relecteur lit avec l'œil du client…", async (signal) => {
+      const c = state.charte || {};
+      const prompt = `Tu es le relecteur des posts LinkedIn de Théo Namor. Tu n'as pas écrit ce texte. Lis-le deux fois : comme le client dont parle la situation, puis comme un dirigeant de PME qui découvre le post. Applique la grille sans indulgence.\n\n# Grille\n${c.grille || ""}\n\n# Garde-fous et sujets interdits\n${c.gardefous || ""}\n\n# Lexique de la cible\n${c.lexique || ""}\n\n# Posts déjà publiés\n${derniersPosts(p.id)}\n\n# Situation d'origine, pour juger l'anonymat\n${ideeTexte(p)}\n\n# Texte à relire\n${p.texte}\n\n# Ce que tu rends\nRéponds uniquement par un objet JSON : {"verdict":"bon" ou "a_corriger","resume":"une phrase","points":[{"question":"...","ok":true,"remarque":"..."}],"corrections":["correction précise et applicable"]}. Un point par question de la grille, dans l'ordre. Un seul échec suffit pour "a_corriger".`;
+      const out = await sample.json(prompt, { modelTier: "complex", signal, cache: false });
+      const points = Array.isArray(out?.points) ? out.points.map((x) => ({ question: String(x?.question || ""), ok: !!x?.ok, remarque: String(x?.remarque || "") })) : [];
+      if (!points.length) throw { code: "invalid_json" };
+      const verdict = out.verdict === "bon" && points.every((x) => x.ok) ? "bon" : "a_corriger";
+      const relecture = { verdict, resume: String(out.resume || ""), points, corrections: Array.isArray(out.corrections) ? out.corrections.map(String) : [], date: now() };
+      await writePost(p.id, { relecture, ...(verdict === "bon" && p.statut === "brouillon" ? { statut: "relu" } : {}) });
+      toast(verdict === "bon" ? "Relu : bon pour validation" : "Relu : corrections proposées");
+    });
+  }
+  function corriger(p) {
+    return runClaude(p, "Claude applique les corrections…", async (signal) => {
+      const prompt = `Tu es le rédacteur des posts LinkedIn de Théo Namor. Applique les corrections du relecteur au texte ci-dessous, sans rien changer d'autre, en respectant la charte.\n\n${charteTexte()}\n\n# Corrections\n${(p.relecture?.corrections || []).map((x) => "- " + x).join("\n")}\n\n# Texte\n${p.texte}\n\nRéponds uniquement par un objet JSON : {"texte":"..."}.`;
+      const out = await sample.json(prompt, { modelTier: "complex", signal, cache: false });
+      if (!out || typeof out.texte !== "string" || !out.texte.trim()) throw { code: "invalid_json" };
+      await writePost(p.id, { texte: out.texte, relecture: { ...p.relecture, corrections: [], verdict: "a_corriger", resume: "Corrections appliquées : relis à nouveau avant de valider." } });
+      toast("Corrections appliquées");
+    });
+  }
+
+  async function copyText(text, fallbackEl) {
+    try { await navigator.clipboard.writeText(text); toast("Copié"); }
+    catch (e) { if (fallbackEl) { fallbackEl.focus(); fallbackEl.select(); } toast("Copie bloquée : le texte est sélectionné, copie-le à la main."); }
+  }
+
+  // Actions
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-act]"); if (!b) return;
+    const id = b.dataset.id; const p = state.posts.find((x) => x.id === id);
+    const act = b.dataset.act;
+    if (act === "select") { flushTimers(); state.selected = id; state.editorDeferred = false; if (document.activeElement) document.activeElement.blur(); renderAtelier(); return; }
+    if (act === "stop") { state.ctl?.abort(); return; }
+    if (!p) return;
+    if (act === "copy") { copyText(p.texte || "", $(`#texte-${id}`)); return; }
+    if (act === "copy-hook") { copyText((p.accroches || [])[Number(b.dataset.i)] || ""); return; }
+    if (!state.canWrite) return;
+    if (act === "to-atelier") { writePost(id, { statut: "brouillon" }); state.selected = id; setTab("atelier"); toast("Idée passée à l'atelier"); }
+    else if (act === "ecarter") writePost(id, { statut: "ecarte" }).then(() => toast("Écartée"));
+    else if (act === "restore") writePost(id, { statut: "idee" });
+    else if (act === "rediger") rediger(p);
+    else if (act === "relire") { flushTimers(); relire({ ...p, texte: ($(`#texte-${id}`) || {}).value ?? p.texte }); }
+    else if (act === "corriger") corriger(p);
+    else if (act === "choose") { const v = (p.versions || [])[Number(b.dataset.i)]; if (v) writePost(id, { texte: v.texte, choisie: Number(b.dataset.i), relecture: null, statut: "brouillon" }); }
+    else if (act === "status") writePost(id, { statut: b.dataset.to });
+    else if (act === "programmer") { const d = ($(`#date-${id}`) || {}).value || p.datePrevue; if (!d) { toast("Indique d'abord la date de publication prévue."); return; } writePost(id, { statut: "programme", datePrevue: d }).then(() => toast("Programmé : retrouve-le dans l'onglet Publiés")); }
+    else if (act === "publier") writePost(id, { statut: "publie" }).then(() => toast("Publié : note les chiffres dans sept jours"));
+  });
+  document.addEventListener("input", (e) => {
+    const el = e.target;
+    if (el.dataset.field && el.dataset.id) {
+      debounced(el.dataset.id, el.dataset.field, el.value);
+      if (el.dataset.field === "texte") { const pv = $(`#preview-${el.dataset.id}`); if (pv) pv.innerHTML = foldHtml(el.value); }
+    }
+  });
+  document.addEventListener("change", (e) => {
+    const el = e.target;
+    if (el.dataset.chiffre && el.dataset.id) {
+      const p = state.posts.find((x) => x.id === el.dataset.id); if (!p) return;
+      const v = el.value.replace(/\s/g, ""); const n = v === "" ? null : Number(v);
+      if (v !== "" && !Number.isFinite(n)) { toast("Saisis un nombre entier."); return; }
+      writePost(p.id, { chiffres: { ...(p.chiffres || {}), [el.dataset.chiffre]: n } });
+    }
+  });
+  document.addEventListener("focusout", () => {
+    setTimeout(() => { if (state.tab === "atelier" && state.editorDeferred && !$("#editor").contains(document.activeElement)) renderAtelier(); }, 0);
+  });
+
+  // Démarrage
+  renderBeneficeChips();
+  try { const t = localStorage.getItem("studio-tab"); if (t && ["idees", "atelier", "publies", "charte"].includes(t)) setTab(t); else render(); } catch (e) { render(); }
+
+  (async () => {
+    const c = window.claude;
+    if (!c || typeof c.use !== "function") { $("#offline").hidden = false; $("#sync").textContent = "Hors ligne"; return; }
+    const [d, s, u] = await Promise.all([c.use("db"), c.use("sample"), c.use("user")]);
+    db = d; sample = s;
+    if (!db) { $("#offline").hidden = false; $("#sync").textContent = "Hors ligne"; return; }
+    if (u) { try { const w = await u.can("data.write"); if (w === false) { state.canWrite = false; $("#readonly").hidden = false; } } catch (e) {} }
+    db.collection("posts").onSnapshot((snap) => {
+      state.posts = snap.docs.map((x) => ({ id: x.id, ...x.data() }));
+      state.connected = true; $("#sync").textContent = "Base à jour"; render();
+    }, () => { $("#sync").textContent = "Base indisponible"; $("#offline").hidden = false; });
+    db.doc("charte/courante").onSnapshot((snap) => {
+      state.charte = snap.exists ? snap.data() : null; state.connected = true; render();
+    }, () => {});
+  })();
+})();
+</script>
