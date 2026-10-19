@@ -168,6 +168,19 @@ tr:last-child td { border-bottom: 0; }
 @media (min-width: 960px) { .charte { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .charte .wide { grid-column: 1 / -1; } }
 .charte textarea { min-height: 160px; font-size: 0.92rem; }
 
+/* Deux auteurs, remarques */
+.who { font-size: 0.8rem; padding: 3px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--fg); font-weight: 600; }
+.author { font-size: 0.75rem; font-weight: 600; color: var(--muted); }
+.filters { display: flex; flex-wrap: wrap; gap: 6px; }
+.badge-n { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--bad); color: var(--surface); font-size: 0.72rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.remarks { display: grid; gap: 10px; }
+.remark { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: grid; gap: 6px; background: var(--bg); }
+.remark.open { border-left: 3px solid var(--warn); }
+.remark .meta { font-size: 0.8rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.remark p { white-space: pre-wrap; }
+.remark .rep { font-size: 0.88rem; color: var(--muted); border-top: 1px dashed var(--line); padding-top: 6px; white-space: pre-wrap; }
+.readonly-text { white-space: pre-wrap; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 12px; overflow-wrap: anywhere; }
+
 #toast { position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; max-width: calc(100% - 32px); z-index: 20; }
 </style>
 
@@ -177,11 +190,12 @@ tr:last-child td { border-bottom: 0; }
       <span class="mark" aria-hidden="true"><i></i></span>
       <h1>Studio LinkedIn</h1>
       <span class="sub">de la note brouillon au post validé</span>
+      <span class="who" id="who" hidden></span>
       <span class="sync" id="sync">Connexion à la base…</span>
     </div>
     <nav class="tabs" role="tablist" aria-label="Sections du Studio">
-      <button class="tab" role="tab" id="tab-idees" data-tab="idees" aria-selected="true">Idées<span class="n" id="n-idees"></span></button>
-      <button class="tab" role="tab" id="tab-atelier" data-tab="atelier" aria-selected="false">Atelier<span class="n" id="n-atelier"></span></button>
+      <button class="tab" role="tab" id="tab-atelier" data-tab="atelier" aria-selected="true">Atelier<span class="n" id="n-atelier"></span></button>
+      <button class="tab" role="tab" id="tab-idees" data-tab="idees" aria-selected="false">Idées<span class="n" id="n-idees"></span></button>
       <button class="tab" role="tab" id="tab-publies" data-tab="publies" aria-selected="false">Publiés<span class="n" id="n-publies"></span></button>
       <button class="tab" role="tab" id="tab-charte" data-tab="charte" aria-selected="false">Charte</button>
     </nav>
@@ -191,12 +205,27 @@ tr:last-child td { border-bottom: 0; }
 <main>
   <div class="notice bad" id="offline" hidden>La base du Studio ne répond pas sur cette vue. Ouvre le Studio depuis claude.ai, connecté à ton compte, pour retrouver les idées et les posts.</div>
   <div class="notice" id="readonly" hidden>Tu consultes le Studio en lecture seule. Pour modifier, demande à Théo un accès « Contributeur » ou « Éditeur ».</div>
+  <div class="notice info" id="claim" hidden>
+    <div class="row"><span class="grow">Le Studio ne sait pas encore qui tu es. Si tu es Jonathan, confirme-le une fois : tes posts, ta charte et tes validations seront à ton nom.</span><button class="btn primary" data-act="claim">Je suis Jonathan</button></div>
+  </div>
 
-  <section class="view" id="v-idees" role="tabpanel" aria-labelledby="tab-idees">
+  <section class="view" id="v-atelier" role="tabpanel" aria-labelledby="tab-atelier">
+    <div class="filters" id="filters"></div>
+    <div class="atelier">
+      <div class="list" id="post-list"></div>
+      <div id="editor"></div>
+    </div>
+  </section>
+
+  <section class="view" id="v-idees" role="tabpanel" aria-labelledby="tab-idees" hidden>
     <form class="panel" id="idea-form">
       <div>
         <h2>Nouvelle idée</h2>
-        <p class="lead">Une ou deux phrases brouillon suffisent : ce qui s'est passé, ce que tu en penses. Le Studio s'occupe de la mise en forme.</p>
+        <p class="lead">Une ou deux phrases brouillon suffisent : ce qui s'est passé, ce que tu en penses. Tu peux aussi proposer une idée pour le post de ton associé.</p>
+      </div>
+      <div class="field">
+        <span class="label">Pour qui</span>
+        <div class="chips" id="f-pour"></div>
       </div>
       <div class="field">
         <label class="label" for="f-titre">Titre court</label>
@@ -208,7 +237,7 @@ tr:last-child td { border-bottom: 0; }
       </div>
       <div class="field">
         <label class="label" for="f-angle">Ce que j'en pense</label>
-        <textarea id="f-angle" rows="2" placeholder="Ton angle, ta conclusion, même mal dite"></textarea>
+        <textarea id="f-angle" rows="2" placeholder="L'angle, la conclusion, même mal dite"></textarea>
       </div>
       <div class="field">
         <span class="label">Ce que le dirigeant y gagne</span>
@@ -216,19 +245,12 @@ tr:last-child td { border-bottom: 0; }
       </div>
       <div class="field">
         <label class="label" for="f-source">Source</label>
-        <input id="f-source" maxlength="160" placeholder="Rendez-vous du 21/10, note vocale, réunion Plaud…">
+        <input id="f-source" maxlength="160" placeholder="Rendez-vous du 21/10, appel, note vocale, réunion Plaud…">
       </div>
-      <div class="row"><button class="btn primary" type="submit" id="f-submit">Ajouter l'idée</button><span class="hint">La récolte automatique depuis Plaud arrive en phase 2.</span></div>
+      <div class="row"><button class="btn primary" type="submit" id="f-submit">Ajouter l'idée</button><span class="hint">La récolte automatique depuis Plaud arrive plus tard, chacun avec ses propres enregistrements.</span></div>
     </form>
     <div class="row"><h2 class="grow">Idées en attente</h2></div>
     <div id="idea-list"></div>
-  </section>
-
-  <section class="view" id="v-atelier" role="tabpanel" aria-labelledby="tab-atelier" hidden>
-    <div class="atelier">
-      <div class="list" id="post-list"></div>
-      <div id="editor"></div>
-    </div>
   </section>
 
   <section class="view" id="v-publies" role="tabpanel" aria-labelledby="tab-publies" hidden>
@@ -244,19 +266,22 @@ tr:last-child td { border-bottom: 0; }
     <div class="row">
       <div class="grow">
         <h2>Charte</h2>
-        <p class="lead">Le rédacteur et le relecteur lisent ces six pièces à chaque appel. Ce que tu changes ici change tous les prochains posts.</p>
+        <p class="lead">Chacun a sa charte. Le rédacteur et le relecteur lisent celle de l'auteur du post à chaque appel. Tu modifies la tienne, tu lis celle de ton associé.</p>
       </div>
       <span class="hint" id="charte-version"></span>
     </div>
-    <div id="charte-empty" class="empty" hidden>La charte n'est pas encore chargée dans la base. Demande à Claude de la charger, ou colle-la dans les champs ci-dessous puis enregistre.</div>
+    <div class="filters" id="charte-who"></div>
+    <div id="charte-empty" class="empty" hidden>Cette charte n'est pas encore remplie. Complète les champs puis enregistre.</div>
     <form class="charte" id="charte-form">
+      <div class="field"><label class="label" for="c-nom">Nom affiché</label><input id="c-nom" maxlength="80"></div>
+      <div class="field"><label class="label" for="c-titre">Titre sous le nom</label><input id="c-titre" maxlength="120"></div>
       <div class="field"><label class="label" for="c-identite">Qui je suis</label><textarea id="c-identite"></textarea></div>
       <div class="field"><label class="label" for="c-direction">Direction éditoriale</label><textarea id="c-direction"></textarea></div>
       <div class="field"><label class="label" for="c-lexique">Lexique de la cible</label><textarea id="c-lexique"></textarea></div>
       <div class="field"><label class="label" for="c-gardefous">Garde-fous et sujets interdits</label><textarea id="c-gardefous"></textarea></div>
       <div class="field wide"><label class="label" for="c-reference">Posts de référence</label><textarea id="c-reference"></textarea></div>
       <div class="field wide"><label class="label" for="c-grille">Grille du relecteur</label><textarea id="c-grille"></textarea></div>
-      <div class="row wide"><button class="btn primary" type="submit" id="c-save">Enregistrer la charte</button><span class="hint">Chaque enregistrement garde une copie datée de la version précédente.</span></div>
+      <div class="row wide"><button class="btn primary" type="submit" id="c-save">Enregistrer ma charte</button><span class="hint" id="c-hint">Chaque enregistrement garde une copie datée de la version précédente.</span></div>
     </form>
   </section>
 </main>
@@ -264,23 +289,38 @@ tr:last-child td { border-bottom: 0; }
 
 <script>
 (() => {
+  const AUTEURS = { theo: "Théo", jonathan: "Jonathan" };
+  const autre = (a) => (a === "theo" ? "jonathan" : "theo");
+  const prenom = (a) => AUTEURS[a] || "?";
   const BENEFICES = ["Image de marque", "Productivité", "Marge et trésorerie", "Fiabilité", "Confort au quotidien", "Simplicité d'usage", "Bien-être des salariés", "Indépendance"];
-  const STATUTS = {
-    idee: "Idée", brouillon: "Brouillon", relu: "Relu", valide_theo: "Validé par Théo",
-    valide_jonathan: "Validé par Jonathan", programme: "Programmé", publie: "Publié", ecarte: "Écartée"
-  };
-  const CHAINE = ["brouillon", "relu", "valide_theo", "valide_jonathan", "programme", "publie"];
-  const ATELIER = ["brouillon", "relu", "valide_theo", "valide_jonathan"];
-  const CHARTE_CHAMPS = ["identite", "direction", "lexique", "gardefous", "reference", "grille"];
+  const CHAINE = ["brouillon", "relu", "valide_auteur", "valide_associe", "programme", "publie"];
+  const ATELIER = ["brouillon", "relu", "valide_auteur", "valide_associe"];
+  const CHARTE_CHAMPS = ["nom", "titre", "identite", "direction", "lexique", "gardefous", "reference", "grille"];
+  const LEGACY = { valide_theo: "valide_auteur", valide_jonathan: "valide_associe" };
   const FOLD = 210;
 
-  const state = { posts: [], charte: null, tab: "idees", selected: null, busy: null, ctl: null, canWrite: true, connected: false, chosenBenefices: new Set(), editorDeferred: false };
+  const state = {
+    posts: [], remarques: [], chartes: {}, membres: null, tab: "atelier", selected: null, filtre: "moi",
+    busy: null, ctl: null, canWrite: true, connected: false, me: null, uid: null, owner: false,
+    chosenBenefices: new Set(), pour: null, charteVue: null, editorDeferred: false, claiming: false
+  };
   let db = null, sample = null;
 
   const $ = (s, r = document) => r.querySelector(s);
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const now = () => new Date().toISOString();
   const frDate = (iso) => { if (!iso) return ""; const d = String(iso).slice(0, 10).split("-"); return d.length === 3 ? `${d[2]}/${d[1]}/${d[0]}` : iso; };
+  const auteurDe = (p) => p.auteur || "theo";
+
+  function statutLabel(s, p) {
+    const a = p ? auteurDe(p) : null;
+    return ({
+      idee: "Idée", brouillon: "Brouillon", relu: "Relu par Claude",
+      valide_auteur: a ? `Validé par ${prenom(a)}` : "Validé par l'auteur",
+      valide_associe: a ? `Validé par ${prenom(autre(a))}` : "Double validation",
+      programme: "Programmé", publie: "Publié", ecarte: "Écartée"
+    })[s] || s;
+  }
 
   function toast(msg) {
     const t = $("#toast"); t.textContent = msg; t.hidden = false;
@@ -304,15 +344,25 @@ tr:last-child td { border-bottom: 0; }
     return "Claude n'a pas pu répondre. Relance l'action.";
   }
 
+  // Droits, côté page : qui peut faire quoi sur un post.
+  const canAct = () => state.canWrite && !!state.me;
+  const estAuteur = (p) => state.me === auteurDe(p);
+  const peutModifier = (p) => canAct() && estAuteur(p);
+  const remarquesDe = (p) => state.remarques.filter((r) => r.postId === p.id);
+  const ouvertes = (p) => remarquesDe(p).filter((r) => r.statut !== "traitee");
+  const ouvertesPourMoi = (p) => ouvertes(p).filter((r) => r.pour === state.me);
+
   // Écritures : une à la fois par document.
   const queues = new Map();
-  function writePost(id, data) {
+  function write(path, data, merge = true) {
     if (!db) return Promise.resolve();
-    const prev = queues.get(id) || Promise.resolve();
-    const p = prev.then(() => db.doc("posts/" + id).update({ ...data, maj: now() })).catch((e) => { toast(dbMessage(e)); });
-    queues.set(id, p);
+    const prev = queues.get(path) || Promise.resolve();
+    const ref = db.doc(path);
+    const p = prev.then(() => (merge ? ref.update({ ...data, maj: now() }) : ref.set(data))).catch((e) => { toast(dbMessage(e)); });
+    queues.set(path, p);
     return p;
   }
+  const writePost = (id, data) => write("posts/" + id, data);
   const timers = new Map();
   function debounced(id, field, value) {
     const k = id + ":" + field;
@@ -320,7 +370,6 @@ tr:last-child td { border-bottom: 0; }
     timers.set(k, setTimeout(() => { timers.delete(k); writePost(id, { [field]: value }); }, 700));
   }
   function flushTimers() {
-    // Les champs gardent leur valeur dans le DOM ; on écrit ce qui attend.
     for (const [k, h] of timers) {
       clearTimeout(h);
       const [id, field] = k.split(":");
@@ -328,6 +377,22 @@ tr:last-child td { border-bottom: 0; }
       if (el) writePost(id, { [field]: el.value });
     }
     timers.clear();
+  }
+
+  // Identité de la personne qui consulte
+  function resolveMe() {
+    const m = state.membres || {};
+    state.me = Object.keys(AUTEURS).find((k) => m[k] && m[k] === state.uid) || null;
+    if (!state.me && state.owner && state.uid && !m.theo && !state.claiming && state.canWrite) {
+      state.claiming = true;
+      db.doc("config/membres").set({ ...m, theo: state.uid }).catch((e) => toast(dbMessage(e))).finally(() => { state.claiming = false; });
+    }
+    $("#who").hidden = !state.me;
+    $("#who").textContent = state.me ? `Tu es ${prenom(state.me)}` : "";
+    $("#claim").hidden = !(state.membres && !state.me && !state.owner && state.uid && !m.jonathan && state.canWrite);
+    if (!state.pour) state.pour = state.me || "theo";
+    if (!state.charteVue) state.charteVue = state.me || "theo";
+    if (!state.me) state.filtre = "tous";
   }
 
   // Onglets
@@ -341,37 +406,69 @@ tr:last-child td { border-bottom: 0; }
   document.querySelector(".tabs").addEventListener("click", (e) => { const b = e.target.closest(".tab"); if (b) setTab(b.dataset.tab); });
 
   // Formulaire d'idée
-  function renderBeneficeChips() {
+  function renderIdeaForm() {
     $("#f-benefices").innerHTML = BENEFICES.map((b) => `<button type="button" class="chip" data-b="${esc(b)}" aria-pressed="${state.chosenBenefices.has(b)}">${esc(b)}</button>`).join("");
+    $("#f-pour").innerHTML = Object.keys(AUTEURS).map((a) => `<button type="button" class="chip" data-pour="${a}" aria-pressed="${state.pour === a}">${a === state.me ? "Pour moi" : "Pour " + esc(prenom(a))}</button>`).join("");
+    for (const el of $("#idea-form").querySelectorAll("input, textarea, button")) el.disabled = !canAct();
   }
-  $("#f-benefices").addEventListener("click", (e) => {
-    const c = e.target.closest("[data-b]"); if (!c) return;
-    const b = c.dataset.b; state.chosenBenefices.has(b) ? state.chosenBenefices.delete(b) : state.chosenBenefices.add(b);
-    c.setAttribute("aria-pressed", String(state.chosenBenefices.has(b)));
+  $("#idea-form").addEventListener("click", (e) => {
+    const c = e.target.closest("[data-b]");
+    if (c) { const b = c.dataset.b; state.chosenBenefices.has(b) ? state.chosenBenefices.delete(b) : state.chosenBenefices.add(b); c.setAttribute("aria-pressed", String(state.chosenBenefices.has(b))); return; }
+    const w = e.target.closest("[data-pour]");
+    if (w) { state.pour = w.dataset.pour; renderIdeaForm(); }
   });
   $("#idea-form").addEventListener("submit", async (e) => {
     e.preventDefault();
-    if (!db) { toast("La base du Studio n'est pas disponible sur cette vue."); return; }
+    if (!db || !canAct()) { toast("Le Studio doit savoir qui tu es avant d'ajouter une idée."); return; }
     const btn = $("#f-submit"); btn.disabled = true;
     try {
       await db.collection("posts").add({
         titre: $("#f-titre").value.trim(), situation: $("#f-situation").value.trim(), angle: $("#f-angle").value.trim(),
         benefices: [...state.chosenBenefices], source: $("#f-source").value.trim(), gardeFou: "",
+        auteur: state.pour, proposePar: state.me,
         statut: "idee", versions: [], accroches: [], choisie: null, texte: "", relecture: null, bloque: "",
         datePrevue: "", lien: "", chiffres: {}, cree: now(), maj: now()
       });
-      e.target.reset(); state.chosenBenefices.clear(); renderBeneficeChips();
-      toast("Idée ajoutée");
+      e.target.reset(); state.chosenBenefices.clear(); renderIdeaForm();
+      toast(state.pour === state.me ? "Idée ajoutée" : `Idée proposée à ${prenom(state.pour)}`);
     } catch (err) { toast(dbMessage(err)); }
-    finally { btn.disabled = false; }
+    finally { btn.disabled = !canAct(); }
   });
 
-  // Rendu général
+  // Files de l'Atelier
+  const enCours = () => state.posts.filter((p) => ATELIER.includes(p.statut));
+  function groupesMoi() {
+    const me = state.me, o = autre(me), mine = enCours().filter((p) => auteurDe(p) === me), theirs = enCours().filter((p) => auteurDe(p) === o);
+    const aReviser = mine.filter((p) => ouvertesPourMoi(p).length);
+    const sans = (p) => !aReviser.includes(p);
+    return [
+      [`À réviser : remarques de ${prenom(o)}`, aReviser, true],
+      ["À rédiger ou faire relire", mine.filter((p) => sans(p) && p.statut === "brouillon"), true],
+      ["À valider par toi", mine.filter((p) => sans(p) && p.statut === "relu"), true],
+      [`Posts de ${prenom(o)} à valider`, theirs.filter((p) => p.statut === "valide_auteur" && !ouvertes(p).length), true],
+      ["Prêts à programmer", mine.filter((p) => sans(p) && p.statut === "valide_associe"), true],
+      [`En attente de ${prenom(o)}`, mine.filter((p) => sans(p) && p.statut === "valide_auteur"), false],
+      [`Remarques envoyées à ${prenom(o)}`, theirs.filter((p) => ouvertes(p).some((r) => r.de === me)), false]
+    ];
+  }
+  function groupesAuteur(a) {
+    const l = enCours().filter((p) => auteurDe(p) === a);
+    return [["Brouillons", l.filter((p) => p.statut === "brouillon")], ["Relus par Claude", l.filter((p) => p.statut === "relu")],
+      [statutLabel("valide_auteur", { auteur: a }), l.filter((p) => p.statut === "valide_auteur")], ["Double validation, prêts", l.filter((p) => p.statut === "valide_associe")]];
+  }
+  function groupes() {
+    if (state.filtre === "moi" && state.me) return groupesMoi();
+    if (state.filtre === "theo" || state.filtre === "jonathan") return groupesAuteur(state.filtre);
+    return Object.keys(AUTEURS).flatMap((a) => groupesAuteur(a).map(([t, l]) => [`${prenom(a)} · ${t}`, l]));
+  }
+  const aFaire = () => (state.me ? groupesMoi().filter((g) => g[2]).reduce((n, g) => n + g[1].length, 0) : 0);
+
+  // Rendu
   function counts() {
-    const by = (list) => state.posts.filter((p) => list.includes(p.statut)).length;
-    $("#n-idees").textContent = by(["idee"]) || "";
-    $("#n-atelier").textContent = by(ATELIER) || "";
-    $("#n-publies").textContent = by(["programme", "publie"]) || "";
+    $("#n-idees").textContent = state.posts.filter((p) => p.statut === "idee").length || "";
+    const n = aFaire();
+    $("#n-atelier").innerHTML = n ? `<span class="badge-n" title="À faire pour toi">${n}</span>` : "";
+    $("#n-publies").textContent = state.posts.filter((p) => p.statut === "programme" || p.statut === "publie").length || "";
   }
   function render() {
     counts();
@@ -382,123 +479,159 @@ tr:last-child td { border-bottom: 0; }
   }
   const byMaj = (a, b) => String(b.maj || "").localeCompare(String(a.maj || ""));
   const chipsHtml = (list) => (list || []).length ? `<div class="chips">${list.map((b) => `<span class="chip">${esc(b)}</span>`).join("")}</div>` : "";
-  const pill = (s) => `<span class="pill s-${esc(s)}">${esc(STATUTS[s] || s)}</span>`;
-  const ro = () => (state.canWrite ? "" : "disabled");
+  const pill = (s, p) => `<span class="pill s-${esc(s)}">${esc(statutLabel(s, p))}</span>`;
+  const dis = (ok) => (ok ? "" : "disabled");
 
   function renderIdeas() {
+    renderIdeaForm();
     if (!state.connected) { $("#idea-list").innerHTML = `<div class="empty">Chargement des idées…</div>`; return; }
     const ideas = state.posts.filter((p) => p.statut === "idee").sort(byMaj);
     const out = state.posts.filter((p) => p.statut === "ecarte").sort(byMaj);
-    let html = ideas.length ? `<div class="idea-grid">${ideas.map((p) => `
+    const carte = (p) => `
       <article class="idea">
-        <div class="row"><h3 class="grow">${esc(p.titre)}</h3>${pill(p.statut)}</div>
+        <div class="row"><h3 class="grow">${esc(p.titre)}</h3>${pill(p.statut, p)}</div>
+        <span class="author">Pour ${esc(prenom(auteurDe(p)))}${p.proposePar && p.proposePar !== auteurDe(p) ? `, proposée par ${esc(prenom(p.proposePar))}` : ""}</span>
         <p>${esc(p.situation)}</p>
         ${p.angle ? `<p class="hint">${esc(p.angle)}</p>` : ""}
         ${chipsHtml(p.benefices)}
         ${p.source ? `<span class="src">Source : ${esc(p.source)}</span>` : ""}
-        <div class="row"><button class="btn primary" data-act="to-atelier" data-id="${p.id}" ${ro()}>Passer à l'atelier</button><button class="btn quiet" data-act="ecarter" data-id="${p.id}" ${ro()}>Écarter</button></div>
-      </article>`).join("")}</div>` : `<div class="empty">Aucune idée en attente. Ajoute la première avec le formulaire ci-dessus, ou après ton prochain rendez-vous.</div>`;
+        ${peutModifier(p) ? `<div class="row"><button class="btn primary" data-act="to-atelier" data-id="${p.id}">Passer à l'atelier</button><button class="btn quiet" data-act="ecarter" data-id="${p.id}">Écarter</button></div>` : ""}
+      </article>`;
+    let html = ideas.length ? `<div class="idea-grid">${ideas.map(carte).join("")}</div>` : `<div class="empty">Aucune idée en attente. Ajoute la première avec le formulaire ci-dessus, ou après ton prochain rendez-vous.</div>`;
     if (out.length) html += `<details class="ecartees"><summary>Idées écartées (${out.length})</summary><div class="idea-grid">${out.map((p) => `
-      <article class="idea"><div class="row"><h3 class="grow">${esc(p.titre)}</h3>${pill(p.statut)}</div><div class="row"><button class="btn" data-act="restore" data-id="${p.id}" ${ro()}>Remettre en idée</button></div></article>`).join("")}</div></details>`;
+      <article class="idea"><div class="row"><h3 class="grow">${esc(p.titre)}</h3>${pill(p.statut, p)}</div><span class="author">Pour ${esc(prenom(auteurDe(p)))}</span>${peutModifier(p) ? `<div class="row"><button class="btn" data-act="restore" data-id="${p.id}">Remettre en idée</button></div>` : ""}</article>`).join("")}</div></details>`;
     $("#idea-list").innerHTML = html;
   }
 
+  function renderFilters() {
+    const opts = (state.me ? [["moi", "À faire pour moi"], [state.me, "Mes posts"], [autre(state.me), `Posts de ${prenom(autre(state.me))}`]] : []).concat([["tous", "Tous"]]);
+    $("#filters").innerHTML = opts.map(([k, l]) => `<button type="button" class="chip" data-filtre="${k}" aria-pressed="${state.filtre === k}">${esc(l)}</button>`).join("");
+  }
+  $("#filters").addEventListener("click", (e) => { const b = e.target.closest("[data-filtre]"); if (!b) return; state.filtre = b.dataset.filtre; state.selected = null; renderAtelier(); });
+
   function renderAtelier() {
-    const posts = state.posts.filter((p) => ATELIER.includes(p.statut)).sort(byMaj);
-    if (!state.selected || !posts.some((p) => p.id === state.selected)) state.selected = posts[0] ? posts[0].id : null;
-    const groups = [["À rédiger ou relire", ["brouillon"]], ["À valider", ["relu", "valide_theo"]], ["Prêts à programmer", ["valide_jonathan"]]];
-    $("#post-list").innerHTML = !state.connected ? `<div class="empty">Chargement…</div>` : posts.length ? groups.map(([t, ss]) => {
-      const g = posts.filter((p) => ss.includes(p.statut)); if (!g.length) return "";
-      return `<span class="label group-title">${esc(t)}</span>` + g.map((p) => `
-        <button class="item" data-act="select" data-id="${p.id}" aria-current="${p.id === state.selected}">
+    renderFilters();
+    const gs = groupes();
+    const visibles = gs.flatMap((g) => g[1]);
+    if (!state.selected || !enCours().some((p) => p.id === state.selected)) state.selected = visibles[0] ? visibles[0].id : null;
+    $("#post-list").innerHTML = !state.connected ? `<div class="empty">Chargement…</div>` : visibles.length ? gs.map(([t, g]) => !g.length ? "" :
+      `<span class="label group-title">${esc(t)}</span>` + g.map((p) => {
+        const n = ouvertes(p).length;
+        return `<button class="item" data-act="select" data-id="${p.id}" aria-current="${p.id === state.selected}">
           <span class="t">${esc(p.titre)}</span>
-          <span class="row">${pill(p.statut)}${p.bloque ? `<span class="pill s-brouillon">En attente</span>` : ""}</span>
-        </button>`).join("");
-    }).join("") : `<div class="empty">Aucun post en cours. Passe une idée à l'atelier depuis l'onglet Idées.</div>`;
+          <span class="row">${state.filtre === "moi" ? "" : `<span class="author">${esc(prenom(auteurDe(p)))}</span>`}${pill(p.statut, p)}${n ? `<span class="pill s-brouillon">${n} remarque${n > 1 ? "s" : ""}</span>` : ""}${p.bloque ? `<span class="pill s-brouillon">En attente</span>` : ""}</span>
+        </button>`;
+      }).join("")).join("") : `<div class="empty">${state.filtre === "moi" ? "Rien à faire pour toi en ce moment. Passe une idée à l'atelier, ou regarde les posts de ton associé." : "Aucun post en cours ici."}</div>`;
     const ed = $("#editor");
     if (ed.contains(document.activeElement) && document.activeElement.matches("textarea, input")) { state.editorDeferred = true; return; }
     state.editorDeferred = false;
-    const p = posts.find((x) => x.id === state.selected);
+    const p = enCours().find((x) => x.id === state.selected);
     ed.innerHTML = p ? editorHtml(p) : "";
   }
 
-  function stepsHtml(s) {
-    const i = CHAINE.indexOf(s);
-    return `<ol class="steps">${CHAINE.map((c, k) => `<li class="${k < i ? "done" : k === i ? "now" : ""}">${esc(STATUTS[c])}</li>`).join("")}</ol>`;
+  function stepsHtml(p) {
+    const i = CHAINE.indexOf(p.statut);
+    return `<ol class="steps">${CHAINE.map((c, k) => `<li class="${k < i ? "done" : k === i ? "now" : ""}">${esc(statutLabel(c, p))}</li>`).join("")}</ol>`;
   }
-  function foldHtml(text) {
-    const t = String(text || "");
-    return `<mark>${esc(t.slice(0, FOLD))}</mark>${esc(t.slice(FOLD))}`;
-  }
+  const foldHtml = (text) => { const t = String(text || ""); return `<mark>${esc(t.slice(0, FOLD))}</mark>${esc(t.slice(FOLD))}`; };
   function countHtml(text) {
     const n = String(text || "").length;
-    const cls = n >= 800 && n <= 1300 ? "ok" : "out";
-    return `<span class="count ${cls}">${n} caractères · cible 800 à 1 300</span>`;
+    return `<span class="count ${n >= 800 && n <= 1300 ? "ok" : "out"}">${n} caractères · cible 800 à 1 300</span>`;
+  }
+
+  function remarquesHtml(p) {
+    const list = remarquesDe(p).sort((a, b) => String(a.cree).localeCompare(String(b.cree)));
+    const a = auteurDe(p);
+    const pour = estAuteur(p) ? autre(a) : a;
+    return `
+    <div class="panel">
+      <div class="row"><h3 class="grow">Remarques</h3>${ouvertes(p).length ? `<span class="pill s-brouillon">${ouvertes(p).length} à traiter</span>` : ""}</div>
+      ${list.length ? `<div class="remarks">${list.map((r) => `
+        <div class="remark ${r.statut !== "traitee" ? "open" : ""}">
+          <div class="meta"><strong>${esc(prenom(r.de))}</strong><span>${esc(frDate(r.cree))}</span>${r.statut === "traitee" ? `<span class="pill s-valide_auteur">Traitée</span>` : `<span class="pill s-brouillon">À traiter par ${esc(prenom(r.pour))}</span>`}</div>
+          <p>${esc(r.texte)}</p>
+          ${r.reponse ? `<div class="rep">${esc(prenom(r.pour))} : ${esc(r.reponse)}</div>` : ""}
+          ${r.statut !== "traitee" && canAct() && r.pour === state.me ? `
+            <div class="field"><label class="label" for="rep-${r.id}">Ta réponse, facultative</label><textarea id="rep-${r.id}" rows="2"></textarea></div>
+            <div class="row"><button class="btn" data-act="traiter" data-rid="${r.id}" data-id="${p.id}">Marquer traitée</button></div>` : ""}
+        </div>`).join("")}</div>` : `<p class="hint">Aucune remarque sur ce post.</p>`}
+      ${canAct() ? `
+        <div class="field"><label class="label" for="rem-${p.id}">Une remarque pour ${esc(prenom(pour))}</label>
+          <textarea id="rem-${p.id}" rows="3" placeholder="Ce qui te gêne, ce que tu changerais, une question"></textarea></div>
+        <div class="row"><button class="btn" data-act="remarque" data-id="${p.id}" data-pour="${pour}">Envoyer la remarque</button>
+          <span class="hint">${estAuteur(p) ? "" : "Elle arrive dans la file « À réviser » de " + esc(prenom(a)) + " et bloque ta validation tant qu'elle est ouverte."}</span></div>` : ""}
+    </div>`;
   }
 
   function editorHtml(p) {
+    const a = auteurDe(p), mod = peutModifier(p);
     const busy = state.busy && state.busy.id === p.id ? state.busy.what : null;
     const hasText = !!(p.texte && p.texte.trim());
     const versions = Array.isArray(p.versions) ? p.versions : [];
     const r = p.relecture;
-    const nextBtn = {
-      brouillon: hasText ? `<button class="btn primary" data-act="relire" data-id="${p.id}" ${busy || !sample ? "disabled" : ""} ${ro()}>Relire avec l'œil du client</button>` : "",
-      relu: `<button class="btn primary" data-act="status" data-to="valide_theo" data-id="${p.id}" ${ro()}>Je valide</button>`,
-      valide_theo: `<button class="btn primary" data-act="status" data-to="valide_jonathan" data-id="${p.id}" ${ro()}>Jonathan valide</button>`,
-      valide_jonathan: `<button class="btn primary" data-act="programmer" data-id="${p.id}" ${ro()}>Marquer programmé</button>`
-    }[p.statut] || "";
+    const ch = state.chartes[a] || {};
+    const nOuv = ouvertes(p).length;
+    let next = "";
+    if (mod && p.statut === "brouillon" && hasText) next = `<button class="btn primary" data-act="relire" data-id="${p.id}" ${dis(!busy && sample)}>Relire avec l'œil du client</button>`;
+    if (mod && p.statut === "relu") next = `<button class="btn primary" data-act="status" data-to="valide_auteur" data-id="${p.id}">Je valide</button>`;
+    if (canAct() && !estAuteur(p) && p.statut === "valide_auteur") next = nOuv ? `<span class="hint">Ta validation attend que ${esc(prenom(a))} traite les remarques.</span>` : `<button class="btn primary" data-act="status" data-to="valide_associe" data-id="${p.id}">Je valide le post de ${esc(prenom(a))}</button>`;
+    if (mod && p.statut === "valide_associe") next = `<button class="btn primary" data-act="programmer" data-id="${p.id}">Marquer programmé</button>`;
     return `
     <div class="panel">
-      <div class="row"><h2 class="grow">${esc(p.titre)}</h2>${pill(p.statut)}</div>
-      ${stepsHtml(p.statut)}
+      <div class="row"><h2 class="grow">${esc(p.titre)}</h2>${pill(p.statut, p)}</div>
+      <span class="author">Post de ${esc(prenom(a))}${p.proposePar && p.proposePar !== a ? `, idée proposée par ${esc(prenom(p.proposePar))}` : ""}</span>
+      ${stepsHtml(p)}
       ${p.bloque ? `<div class="notice">${esc(p.bloque)}</div>` : ""}
+      ${nOuv && estAuteur(p) ? `<div class="notice">${nOuv} remarque${nOuv > 1 ? "s" : ""} de ${esc(prenom(autre(a)))} à traiter, plus bas.</div>` : ""}
       <div class="field"><span class="label">Situation de départ</span><p>${esc(p.situation)}</p></div>
       ${chipsHtml(p.benefices)}
       ${p.gardeFou ? `<p class="hint">Garde-fou : ${esc(p.gardeFou)}</p>` : ""}
-      <div class="field">
+      ${mod ? `<div class="field">
         <label class="label" for="angle-${p.id}">Ton angle</label>
-        <textarea id="angle-${p.id}" rows="2" data-field="angle" data-id="${p.id}" ${ro()} placeholder="Ce que tu veux que le dirigeant retienne, en deux lignes">${esc(p.angle)}</textarea>
+        <textarea id="angle-${p.id}" rows="2" data-field="angle" data-id="${p.id}" placeholder="Ce que tu veux que le dirigeant retienne, en deux lignes">${esc(p.angle)}</textarea>
       </div>
       <div class="row">
-        <button class="btn ${versions.length ? "" : "primary"}" data-act="rediger" data-id="${p.id}" ${busy || !sample ? "disabled" : ""} ${ro()}>${versions.length ? "Rédiger deux nouvelles versions" : "Rédiger deux versions"}</button>
+        <button class="btn ${versions.length ? "" : "primary"}" data-act="rediger" data-id="${p.id}" ${dis(!busy && sample && state.chartes[a])}>${versions.length ? "Rédiger deux nouvelles versions" : "Rédiger deux versions"}</button>
         ${busy ? `<span class="thinking"><span class="dot"></span>${esc(busy)}</span><button class="btn quiet" data-act="stop">Arrêter</button>` : ""}
         ${!sample && state.connected ? `<span class="hint">Claude n'est pas disponible sur cette vue.</span>` : ""}
-      </div>
+        ${!state.chartes[a] && state.connected ? `<span class="hint">Remplis d'abord ta charte, onglet Charte.</span>` : ""}
+      </div>` : (p.angle ? `<div class="field"><span class="label">Angle de ${esc(prenom(a))}</span><p>${esc(p.angle)}</p></div>` : "")}
     </div>
-    ${versions.length ? `
+    ${versions.length && mod ? `
     <div class="panel">
       <div class="row"><h3 class="grow">Deux versions</h3><span class="hint">Choisis-en une, puis retouche-la dans le texte final.</span></div>
       <div class="versions">${versions.map((v, i) => `
         <div class="version ${p.choisie === i ? "chosen" : ""}">
           <div class="row"><span class="label grow">Version ${esc(v.label || String.fromCharCode(65 + i))}</span>${countHtml(v.texte)}</div>
           <pre>${esc(v.texte)}</pre>
-          <div class="row"><button class="btn" data-act="choose" data-i="${i}" data-id="${p.id}" ${ro()}>${p.choisie === i ? "Reprendre cette version" : "Choisir cette version"}</button></div>
+          <div class="row"><button class="btn" data-act="choose" data-i="${i}" data-id="${p.id}">${p.choisie === i ? "Reprendre cette version" : "Choisir cette version"}</button></div>
         </div>`).join("")}</div>
-      ${(p.accroches || []).length ? `<div class="field"><span class="label">Accroches de rechange</span>${p.accroches.map((a, i) => `<div class="row"><span class="grow">${esc(a)}</span><button class="btn quiet" data-act="copy-hook" data-i="${i}" data-id="${p.id}">Copier</button></div>`).join("")}</div>` : ""}
+      ${(p.accroches || []).length ? `<div class="field"><span class="label">Accroches de rechange</span>${p.accroches.map((x, i) => `<div class="row"><span class="grow">${esc(x)}</span><button class="btn quiet" data-act="copy-hook" data-i="${i}" data-id="${p.id}">Copier</button></div>`).join("")}</div>` : ""}
     </div>` : ""}
-    ${hasText || versions.length ? `
+    ${hasText || (versions.length && mod) ? `
     <div class="panel">
       <div class="row"><h3 class="grow">Texte final</h3>${countHtml(p.texte)}</div>
-      <div class="field"><label class="label" for="texte-${p.id}">Ton texte, retouché à la main</label>
-        <textarea id="texte-${p.id}" rows="14" data-field="texte" data-id="${p.id}" ${ro()}>${esc(p.texte)}</textarea></div>
+      ${mod ? `<div class="field"><label class="label" for="texte-${p.id}">Ton texte, retouché à la main</label>
+        <textarea id="texte-${p.id}" rows="14" data-field="texte" data-id="${p.id}">${esc(p.texte)}</textarea></div>` : ""}
       <div class="field"><span class="label">Aperçu, la zone teintée s'affiche avant « voir plus »</span>
         <div class="li-card">
-          <div class="li-head"><span class="avatar">TN</span><div><div class="li-name">Théo Namor</div><div class="li-role">Fondateur de SKEAM</div></div></div>
+          <div class="li-head"><span class="avatar">${esc((ch.nom || prenom(a)).split(/\s+/).map((w) => w[0]).join("").slice(0, 2).toUpperCase())}</span><div><div class="li-name">${esc(ch.nom || prenom(a))}</div><div class="li-role">${esc(ch.titre || "")}</div></div></div>
           <div class="li-text" id="preview-${p.id}">${foldHtml(p.texte)}</div>
           <div class="li-more">Environ ${FOLD} caractères visibles avant « … voir plus » sur téléphone</div>
         </div></div>
-      <div class="row">${nextBtn}<button class="btn" data-act="copy" data-id="${p.id}" ${hasText ? "" : "disabled"}>Copier pour LinkedIn</button>
-        ${p.statut !== "brouillon" ? `<button class="btn quiet" data-act="status" data-to="brouillon" data-id="${p.id}" ${ro()}>Revenir en brouillon</button>` : ""}
-        <button class="btn quiet" data-act="ecarter" data-id="${p.id}" ${ro()}>Écarter</button></div>
-      ${p.statut === "valide_jonathan" ? `<div class="field"><label class="label" for="date-${p.id}">Date de publication prévue</label><input type="date" id="date-${p.id}" data-field="datePrevue" data-id="${p.id}" value="${esc(p.datePrevue)}" ${ro()}></div>` : ""}
-    </div>` : ""}
+      <div class="row">${next}${mod ? `<button class="btn" data-act="copy" data-id="${p.id}" ${dis(hasText)}>Copier pour LinkedIn</button>
+        ${p.statut !== "brouillon" ? `<button class="btn quiet" data-act="status" data-to="brouillon" data-id="${p.id}">Revenir en brouillon</button>` : ""}
+        <button class="btn quiet" data-act="ecarter" data-id="${p.id}">Écarter</button>` : ""}</div>
+      ${mod && p.statut === "valide_associe" ? `<div class="field"><label class="label" for="date-${p.id}">Date de publication prévue</label><input type="date" id="date-${p.id}" data-field="datePrevue" data-id="${p.id}" value="${esc(p.datePrevue)}"></div>` : ""}
+    </div>` : (next ? `<div class="panel"><div class="row">${next}</div></div>` : "")}
     ${r ? `
     <div class="panel">
-      <div class="row"><h3 class="grow">Relecture</h3><span class="pill ${r.verdict === "bon" ? "s-valide_theo" : "s-ecarte"}">${r.verdict === "bon" ? "Bon pour validation" : "À corriger"}</span><span class="hint">${esc(frDate(r.date))}</span></div>
+      <div class="row"><h3 class="grow">Relecture par Claude</h3><span class="pill ${r.verdict === "bon" ? "s-valide_auteur" : "s-ecarte"}">${r.verdict === "bon" ? "Bon pour validation" : "À corriger"}</span><span class="hint">${esc(frDate(r.date))}</span></div>
       ${r.resume ? `<p>${esc(r.resume)}</p>` : ""}
       <div class="review">${(r.points || []).map((pt) => `<div class="check ${pt.ok ? "ok" : "ko"}"><span class="mk">${pt.ok ? "✓" : "✗"}</span><div><div>${esc(pt.question)}</div>${pt.remarque ? `<div class="rq">${esc(pt.remarque)}</div>` : ""}</div></div>`).join("")}</div>
-      ${r.verdict !== "bon" && (r.corrections || []).length ? `<div class="row"><button class="btn primary" data-act="corriger" data-id="${p.id}" ${busy || !sample ? "disabled" : ""} ${ro()}>Appliquer les corrections</button><span class="hint">Une passe, puis relis à nouveau.</span></div>` : ""}
-    </div>` : ""}`;
+      ${mod && r.verdict !== "bon" && (r.corrections || []).length ? `<div class="row"><button class="btn primary" data-act="corriger" data-id="${p.id}" ${dis(!busy && sample)}>Appliquer les corrections</button><span class="hint">Une passe, puis relis à nouveau.</span></div>` : ""}
+    </div>` : ""}
+    ${remarquesHtml(p)}`;
   }
 
   function renderPublies() {
@@ -507,58 +640,71 @@ tr:last-child td { border-bottom: 0; }
     const pub = list.filter((p) => p.statut === "publie");
     const imp = pub.map((p) => Number(p.chiffres?.impressions) || 0).filter((n) => n > 0);
     const moy = imp.length ? Math.round(imp.reduce((a, b) => a + b, 0) / imp.length) : null;
-    const recent = pub.slice(0, 5).flatMap((p) => p.benefices || []);
+    const mine = state.me ? pub.filter((p) => auteurDe(p) === state.me) : pub;
+    const recent = mine.slice(0, 5).flatMap((p) => p.benefices || []);
     const manque = BENEFICES.filter((b) => !recent.includes(b));
     $("#stats").innerHTML = `
       <div class="panel stat"><span class="label">Posts publiés</span><span class="v">${pub.length}</span></div>
       <div class="panel stat"><span class="label">Impressions moyennes</span><span class="v">${moy === null ? "—" : moy.toLocaleString("fr-FR")}</span></div>
-      <div class="panel stat"><span class="label">Bénéfices absents des cinq derniers</span>${manque.length ? chipsHtml(manque) : `<span class="hint">Tous couverts</span>`}</div>`;
-    $("#pub-table").innerHTML = !list.length ? `<div class="empty">Rien de programmé pour l'instant. Un post validé par Jonathan passe ici quand tu le marques programmé.</div>` : `
+      <div class="panel stat"><span class="label">${state.me ? "Bénéfices absents de tes cinq derniers posts" : "Bénéfices absents des cinq derniers"}</span>${manque.length ? chipsHtml(manque) : `<span class="hint">Tous couverts</span>`}</div>`;
+    $("#pub-table").innerHTML = !list.length ? `<div class="empty">Rien de programmé pour l'instant. Un post qui a ses deux validations passe ici quand son auteur le marque programmé.</div>` : `
       <div class="table-wrap"><table>
-        <thead><tr><th>Date</th><th>Post</th><th>Statut</th><th class="num">Impressions</th><th class="num">Réactions</th><th class="num">Commentaires</th><th>Lien</th></tr></thead>
-        <tbody>${list.map((p) => `<tr>
+        <thead><tr><th>Date</th><th>Post</th><th>Auteur</th><th>Statut</th><th class="num">Impressions</th><th class="num">Réactions</th><th class="num">Commentaires</th><th>Lien</th></tr></thead>
+        <tbody>${list.map((p) => { const m = peutModifier(p); return `<tr>
           <td>${esc(frDate(p.datePrevue)) || "—"}</td>
           <td><strong>${esc(p.titre)}</strong>${chipsHtml(p.benefices)}</td>
-          <td>${pill(p.statut)}${p.statut === "programme" ? `<div><button class="btn quiet" data-act="publier" data-id="${p.id}" ${ro()}>Marquer publié</button></div>` : ""}</td>
-          ${["impressions", "reactions", "commentaires"].map((k) => `<td class="num"><input inputmode="numeric" aria-label="${k}" data-chiffre="${k}" data-id="${p.id}" value="${esc(p.chiffres?.[k] ?? "")}" ${ro()}></td>`).join("")}
-          <td>${p.lien ? `<a href="${esc(p.lien)}" target="_blank" rel="noopener">Ouvrir</a>` : `<input type="url" style="width:160px" placeholder="Lien du post" data-field="lien" data-id="${p.id}" ${ro()}>`}</td>
-        </tr>`).join("")}</tbody></table></div>`;
+          <td>${esc(prenom(auteurDe(p)))}</td>
+          <td>${pill(p.statut, p)}${p.statut === "programme" && m ? `<div><button class="btn quiet" data-act="publier" data-id="${p.id}">Marquer publié</button></div>` : ""}</td>
+          ${["impressions", "reactions", "commentaires"].map((k) => `<td class="num">${m ? `<input inputmode="numeric" aria-label="${k}" data-chiffre="${k}" data-id="${p.id}" value="${esc(p.chiffres?.[k] ?? "")}">` : esc(p.chiffres?.[k] ?? "—")}</td>`).join("")}
+          <td>${p.lien ? `<a href="${esc(p.lien)}" target="_blank" rel="noopener">Ouvrir</a>` : m ? `<input type="url" style="width:160px" placeholder="Lien du post" data-field="lien" data-id="${p.id}">` : "—"}</td>
+        </tr>`; }).join("")}</tbody></table></div>`;
   }
 
   let charteDirty = false;
   function renderCharte() {
-    const c = state.charte;
+    const qui = state.charteVue || "theo";
+    $("#charte-who").innerHTML = Object.keys(AUTEURS).map((a) => `<button type="button" class="chip" data-charte="${a}" aria-pressed="${qui === a}">${a === state.me ? "Ma charte" : "Charte de " + esc(prenom(a))}</button>`).join("");
+    const c = state.chartes[qui];
+    const edit = canAct() && qui === state.me;
     $("#charte-empty").hidden = !!c || !state.connected;
     $("#charte-version").textContent = c && c.maj ? `Version du ${frDate(c.maj)}` : "";
+    $("#c-save").hidden = !edit; $("#c-hint").hidden = !edit;
     if (charteDirty || $("#charte-form").contains(document.activeElement)) return;
-    for (const k of CHARTE_CHAMPS) $("#c-" + k).value = c ? (c[k] || "") : "";
-    for (const el of $("#charte-form").querySelectorAll("textarea, button")) el.disabled = !state.canWrite;
+    for (const k of CHARTE_CHAMPS) { const el = $("#c-" + k); el.value = c ? (c[k] || "") : ""; el.readOnly = !edit; }
   }
+  $("#charte-who").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-charte]"); if (!b) return;
+    if (charteDirty && !confirmDiscard()) return;
+    state.charteVue = b.dataset.charte; charteDirty = false; renderCharte();
+  });
+  function confirmDiscard() { toast("Enregistre ou annule d'abord tes changements de charte."); return false; }
   $("#charte-form").addEventListener("input", () => { charteDirty = true; });
   $("#charte-form").addEventListener("submit", async (e) => {
     e.preventDefault();
-    if (!db) return toast("La base du Studio n'est pas disponible sur cette vue.");
+    const qui = state.charteVue;
+    if (!db || !canAct() || qui !== state.me) return;
     const btn = $("#c-save"); btn.disabled = true;
     const data = {}; for (const k of CHARTE_CHAMPS) data[k] = $("#c-" + k).value;
     try {
-      if (state.charte) await db.collection("charte_versions").add({ ...state.charte, archivee: now() });
-      await db.doc("charte/courante").set({ ...data, maj: now() });
+      if (state.chartes[qui]) await db.collection("charte_versions").add({ ...state.chartes[qui], auteur: qui, archivee: now() });
+      await db.doc("charte/" + qui).set({ ...data, maj: now() });
       charteDirty = false; toast("Charte enregistrée");
     } catch (err) { toast(dbMessage(err)); }
-    finally { btn.disabled = !state.canWrite; }
+    finally { btn.disabled = false; }
   });
 
   // Claude
-  function charteTexte() {
-    const c = state.charte || {};
-    return `# Qui je suis\n${c.identite || ""}\n\n# Direction éditoriale\n${c.direction || ""}\n\n# Lexique de la cible\n${c.lexique || ""}\n\n# Garde-fous et sujets interdits\n${c.gardefous || ""}\n\n# Posts de référence\n${c.reference || ""}`;
+  function charteTexte(a) {
+    const c = state.chartes[a] || {};
+    return `# Qui écrit\n${c.nom || prenom(a)}, ${c.titre || ""}\n${c.identite || ""}\n\n# Direction éditoriale\n${c.direction || ""}\n\n# Lexique de la cible\n${c.lexique || ""}\n\n# Garde-fous et sujets interdits\n${c.gardefous || ""}\n\n# Posts de référence\n${c.reference || ""}`;
   }
-  function derniersPosts(exceptId) {
-    return state.posts.filter((p) => (p.statut === "publie" || p.statut === "programme") && p.id !== exceptId).sort(byMaj).slice(0, 10)
+  function derniersPosts(a, exceptId) {
+    return state.posts.filter((p) => (p.statut === "publie" || p.statut === "programme") && auteurDe(p) === a && p.id !== exceptId).sort(byMaj).slice(0, 10)
       .map((p) => `- ${p.titre} | bénéfices : ${(p.benefices || []).join(", ")} | début : ${String(p.texte || "").slice(0, 160).replace(/\n/g, " ")}`).join("\n") || "aucun";
   }
   function ideeTexte(p) {
-    return `Titre : ${p.titre}\nSituation vécue : ${p.situation}\nAngle de Théo : ${p.angle || "à déduire de la situation"}\nBénéfices visés : ${(p.benefices || []).join(", ") || "à choisir"}\nGarde-fou propre à cette idée : ${p.gardeFou || "aucun"}`;
+    const rem = remarquesDe(p).map((r) => `- ${prenom(r.de)} : ${r.texte}${r.reponse ? ` (réponse : ${r.reponse})` : ""}`).join("\n");
+    return `Titre : ${p.titre}\nSituation vécue : ${p.situation}\nAngle de l'auteur : ${p.angle || "à déduire de la situation"}\nBénéfices visés : ${(p.benefices || []).join(", ") || "à choisir"}\nGarde-fou propre à cette idée : ${p.gardeFou || "aucun"}${rem ? `\nRemarques de l'associé à prendre en compte :\n${rem}` : ""}`;
   }
   async function runClaude(p, what, fn) {
     if (!sample) return;
@@ -570,8 +716,9 @@ tr:last-child td { border-bottom: 0; }
     finally { state.busy = null; state.ctl = null; renderAtelier(); }
   }
   function rediger(p) {
+    const a = auteurDe(p);
     return runClaude(p, "Claude rédige deux versions…", async (signal) => {
-      const prompt = `Tu es le rédacteur des posts LinkedIn de Théo Namor. Respecte strictement la charte ci-dessous, notamment la posture de respect envers les dirigeants, le format, le lexique et les garde-fous. N'invente aucun fait qui ne figure pas dans l'idée.\n\n${charteTexte()}\n\n# Posts déjà publiés, à ne pas répéter\n${derniersPosts(p.id)}\n\n# L'idée à rédiger\n${ideeTexte(p)}\n\n# Ce que tu rends\nRéponds uniquement par un objet JSON : {"versions":[{"label":"A","texte":"..."},{"label":"B","texte":"..."}],"accroches":["...","...","..."],"benefices":["..."]}. Deux versions prêtes à publier, d'accroches différentes, de 800 à 1 300 caractères chacune, avec des sauts de ligne comme sur LinkedIn. Trois accroches de rechange de deux lignes au plus. Les bénéfices nommés, pris dans cette liste : ${BENEFICES.join(", ")}.`;
+      const prompt = `Tu es le rédacteur des posts LinkedIn de ${prenom(a)}. Respecte strictement sa charte ci-dessous, notamment la posture de respect envers les dirigeants, le format, le lexique et les garde-fous. N'invente aucun fait qui ne figure pas dans l'idée.\n\n${charteTexte(a)}\n\n# Posts déjà publiés par ${prenom(a)}, à ne pas répéter\n${derniersPosts(a, p.id)}\n\n# L'idée à rédiger\n${ideeTexte(p)}\n\n# Ce que tu rends\nRéponds uniquement par un objet JSON : {"versions":[{"label":"A","texte":"..."},{"label":"B","texte":"..."}],"accroches":["...","...","..."],"benefices":["..."]}. Deux versions prêtes à publier, d'accroches différentes, de 800 à 1 300 caractères chacune, avec des sauts de ligne comme sur LinkedIn. Trois accroches de rechange de deux lignes au plus. Les bénéfices nommés, pris dans cette liste : ${BENEFICES.join(", ")}.`;
       const out = await sample.json(prompt, { modelTier: "complex", signal, cache: false });
       const versions = Array.isArray(out?.versions) ? out.versions.filter((v) => v && typeof v.texte === "string").slice(0, 2).map((v, i) => ({ label: String(v.label || "AB"[i]), texte: v.texte })) : [];
       if (!versions.length) throw { code: "invalid_json" };
@@ -582,9 +729,10 @@ tr:last-child td { border-bottom: 0; }
     });
   }
   function relire(p) {
+    const a = auteurDe(p);
     return runClaude(p, "Le relecteur lit avec l'œil du client…", async (signal) => {
-      const c = state.charte || {};
-      const prompt = `Tu es le relecteur des posts LinkedIn de Théo Namor. Tu n'as pas écrit ce texte. Lis-le deux fois : comme le client dont parle la situation, puis comme un dirigeant de PME qui découvre le post. Applique la grille sans indulgence.\n\n# Grille\n${c.grille || ""}\n\n# Garde-fous et sujets interdits\n${c.gardefous || ""}\n\n# Lexique de la cible\n${c.lexique || ""}\n\n# Posts déjà publiés\n${derniersPosts(p.id)}\n\n# Situation d'origine, pour juger l'anonymat\n${ideeTexte(p)}\n\n# Texte à relire\n${p.texte}\n\n# Ce que tu rends\nRéponds uniquement par un objet JSON : {"verdict":"bon" ou "a_corriger","resume":"une phrase","points":[{"question":"...","ok":true,"remarque":"..."}],"corrections":["correction précise et applicable"]}. Un point par question de la grille, dans l'ordre. Un seul échec suffit pour "a_corriger".`;
+      const c = state.chartes[a] || {};
+      const prompt = `Tu es le relecteur des posts LinkedIn de ${prenom(a)}. Tu n'as pas écrit ce texte. Lis-le deux fois : comme le client dont parle la situation, puis comme un dirigeant de PME qui découvre le post. Applique la grille sans indulgence.\n\n# Grille\n${c.grille || ""}\n\n# Garde-fous et sujets interdits\n${c.gardefous || ""}\n\n# Lexique de la cible\n${c.lexique || ""}\n\n# Posts déjà publiés\n${derniersPosts(a, p.id)}\n\n# Situation d'origine, pour juger l'anonymat\n${ideeTexte(p)}\n\n# Texte à relire\n${p.texte}\n\n# Ce que tu rends\nRéponds uniquement par un objet JSON : {"verdict":"bon" ou "a_corriger","resume":"une phrase","points":[{"question":"...","ok":true,"remarque":"..."}],"corrections":["correction précise et applicable"]}. Un point par question de la grille, dans l'ordre. Un seul échec suffit pour "a_corriger".`;
       const out = await sample.json(prompt, { modelTier: "complex", signal, cache: false });
       const points = Array.isArray(out?.points) ? out.points.map((x) => ({ question: String(x?.question || ""), ok: !!x?.ok, remarque: String(x?.remarque || "") })) : [];
       if (!points.length) throw { code: "invalid_json" };
@@ -595,8 +743,9 @@ tr:last-child td { border-bottom: 0; }
     });
   }
   function corriger(p) {
+    const a = auteurDe(p);
     return runClaude(p, "Claude applique les corrections…", async (signal) => {
-      const prompt = `Tu es le rédacteur des posts LinkedIn de Théo Namor. Applique les corrections du relecteur au texte ci-dessous, sans rien changer d'autre, en respectant la charte.\n\n${charteTexte()}\n\n# Corrections\n${(p.relecture?.corrections || []).map((x) => "- " + x).join("\n")}\n\n# Texte\n${p.texte}\n\nRéponds uniquement par un objet JSON : {"texte":"..."}.`;
+      const prompt = `Tu es le rédacteur des posts LinkedIn de ${prenom(a)}. Applique les corrections du relecteur au texte ci-dessous, sans rien changer d'autre, en respectant la charte.\n\n${charteTexte(a)}\n\n# Corrections\n${(p.relecture?.corrections || []).map((x) => "- " + x).join("\n")}\n\n# Texte\n${p.texte}\n\nRéponds uniquement par un objet JSON : {"texte":"..."}.`;
       const out = await sample.json(prompt, { modelTier: "complex", signal, cache: false });
       if (!out || typeof out.texte !== "string" || !out.texte.trim()) throw { code: "invalid_json" };
       await writePost(p.id, { texte: out.texte, relecture: { ...p.relecture, corrections: [], verdict: "a_corriger", resume: "Corrections appliquées : relis à nouveau avant de valider." } });
@@ -609,25 +758,52 @@ tr:last-child td { border-bottom: 0; }
     catch (e) { if (fallbackEl) { fallbackEl.focus(); fallbackEl.select(); } toast("Copie bloquée : le texte est sélectionné, copie-le à la main."); }
   }
 
+  async function envoyerRemarque(p, pour) {
+    const el = $(`#rem-${p.id}`); const texte = (el && el.value || "").trim();
+    if (!texte) { toast("Écris d'abord ta remarque."); return; }
+    try {
+      await db.collection("remarques").add({ postId: p.id, de: state.me, pour, texte, statut: "ouverte", reponse: "", cree: now() });
+      el.value = "";
+      if (!estAuteur(p) && (p.statut === "valide_auteur" || p.statut === "valide_associe")) {
+        await writePost(p.id, { statut: "relu" });
+        toast(`Remarque envoyée : le post repasse à valider chez ${prenom(auteurDe(p))}`);
+      } else toast(`Remarque envoyée à ${prenom(pour)}`);
+    } catch (e) { toast(dbMessage(e)); }
+  }
+  async function traiterRemarque(rid) {
+    const el = $(`#rep-${rid}`);
+    try { await write("remarques/" + rid, { statut: "traitee", reponse: (el && el.value || "").trim(), traitee: now() }); toast("Remarque traitée"); }
+    catch (e) { toast(dbMessage(e)); }
+  }
+
   // Actions
   document.addEventListener("click", (e) => {
     const b = e.target.closest("[data-act]"); if (!b) return;
-    const id = b.dataset.id; const p = state.posts.find((x) => x.id === id);
     const act = b.dataset.act;
+    if (act === "claim") { if (!db || !state.uid) return; db.doc("config/membres").set({ ...(state.membres || {}), jonathan: state.uid }).then(() => toast("C'est noté, bienvenue Jonathan")).catch((er) => toast(dbMessage(er))); return; }
+    const id = b.dataset.id; const p = state.posts.find((x) => x.id === id);
     if (act === "select") { flushTimers(); state.selected = id; state.editorDeferred = false; if (document.activeElement) document.activeElement.blur(); renderAtelier(); return; }
     if (act === "stop") { state.ctl?.abort(); return; }
     if (!p) return;
     if (act === "copy") { copyText(p.texte || "", $(`#texte-${id}`)); return; }
     if (act === "copy-hook") { copyText((p.accroches || [])[Number(b.dataset.i)] || ""); return; }
-    if (!state.canWrite) return;
-    if (act === "to-atelier") { writePost(id, { statut: "brouillon" }); state.selected = id; setTab("atelier"); toast("Idée passée à l'atelier"); }
+    if (!canAct()) return;
+    if (act === "remarque") { envoyerRemarque(p, b.dataset.pour); return; }
+    if (act === "traiter") { traiterRemarque(b.dataset.rid); return; }
+    if (act === "status" && b.dataset.to === "valide_associe") {
+      if (estAuteur(p) || ouvertes(p).length) return;
+      writePost(id, { statut: "valide_associe", valideParAssocie: state.me }).then(() => toast(`Validé : ${prenom(auteurDe(p))} peut programmer`));
+      return;
+    }
+    if (!peutModifier(p)) return;
+    if (act === "to-atelier") { writePost(id, { statut: "brouillon" }); state.selected = id; state.filtre = "moi"; setTab("atelier"); toast("Idée passée à l'atelier"); }
     else if (act === "ecarter") writePost(id, { statut: "ecarte" }).then(() => toast("Écartée"));
     else if (act === "restore") writePost(id, { statut: "idee" });
     else if (act === "rediger") rediger(p);
     else if (act === "relire") { flushTimers(); relire({ ...p, texte: ($(`#texte-${id}`) || {}).value ?? p.texte }); }
     else if (act === "corriger") corriger(p);
     else if (act === "choose") { const v = (p.versions || [])[Number(b.dataset.i)]; if (v) writePost(id, { texte: v.texte, choisie: Number(b.dataset.i), relecture: null, statut: "brouillon" }); }
-    else if (act === "status") writePost(id, { statut: b.dataset.to });
+    else if (act === "status") writePost(id, { statut: b.dataset.to }).then(() => { if (b.dataset.to === "valide_auteur") toast(`Validé : en attente de ${prenom(autre(auteurDe(p)))}`); });
     else if (act === "programmer") { const d = ($(`#date-${id}`) || {}).value || p.datePrevue; if (!d) { toast("Indique d'abord la date de publication prévue."); return; } writePost(id, { statut: "programme", datePrevue: d }).then(() => toast("Programmé : retrouve-le dans l'onglet Publiés")); }
     else if (act === "publier") writePost(id, { statut: "publie" }).then(() => toast("Publié : note les chiffres dans sept jours"));
   });
@@ -641,7 +817,7 @@ tr:last-child td { border-bottom: 0; }
   document.addEventListener("change", (e) => {
     const el = e.target;
     if (el.dataset.chiffre && el.dataset.id) {
-      const p = state.posts.find((x) => x.id === el.dataset.id); if (!p) return;
+      const p = state.posts.find((x) => x.id === el.dataset.id); if (!p || !peutModifier(p)) return;
       const v = el.value.replace(/\s/g, ""); const n = v === "" ? null : Number(v);
       if (v !== "" && !Number.isFinite(n)) { toast("Saisis un nombre entier."); return; }
       writePost(p.id, { chiffres: { ...(p.chiffres || {}), [el.dataset.chiffre]: n } });
@@ -652,7 +828,6 @@ tr:last-child td { border-bottom: 0; }
   });
 
   // Démarrage
-  renderBeneficeChips();
   try { const t = localStorage.getItem("studio-tab"); if (t && ["idees", "atelier", "publies", "charte"].includes(t)) setTab(t); else render(); } catch (e) { render(); }
 
   (async () => {
@@ -661,13 +836,20 @@ tr:last-child td { border-bottom: 0; }
     const [d, s, u] = await Promise.all([c.use("db"), c.use("sample"), c.use("user")]);
     db = d; sample = s;
     if (!db) { $("#offline").hidden = false; $("#sync").textContent = "Hors ligne"; return; }
-    if (u) { try { const w = await u.can("data.write"); if (w === false) { state.canWrite = false; $("#readonly").hidden = false; } } catch (e) {} }
+    if (u) {
+      try { const w = await u.can("data.write"); if (w === false) { state.canWrite = false; $("#readonly").hidden = false; } } catch (e) {}
+      try { state.uid = await u.id(); } catch (e) {}
+      try { state.owner = await u.isOwner(); } catch (e) {}
+    }
+    db.doc("config/membres").onSnapshot((snap) => { state.membres = snap.exists ? snap.data() : {}; resolveMe(); render(); }, () => {});
     db.collection("posts").onSnapshot((snap) => {
-      state.posts = snap.docs.map((x) => ({ id: x.id, ...x.data() }));
+      state.posts = snap.docs.map((x) => { const v = x.data(); return { id: x.id, ...v, statut: LEGACY[v.statut] || v.statut }; });
       state.connected = true; $("#sync").textContent = "Base à jour"; render();
     }, () => { $("#sync").textContent = "Base indisponible"; $("#offline").hidden = false; });
-    db.doc("charte/courante").onSnapshot((snap) => {
-      state.charte = snap.exists ? snap.data() : null; state.connected = true; render();
+    db.collection("remarques").onSnapshot((snap) => { state.remarques = snap.docs.map((x) => ({ id: x.id, ...x.data() })); render(); }, () => {});
+    db.collection("charte").onSnapshot((snap) => {
+      const ch = {}; for (const x of snap.docs) ch[x.id] = x.data();
+      state.chartes = ch; state.connected = true; render();
     }, () => {});
   })();
 })();

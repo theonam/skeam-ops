@@ -176,3 +176,23 @@ items:
     commit: 1a47ed3
     maj: 2026-10-19
     notes: 'Besoin découvert le 2026-10-19, système validé par Théo avec les propositions par défaut du doc « Système de posts LinkedIn ». Récolte Plaud et outil de publication en phases 2 et 3. Non vérifié par l''agent : les appels à Claude depuis la page (Rédiger, Relire, Corriger), qui demandent un navigateur connecté ; base vérifiée par lecture après chargement de la charte et de cinq posts.'
+  - id: OPS-311
+    titre: Studio LinkedIn à deux auteurs, double validation et remarques
+    module: null
+    lot: 1
+    priorite: souhaitable
+    statut: en_cours
+    taille: M
+    estimation_h: 4
+    dependances:
+      - OPS-310
+    criteres_acceptation:
+      - Chaque post et chaque idée ont un auteur, Théo ou Jonathan, et chacun a sa propre charte utilisée pour rédiger et relire ses posts.
+      - Un post passe par la validation de son auteur puis celle de l'associé avant de pouvoir être programmé.
+      - Une remarque de l'un sur un post de l'autre apparaît dans la file « À réviser » de l'auteur, bloque la seconde validation tant qu'elle est ouverte, et ramène un post déjà validé à « à valider ».
+      - L'Atelier s'ouvre sur « À faire pour moi », calculé pour la personne qui consulte.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-19
+    notes: 'Demande de Théo du 2026-10-19 : Jonathan a ses propres posts, double validation et remarques entre eux.'
