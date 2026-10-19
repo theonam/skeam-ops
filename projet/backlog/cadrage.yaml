@@ -175,4 +175,4 @@ items:
     a_valider: false
     commit: 1a47ed3
     maj: 2026-10-19
-    notes: Besoin découvert le 2026-10-19, système validé par Théo avec les propositions par défaut du doc « Système de posts LinkedIn ». Récolte Plaud et outil de publication en phases 2 et 3. Non vérifié par l'agent : les appels à Claude depuis la page (Rédiger, Relire, Corriger), qui demandent un navigateur connecté ; base vérifiée par lecture après chargement de la charte et de cinq posts.
+    notes: 'Besoin découvert le 2026-10-19, système validé par Théo avec les propositions par défaut du doc « Système de posts LinkedIn ». Récolte Plaud et outil de publication en phases 2 et 3. Non vérifié par l''agent : les appels à Claude depuis la page (Rédiger, Relire, Corriger), qui demandent un navigateur connecté ; base vérifiée par lecture après chargement de la charte et de cinq posts.'
