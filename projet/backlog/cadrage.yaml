@@ -193,6 +193,6 @@ items:
       - L'Atelier s'ouvre sur « À faire pour moi », calculé pour la personne qui consulte.
     audience: interne
     a_valider: false
-    commit: "1269355"
-    maj: 2026-10-19
+    commit: "64a8c24"
+    maj: 2026-10-20
     notes: 'Demande de Théo du 2026-10-19 : Jonathan a ses propres posts, double validation et remarques entre eux. Non vérifié par l''agent : le parcours à deux dans un navigateur, faute de second compte ; base migrée et relue, Rédiger déjà utilisé avec succès par Théo.'
