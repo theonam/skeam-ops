@@ -136,6 +136,12 @@ details.ecartees summary { cursor: pointer; color: var(--muted); font-weight: 60
 .li-text { white-space: pre-wrap; overflow-wrap: anywhere; }
 .li-text mark { background: var(--fold); color: inherit; }
 .li-more { color: var(--muted); font-size: 0.85rem; border-top: 1px dashed var(--line); padding-top: 6px; }
+.li-edit { display: grid; border-radius: 6px; }
+.li-edit:focus-within { outline: 2px solid var(--accent); outline-offset: 6px; }
+.li-edit > .li-back, .li-edit > .li-input { grid-area: 1 / 1; margin: 0; padding: 0; border: 0; border-radius: 0; font: inherit; line-height: inherit; letter-spacing: normal; white-space: pre-wrap; overflow-wrap: anywhere; min-height: 0; }
+.li-edit > .li-back { color: transparent; pointer-events: none; }
+.li-edit > .li-back mark { color: transparent; }
+.li-edit > .li-input { background: transparent; color: var(--fg); resize: none; overflow: hidden; width: 100%; height: 100%; outline: none; }
 .count { font-variant-numeric: tabular-nums; font-size: 0.85rem; }
 .count.ok { color: var(--good); }
 .count.out { color: var(--warn); }
@@ -619,12 +625,11 @@ tr:last-child td { border-bottom: 0; }
     ${hasText || (versions.length && mod) ? `
     <div class="panel">
       <div class="row"><h3 class="grow">Texte final</h3>${countHtml(p.texte)}</div>
-      ${mod ? `<div class="field"><label class="label" for="texte-${p.id}">Ton texte, retouché à la main</label>
-        <textarea id="texte-${p.id}" rows="14" data-field="texte" data-id="${p.id}">${esc(p.texte)}</textarea></div>` : ""}
-      <div class="field"><span class="label">Aperçu, la zone teintée s'affiche avant « voir plus »</span>
+      <div class="field">${mod ? `<label class="label" for="texte-${p.id}">Version finale : écris directement dans l'aperçu, la zone teintée s'affiche avant « voir plus »</label>` : `<span class="label">Aperçu, la zone teintée s'affiche avant « voir plus »</span>`}
         <div class="li-card">
           <div class="li-head"><span class="avatar">${esc((ch.nom || prenom(a)).split(/\s+/).map((w) => w[0]).join("").slice(0, 2).toUpperCase())}</span><div><div class="li-name">${esc(ch.nom || prenom(a))}</div><div class="li-role">${esc(ch.titre || "")}</div></div></div>
-          <div class="li-text" id="preview-${p.id}">${foldHtml(p.texte)}</div>
+          ${mod ? `<div class="li-edit"><div class="li-text li-back" id="preview-${p.id}" aria-hidden="true">${foldHtml(p.texte)}\n </div><textarea class="li-input" id="texte-${p.id}" data-field="texte" data-id="${p.id}" rows="1">${esc(p.texte)}</textarea></div>`
+            : `<div class="li-text" id="preview-${p.id}">${foldHtml(p.texte)}</div>`}
           <div class="li-more">Environ ${FOLD} caractères visibles avant « … voir plus » sur téléphone</div>
         </div></div>
       <div class="row">${next}${mod ? `<button class="btn" data-act="copy" data-id="${p.id}" ${dis(hasText)}>Copier pour LinkedIn</button>
@@ -856,7 +861,7 @@ tr:last-child td { border-bottom: 0; }
     const el = e.target;
     if (el.dataset.field && el.dataset.id) {
       debounced(el.dataset.id, el.dataset.field, el.value);
-      if (el.dataset.field === "texte") { const pv = $(`#preview-${el.dataset.id}`); if (pv) pv.innerHTML = foldHtml(el.value); }
+      if (el.dataset.field === "texte") { const pv = $(`#preview-${el.dataset.id}`); if (pv) pv.innerHTML = foldHtml(el.value) + (pv.classList.contains("li-back") ? "\n " : ""); }
     }
   });
   document.addEventListener("change", (e) => {
