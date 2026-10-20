@@ -542,10 +542,16 @@ tr:last-child td { border-bottom: 0; }
   function remarquesHtml(p) {
     const list = remarquesDe(p).sort((a, b) => String(a.cree).localeCompare(String(b.cree)));
     const a = auteurDe(p);
-    const pour = estAuteur(p) ? autre(a) : a;
+    const pour = a;
+    const mod = peutModifier(p);
+    const aAppliquer = ouvertesPourMoi(p);
+    const busy = !!(state.busy && state.busy.id === p.id);
+    const peutAppliquer = mod && sample && !busy && !!(p.texte && p.texte.trim());
     return `
     <div class="panel">
       <div class="row"><h3 class="grow">Remarques</h3>${ouvertes(p).length ? `<span class="pill s-brouillon">${ouvertes(p).length} à traiter</span>` : ""}</div>
+      ${mod && aAppliquer.length > 1 ? `<div class="row"><button class="btn primary" data-act="appliquer-tout" data-id="${p.id}" ${dis(peutAppliquer)}>Appliquer les ${aAppliquer.length} remarques avec Claude</button></div>` : ""}
+      ${mod && aAppliquer.length && !(p.texte && p.texte.trim()) ? `<p class="hint">Rédige d'abord le post : les remarques ouvertes seront prises en compte à la rédaction.</p>` : ""}
       ${list.length ? `<div class="remarks">${list.map((r) => `
         <div class="remark ${r.statut !== "traitee" ? "open" : ""}">
           <div class="meta"><strong>${esc(prenom(r.de))}</strong><span>${esc(frDate(r.cree))}</span>${r.statut === "traitee" ? `<span class="pill s-valide_auteur">Traitée</span>` : `<span class="pill s-brouillon">À traiter par ${esc(prenom(r.pour))}</span>`}</div>
@@ -553,13 +559,15 @@ tr:last-child td { border-bottom: 0; }
           ${r.reponse ? `<div class="rep">${esc(prenom(r.pour))} : ${esc(r.reponse)}</div>` : ""}
           ${r.statut !== "traitee" && canAct() && r.pour === state.me ? `
             <div class="field"><label class="label" for="rep-${r.id}">Ta réponse, facultative</label><textarea id="rep-${r.id}" rows="2"></textarea></div>
-            <div class="row"><button class="btn" data-act="traiter" data-rid="${r.id}" data-id="${p.id}">Marquer traitée</button></div>` : ""}
+            <div class="row">${mod ? `<button class="btn primary" data-act="appliquer" data-rid="${r.id}" data-id="${p.id}" ${dis(peutAppliquer)}>Appliquer avec Claude</button>` : ""}<button class="btn" data-act="traiter" data-rid="${r.id}" data-id="${p.id}">Marquer traitée</button></div>` : ""}
+          ${mod && !r.retenue ? `<div class="row"><button class="btn quiet" data-act="retenir" data-rid="${r.id}" data-id="${p.id}">Retenir dans ma charte</button></div>` : ""}
+          ${r.retenue ? `<span class="hint">Retenue dans la charte de ${esc(prenom(a))}.</span>` : ""}
         </div>`).join("")}</div>` : `<p class="hint">Aucune remarque sur ce post.</p>`}
       ${canAct() ? `
-        <div class="field"><label class="label" for="rem-${p.id}">Une remarque pour ${esc(prenom(pour))}</label>
+        <div class="field"><label class="label" for="rem-${p.id}">${estAuteur(p) ? "Une note pour toi, à appliquer plus tard" : "Une remarque pour " + esc(prenom(pour))}</label>
           <textarea id="rem-${p.id}" rows="3" placeholder="Ce qui te gêne, ce que tu changerais, une question"></textarea></div>
-        <div class="row"><button class="btn" data-act="remarque" data-id="${p.id}" data-pour="${pour}">Envoyer la remarque</button>
-          <span class="hint">${estAuteur(p) ? "" : "Elle arrive dans la file « À réviser » de " + esc(prenom(a)) + " et bloque ta validation tant qu'elle est ouverte."}</span></div>` : ""}
+        <div class="row"><button class="btn" data-act="remarque" data-id="${p.id}" data-pour="${pour}">${estAuteur(p) ? "Ajouter la note" : "Envoyer la remarque"}</button>
+          <span class="hint">${estAuteur(p) ? "Tu pourras l'appliquer avec Claude d'un clic." : "Elle arrive dans la file « À réviser » de " + esc(prenom(a)) + " et bloque ta validation tant qu'elle est ouverte."}</span></div>` : ""}
     </div>`;
   }
 
@@ -770,6 +778,34 @@ tr:last-child td { border-bottom: 0; }
       } else toast(`Remarque envoyée à ${prenom(pour)}`);
     } catch (e) { toast(dbMessage(e)); }
   }
+  function appliquerRemarques(p, rems) {
+    const a = auteurDe(p);
+    if (!rems.length) return;
+    if (!(p.texte && p.texte.trim())) { toast("Rédige d'abord le post : les remarques seront prises en compte à la rédaction."); return; }
+    return runClaude(p, rems.length > 1 ? "Claude applique les remarques…" : "Claude applique la remarque…", async (signal) => {
+      const prompt = `Tu es le rédacteur des posts LinkedIn de ${prenom(a)}. Réécris le texte ci-dessous en appliquant les remarques, en changeant le moins possible le reste, et en respectant strictement la charte.\n\n${charteTexte(a)}\n\n# Remarques à appliquer\n${rems.map((r) => `- ${prenom(r.de)} : ${r.texte}`).join("\n")}\n\n# Texte actuel\n${p.texte}\n\n# Ce que tu rends\nRéponds uniquement par un objet JSON : {"texte":"le post complet réécrit, 800 à 1 300 caractères","resume":"une phrase sur ce que tu as changé"}.`;
+      const out = await sample.json(prompt, { modelTier: "complex", signal, cache: false });
+      if (!out || typeof out.texte !== "string" || !out.texte.trim()) throw { code: "invalid_json" };
+      const resume = String(out.resume || "Remarque appliquée.");
+      await writePost(p.id, { texte: out.texte, relecture: null, statut: "brouillon", choisie: p.choisie ?? null });
+      for (const r of rems) await write("remarques/" + r.id, { statut: "traitee", reponse: "Appliquée avec Claude : " + resume, traitee: now() });
+      toast("Texte réécrit : relis-le, puis relance la relecture");
+    });
+  }
+  async function retenirRemarque(p, rid) {
+    const a = auteurDe(p), r = state.remarques.find((x) => x.id === rid), c = state.chartes[a];
+    if (!r || !c || state.me !== a) return;
+    const titre = "CE QUE J'AI DÉJÀ CORRIGÉ, À NE PLUS REFAIRE";
+    const ligne = "- " + String(r.texte).replace(/\s+/g, " ").trim().slice(0, 400);
+    const direction = String(c.direction || "");
+    const nouvelle = direction.includes(titre) ? direction + "\n" + ligne : direction + "\n\n" + titre + "\n" + ligne;
+    try {
+      await db.collection("charte_versions").add({ ...c, auteur: a, archivee: now() });
+      await write("charte/" + a, { direction: nouvelle });
+      await write("remarques/" + rid, { retenue: true });
+      toast("Retenue dans ta charte : les prochains posts en tiendront compte");
+    } catch (e) { toast(dbMessage(e)); }
+  }
   async function traiterRemarque(rid) {
     const el = $(`#rep-${rid}`);
     try { await write("remarques/" + rid, { statut: "traitee", reponse: (el && el.value || "").trim(), traitee: now() }); toast("Remarque traitée"); }
@@ -790,6 +826,15 @@ tr:last-child td { border-bottom: 0; }
     if (!canAct()) return;
     if (act === "remarque") { envoyerRemarque(p, b.dataset.pour); return; }
     if (act === "traiter") { traiterRemarque(b.dataset.rid); return; }
+    if (act === "appliquer" || act === "appliquer-tout") {
+      if (!peutModifier(p)) return;
+      flushTimers();
+      const cur = { ...p, texte: ($(`#texte-${id}`) || {}).value ?? p.texte };
+      const rems = act === "appliquer" ? ouvertesPourMoi(p).filter((r) => r.id === b.dataset.rid) : ouvertesPourMoi(p);
+      appliquerRemarques(cur, rems);
+      return;
+    }
+    if (act === "retenir") { if (peutModifier(p)) retenirRemarque(p, b.dataset.rid); return; }
     if (act === "status" && b.dataset.to === "valide_associe") {
       if (estAuteur(p) || ouvertes(p).length) return;
       writePost(id, { statut: "valide_associe", valideParAssocie: state.me }).then(() => toast(`Validé : ${prenom(auteurDe(p))} peut programmer`));
