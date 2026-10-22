@@ -47,6 +47,12 @@ Audience interne. Justification des fourchettes de `modules.yaml`, graine du 202
 - **Justification** : 3 heures de paramétrage ; 6 heures si de nombreuses listes ou des filtres calculés sont demandés.
 - **Risques** : volumes importants qui imposent une recherche côté serveur optimisée.
 
+### Actions groupées et relance, `actions-groupees` (hypothèse, à chiffrer)
+
+- **Périmètre** : sélection de plusieurs lignes d'une liste filtrée (une à une ou tout le filtre), barre d'actions groupées, écran de confirmation avant exécution, rapport ligne par ligne. Première action : relance groupée par mail des factures en retard, un mail par facture, depuis un modèle de message.
+- **Justification** : à chiffrer. Le mécanisme de sélection et de rapport est partagé par toutes les actions ; chaque action supplémentaire (relancer des devis sans réponse, changer le statut de plusieurs lignes) est un paramétrage court. Demandé par Théo le 22/10/2026, item de développement OPS-117.
+- **Risques** : envoi en masse (garde-fou de confirmation obligatoire, pas d'envoi sans validation), doublons de relance, adresses manquantes, canal d'envoi (brouillon Outlook ou envoi direct, à décider).
+
 ### Glisser-déposer, `glisser-deposer`
 
 - **Périmètre** : réordonnancement de lignes et affectation d'un élément à une colonne ou une case, à la souris et au doigt, enregistrement immédiat et annulation.

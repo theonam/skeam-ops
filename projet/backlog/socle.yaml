@@ -290,3 +290,29 @@ items:
     commit: "9844693"
     maj: 2026-10-15
     notes: Demandé par Théo, brief du chantier socle du 2026-10-15.
+  - id: OPS-117
+    titre: Actions groupées sur une sélection de lignes, dont la relance groupée par mail
+    module: null
+    lot: 1
+    priorite: souhaitable
+    statut: a_faire
+    taille: L
+    estimation_h: 12
+    dependances:
+      - OPS-102
+      - OPS-111
+      - OPS-113
+      - OPS-114
+    criteres_acceptation:
+      - Dans toute liste du socle, l'utilisateur coche des lignes une à une, ou toutes les lignes du filtre en cours, et une barre d'actions groupées apparaît avec le nombre de lignes sélectionnées.
+      - Les actions proposées dans la barre dépendent de la liste et du profil de l'utilisateur ; un profil sans le droit n'y voit pas l'action.
+      - Sur une liste de factures filtrée sur les factures en retard, l'action « Relance groupée » prépare un brouillon de mail par facture, adressé au contact du client, avec le numéro, le montant restant dû et l'échéance en variables du modèle de message.
+      - Avant tout envoi, un écran de confirmation liste chaque destinataire et chaque mail ; l'utilisateur peut en retirer, sans quitter l'écran.
+      - Aucun mail n'est envoyé sans la confirmation ; une facture déjà relancée il y a moins de N jours (réglable) est signalée avant l'envoi.
+      - Chaque relance est tracée par facture dans le journal d'audit et dans l'historique d'envois, avec sa date et son auteur.
+      - Un rapport indique, ligne par ligne, ce qui est parti et ce qui a échoué (adresse manquante, client sans contact) ; les échecs se relancent d'un clic.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-22
+    notes: Demandé par Théo le 2026-10-22. Cas d'usage de départ, les factures en retard ; le mécanisme (sélection, barre d'actions, confirmation, rapport, trace) reste générique pour d'autres actions groupées, par exemple relancer des devis sans réponse ou changer le statut de plusieurs lignes. Envoi par le chemin du socle, brouillon Outlook (OPS-113) tant que l'envoi direct n'est pas décidé.
