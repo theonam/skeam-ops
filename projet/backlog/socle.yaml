@@ -316,3 +316,89 @@ items:
     commit: null
     maj: 2026-10-22
     notes: Demandé par Théo le 2026-10-22. Cas d'usage de départ, les factures en retard ; le mécanisme (sélection, barre d'actions, confirmation, rapport, trace) reste générique pour d'autres actions groupées, par exemple relancer des devis sans réponse ou changer le statut de plusieurs lignes. Envoi par le chemin du socle, brouillon Outlook (OPS-113) tant que l'envoi direct n'est pas décidé.
+  - id: OPS-118
+    titre: "Factures triables par onglets : Brouillons, Attente de paiement, Payées"
+    module: null
+    lot: 1
+    priorite: souhaitable
+    statut: a_faire
+    taille: S
+    estimation_h: 4
+    dependances:
+      - OPS-111
+    criteres_acceptation:
+      - Des onglets apparaissent en tête de la liste des factures.
+      - L'onglet Brouillons montre les factures de statut brouillon.
+      - L'onglet Attente de paiement montre les factures émises non payées, y compris en retard, avec leur nombre affiché sur l'onglet.
+      - L'onglet Payées montre les factures payées.
+      - Chaque onglet garde ses filtres, son tri et les colonnes choisies par l'utilisateur.
+      - Le compteur de l'onglet se met à jour sans recharger la page.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-22
+    notes: Demandé par Théo le 2026-10-22
+  - id: OPS-119
+    titre: Échéance visible sur la facture
+    module: null
+    lot: 1
+    priorite: souhaitable
+    statut: a_faire
+    taille: XS
+    estimation_h: 2
+    dependances:
+      - OPS-111
+    criteres_acceptation:
+      - La liste des factures a une colonne Échéance, affichée par défaut, triable et filtrable.
+      - L'échéance figure sur la fiche de la facture.
+      - Une facture dont l'échéance est dépassée est signalée en retard.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-22
+    notes: Demandé par Théo le 2026-10-22
+  - id: OPS-120
+    titre: Indicateur En attente de paiement, dont en retard, réservé au dirigeant
+    module: null
+    lot: 1
+    priorite: souhaitable
+    statut: a_faire
+    taille: M
+    estimation_h: 6
+    dependances:
+      - OPS-102
+      - OPS-108
+    criteres_acceptation:
+      - Depuis la vue tableau de bord, que seul le dirigeant possède, une carte « En attente de paiement » affiche le montant TTC, et « dont en retard » s'affiche en rouge.
+      - La carte est visible du seul profil dirigeant, l'administrateur ayant les mêmes droits.
+      - Aucun autre profil ne reçoit ces montants, le contrôle est fait côté serveur et vérifié par un test sur chaque profil.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-22
+    notes: Demandé par Théo le 2026-10-22
+  - id: OPS-121
+    titre: Reporter dans le socle les améliorations visuelles de la démo E G M
+    module: null
+    lot: 1
+    priorite: indispensable
+    statut: a_faire
+    taille: L
+    estimation_h: 14
+    dependances:
+      - OPS-101
+    criteres_acceptation:
+      - Les jetons de la direction artistique Ardoise et cuivre sont repris dans le socle, avec ardoise, sable, cuivre limité au logo et au menu, et rouge vif réservé aux pastilles de notification.
+      - Le logo contour fin, hexagone filaire et point cuivre, et les icônes d'installation sont repris.
+      - Les tableaux sont zébrés avec un en-tête ardoise.
+      - Les cases à cocher sont sobres, contour gris et ardoise pleine une fois cochées.
+      - Les champs de saisie sont carrés, et les boutons, panneaux et totaux sont arrondis.
+      - Les boutons principaux sont en ardoise.
+      - La pastille de statut commune reprend les trois couleurs, vert pour fait, gris ardoise pour travail, rouge pour événement, et turquoise pour à facturer.
+      - L'illustration d'en-tête « technicien connecté » est reprise.
+      - Chaque point est vérifié par des captures aux quatre largeurs.
+    audience: interne
+    a_valider: false
+    commit: null
+    maj: 2026-10-22
+    notes: Demandé par Théo le 2026-10-22
